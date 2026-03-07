@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { jsonError, jsonSuccess } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
+import { notifySale } from '@/lib/telegram';
 
 export async function POST(req: NextRequest) {
     try {
@@ -100,7 +101,6 @@ export async function POST(req: NextRequest) {
 
             // Create fee transaction
             await supabase.from('transactions').insert({
-                id: uuidv4(),
                 user_id: order.seller_id,
                 order_id: order.id,
                 type: 'fee',
@@ -109,19 +109,27 @@ export async function POST(req: NextRequest) {
                 description: `Taxa de plataforma (${feePercentage}%) - Pedido ${order.id}`
             });
 
-            // Update product sales count
+            // Fetch product data for notification and stats
+            let productName = 'Produto';
+            let productData = null;
+
             if (order.product_id) {
                 const { data: product } = await supabase
                     .from('products')
-                    .select('sales_count, type')
+                    .select('id, name, sales_count, type')
                     .eq('id', order.product_id)
                     .single();
-
+                
                 if (product) {
+                    productData = product;
+                    productName = product.name || 'Produto';
+
+                    // Update sales count
                     await supabase.from('products')
                         .update({ sales_count: (product.sales_count || 0) + 1 })
                         .eq('id', order.product_id);
-
+                    
+                    // Enroll user if digital product
                     if (product.type === 'digital' && order.buyer_email) {
                         const normalizedEmail = order.buyer_email.toLowerCase().trim();
                         const { data: existingUser } = await supabase
@@ -140,6 +148,21 @@ export async function POST(req: NextRequest) {
                         }
                     }
                 }
+            }
+
+            // Send Telegram Notification
+            try {
+                const customerName = order.buyer_name || order.buyer_email || 'Cliente';
+                const paymentMethod = order.payment_method || 'PIX';
+                
+                await notifySale(order.seller_id, {
+                    product_name: productName,
+                    amount: order.amount,
+                    payment_method: paymentMethod,
+                    customer_name: customerName
+                });
+            } catch (error) {
+                console.error('Error sending Telegram notification:', error);
             }
         } else {
             // For other statuses (failed, etc.)
