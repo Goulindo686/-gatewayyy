@@ -126,14 +126,21 @@ export async function POST(req: NextRequest) {
             const lastChargeStatus = charges[0]?.status;
             
             if (status === 'failed' || lastChargeStatus === 'failed') {
-                // Debug: retornar resposta completa para identificar o erro
-                const errorDetails = JSON.stringify({
-                    pagarme_response: pagarmeOrder,
-                    used_recipient_id: recipient.pagarme_recipient_id,
-                    platform_recipient_id: process.env.PLATFORM_RECIPIENT_ID
-                }, null, 2);
-                console.error('Pagar.me Failed Order:', errorDetails);
-                throw new Error(`Falha Pagar.me Detalhada: ${errorDetails}`);
+                const charge = charges[0];
+                const transaction = charge?.last_transaction;
+                
+                const failureReason = {
+                    status: status,
+                    charge_status: lastChargeStatus,
+                    acquirer_message: transaction?.acquirer_message,
+                    gateway_errors: transaction?.gateway_response?.errors,
+                    recipient_id: recipient.pagarme_recipient_id,
+                    platform_id: process.env.PLATFORM_RECIPIENT_ID
+                };
+
+                const errorMsg = JSON.stringify(failureReason, null, 2);
+                console.error('Pagar.me Failed Order:', errorMsg);
+                throw new Error(`Falha Pagar.me: ${errorMsg}`);
             }
             
             throw new Error('O Pagar.me recebeu o pedido mas não retornou o QR Code Pix. Verifique os logs.');
@@ -169,6 +176,12 @@ export async function POST(req: NextRequest) {
 
     } catch (error: any) {
         console.error('API Pix Error:', error);
+        
+        if (error.response?.data) {
+             const axiosError = JSON.stringify(error.response.data, null, 2);
+             return jsonError(`Erro Pagar.me API: ${axiosError}`, error.response.status || 400);
+        }
+
         return jsonError(error.message || 'Erro interno ao processar pagamento', 500);
     }
 }
