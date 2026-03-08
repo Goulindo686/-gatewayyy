@@ -126,7 +126,14 @@ export async function POST(req: NextRequest) {
             const lastChargeStatus = charges[0]?.status;
             
             if (status === 'failed' || lastChargeStatus === 'failed') {
-                throw new Error('Falha no Pagar.me: Pagamento recusado ou falhou na criação.');
+                // Debug: retornar resposta completa para identificar o erro
+                const errorDetails = JSON.stringify({
+                    pagarme_response: pagarmeOrder,
+                    used_recipient_id: recipient.pagarme_recipient_id,
+                    platform_recipient_id: process.env.PLATFORM_RECIPIENT_ID
+                }, null, 2);
+                console.error('Pagar.me Failed Order:', errorDetails);
+                throw new Error(`Falha Pagar.me Detalhada: ${errorDetails}`);
             }
             
             throw new Error('O Pagar.me recebeu o pedido mas não retornou o QR Code Pix. Verifique os logs.');
