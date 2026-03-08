@@ -118,8 +118,12 @@
                 }
 
             } catch (err) {
-                errorDiv.textContent = `Erro: ${err.message}`;
-                errorDiv.style.display = 'block';
+                const errorDiv = document.getElementById('error');
+                if (errorDiv) {
+                    errorDiv.textContent = `Erro: ${err.message}`;
+                    errorDiv.style.display = 'block';
+                }
+                console.error('Erro detalhado:', err);
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Gerar Pix de Teste';
