@@ -21,6 +21,7 @@ export default function DocsPage() {
     };
 
     const endpoint = `${baseUrl}/api/v1/pix`;
+    const statusEndpoint = `${baseUrl}/api/v1/pix/{transaction_id}`;
 
     const exampleJson = `{
   "amount": 1000,
@@ -38,7 +39,8 @@ export default function DocsPage() {
   "transaction_id": "8a40135d-e021-456d-a94f-3122c525d5d9",
   "pix": {
     "qr_code": "00020126580014BR.GOV.BCB.PIX0136123e4567-e89b-12d3-a456-426614174000520400005303986540410.005802BR5913Fulano de Tal6008BRASILIA62070503***63041D3D",
-    "qr_code_url": "https://api.pagar.me/core/v5/transactions/tran_12345/qrcode"
+    "qr_code_url": "https://api.pagar.me/core/v5/transactions/tran_12345/qrcode",
+    "expires_at": "2026-03-09T12:00:00.000Z"
   },
   "amount": 1000,
   "status": "pending"
@@ -107,6 +109,64 @@ if ($httpCode === 200) {
 }
 ?>`;
 
+    const exampleStatusResponse = `{
+  "success": true,
+  "transaction_id": "8a40135d-e021-456d-a94f-3122c525d5d9",
+  "status": "paid",
+  "raw_status": "paid",
+  "amount": 1000,
+  "payment_method": "pix",
+  "pagarme_id": "ord_abc123",
+  "pix": {
+    "qr_code": "000201...",
+    "qr_code_url": "https://api.pagar.me/core/v5/transactions/tran_12345/qrcode",
+    "expires_at": "2026-03-09T12:15:00.000Z"
+  },
+  "created_at": "2026-03-09T11:55:00.000Z"
+}`;
+
+    const exampleStatusNode = `const axios = require('axios');
+
+const transactionId = '8a40135d-e021-456d-a94f-3122c525d5d9';
+
+axios.get('${baseUrl}/api/v1/pix/' + transactionId, {
+  headers: {
+    'x-api-key': 'sk_live_sua_chave_aqui',
+    'Content-Type': 'application/json'
+  }
+})
+.then(response => {
+  console.log('Status:', response.data.status);
+})
+.catch(error => {
+  console.error('Erro:', error.response ? error.response.data : error.message);
+});`;
+
+    const exampleStatusPhp = `<?php
+
+$transactionId = '8a40135d-e021-456d-a94f-3122c525d5d9';
+$url = '${baseUrl}/api/v1/pix/' . $transactionId;
+$apiKey = 'sk_live_sua_chave_aqui';
+
+$ch = curl_init($url);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    'x-api-key: ' . $apiKey
+]);
+
+$response = curl_exec($ch);
+$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+curl_close($ch);
+
+if ($httpCode === 200) {
+    $result = json_decode($response, true);
+    echo "Status: " . $result['status'];
+} else {
+    echo "Erro: " . $response;
+}
+?>`;
+
     const exampleWebhook = `{
   "event": "order.paid",
   "data": {
@@ -150,6 +210,9 @@ if ($httpCode === 200) {
                         Todas as requisições devem incluir o header <code>x-api-key</code> com sua Chave de API.
                         Você pode gerar sua chave no painel em <strong>Configurações &gt; API</strong>.
                     </p>
+                    <p className="mb-4">
+                        Alternativamente, você pode enviar <code>Authorization: Bearer {'{API_KEY}'}</code>.
+                    </p>
                     <div className="bg-gray-800 text-gray-100 p-4 rounded-lg font-mono text-sm">
                         x-api-key: sk_live_...
                     </div>
@@ -167,6 +230,23 @@ if ($httpCode === 200) {
                             {copied === 'endpoint' ? <FiCheck /> : <FiCopy />}
                         </button>
                     </div>
+                </section>
+
+                <section className="mb-12">
+                    <h2 className="text-2xl font-semibold mb-4">2.1 Endpoint de Status</h2>
+                    <div className="flex items-center gap-4 bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded font-bold text-sm">GET</span>
+                        <code className="flex-1 font-mono text-sm">{statusEndpoint}</code>
+                        <button 
+                            onClick={() => copyToClipboard(statusEndpoint, 'endpoint-status')}
+                            className="text-gray-500 hover:text-blue-500 transition"
+                        >
+                            {copied === 'endpoint-status' ? <FiCheck /> : <FiCopy />}
+                        </button>
+                    </div>
+                    <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        Use o <code>transaction_id</code> retornado na criação do Pix para consultar o status.
+                    </p>
                 </section>
 
                 <section className="mb-12">
@@ -193,6 +273,13 @@ if ($httpCode === 200) {
                     <h2 className="text-2xl font-semibold mb-4">4. Exemplo de Resposta (Sucesso)</h2>
                     <pre className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
                         <code>{exampleResponse}</code>
+                    </pre>
+                </section>
+
+                <section className="mb-12">
+                    <h2 className="text-2xl font-semibold mb-4">4.1 Exemplo de Resposta (Status)</h2>
+                    <pre className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                        <code>{exampleStatusResponse}</code>
                     </pre>
                 </section>
 
@@ -229,6 +316,36 @@ if ($httpCode === 200) {
                                 </button>
                             </div>
                         </div>
+
+                        <div>
+                            <h3 className="text-xl font-medium mb-3 text-blue-600 dark:text-blue-400">Node.js (Status)</h3>
+                            <div className="relative">
+                                <pre className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                                    <code>{exampleStatusNode}</code>
+                                </pre>
+                                <button 
+                                    onClick={() => copyToClipboard(exampleStatusNode, 'node-status')}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+                                >
+                                    {copied === 'node-status' ? <FiCheck /> : <FiCopy />}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 className="text-xl font-medium mb-3 text-indigo-600 dark:text-indigo-400">PHP (Status)</h3>
+                            <div className="relative">
+                                <pre className="bg-gray-800 text-gray-100 p-4 rounded-lg overflow-x-auto text-sm">
+                                    <code>{exampleStatusPhp}</code>
+                                </pre>
+                                <button 
+                                    onClick={() => copyToClipboard(exampleStatusPhp, 'php-status')}
+                                    className="absolute top-4 right-4 text-gray-400 hover:text-white transition"
+                                >
+                                    {copied === 'php-status' ? <FiCheck /> : <FiCopy />}
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </section>
 
@@ -256,6 +373,20 @@ if ($httpCode === 200) {
                             {copied === 'webhook' ? <FiCheck /> : <FiCopy />}
                         </button>
                     </div>
+                </section>
+
+                <section className="mb-12 border-t border-gray-200 dark:border-gray-700 pt-8">
+                    <h2 className="text-2xl font-semibold mb-4">7. Erros Comuns</h2>
+                    <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+                        <li><strong>401</strong>: Chave de API não fornecida ou inválida (<code>x-api-key</code> ou <code>Authorization: Bearer</code>).</li>
+                        <li><strong>403</strong>: Chave de API inativa.</li>
+                        <li><strong>400</strong>: Corpo inválido (ex.: <code>amount</code> menor que 100, ou <code>customer</code> incompleto).</li>
+                        <li><strong>502</strong>: Pedido criado, mas o Pagar.me não retornou QR Code Pix (tente novamente e verifique documentação do recebedor).</li>
+                        <li><strong>500</strong>: Erro interno (ver logs e configuração de recebedor/variáveis de ambiente).</li>
+                    </ul>
+                    <p className="mt-4 text-sm text-gray-600 dark:text-gray-400">
+                        Dica: Guarde o <code>transaction_id</code> retornado no POST e consulte o status no endpoint GET.
+                    </p>
                 </section>
             </div>
         </div>
