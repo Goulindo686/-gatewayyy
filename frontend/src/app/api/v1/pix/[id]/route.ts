@@ -36,29 +36,64 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
         let transaction: any = null;
 
+        // Spy logs for debugging
+        console.log(`[API v1 Status] Lookup ID: ${lookupId}, User ID: ${keyRecord.user_id}`);
+
         {
-            const { data: tx } = await supabase
+            const { data: tx, error: txError } = await supabase
                 .from('transactions')
                 .select('id, status, amount, description, payment_method, pagarme_id, customer_name, customer_email, created_at')
                 .eq('id', lookupId)
                 .eq('user_id', keyRecord.user_id)
                 .eq('type', 'api_sale')
                 .single();
-            if (tx) transaction = tx;
+            
+            if (tx) {
+                transaction = tx;
+                console.log(`[API v1 Status] Found by ID: ${tx.id}`);
+            } else if (txError) {
+                 console.log(`[API v1 Status] Not found by ID (Error: ${txError.message})`);
+            }
         }
 
         if (!transaction) {
-            const { data: tx } = await supabase
+            const { data: tx, error: txError } = await supabase
                 .from('transactions')
                 .select('id, status, amount, description, payment_method, pagarme_id, customer_name, customer_email, created_at')
                 .eq('pagarme_id', lookupId)
                 .eq('user_id', keyRecord.user_id)
                 .eq('type', 'api_sale')
                 .single();
-            if (tx) transaction = tx;
+            
+            if (tx) {
+                transaction = tx;
+                console.log(`[API v1 Status] Found by Pagar.me ID: ${tx.id}`);
+            } else if (txError) {
+                 console.log(`[API v1 Status] Not found by Pagar.me ID (Error: ${txError.message})`);
+            }
         }
 
-        if (!transaction) return jsonError('Transação não encontrada', 404);
+        if (!transaction) {
+             // Deep debug: Check if transaction exists at all (ignoring user_id or type)
+             const { data: anyTx } = await supabase
+                .from('transactions')
+                .select('id, user_id, type')
+                .or(`id.eq.${lookupId},pagarme_id.eq.${lookupId}`)
+                .single();
+             
+             if (anyTx) {
+                 console.error(`[API v1 Status] Transaction EXISTS but check failed. Details:`, {
+                     lookupId,
+                     foundTx: anyTx,
+                     expectedUserId: keyRecord.user_id,
+                     expectedType: 'api_sale'
+                 });
+             } else {
+                 console.error(`[API v1 Status] Transaction REALLY NOT FOUND anywhere for ID: ${lookupId}`);
+             }
+
+             return jsonError('Transação não encontrada', 404);
+        }
 
         const normalizedStatus = transaction.status === 'confirmed' ? 'paid' : transaction.status;
 

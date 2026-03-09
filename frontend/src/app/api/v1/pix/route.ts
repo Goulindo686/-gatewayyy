@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
         // 8. Save Transaction Record (Optional but recommended)
         // We save it as 'api_sale' type
         const orderId = uuidv4();
-        await supabase.from('transactions').insert({
+        const { error: insertError } = await supabase.from('transactions').insert({
             id: orderId,
             user_id: userId,
             amount: amount,
@@ -161,6 +161,15 @@ export async function POST(req: NextRequest) {
             customer_email: customer.email,
             customer_name: customer.name
         });
+
+        if (insertError) {
+            console.error('CRITICAL ERROR: Failed to save API transaction:', insertError);
+            console.error('Transaction details:', { orderId, userId, amount, pagarme_id: pagarmeOrder.id });
+            // Should we return error? If we return error, the client will think it failed.
+            // But the Pagar.me order WAS created.
+            // It is safer to return error so the client doesn't try to use an ID that doesn't exist in our DB.
+            return jsonError('Erro interno: Pagamento criado mas falha ao registrar transação. Contate o suporte.', 500);
+        }
 
         return jsonResponse({
             success: true,
