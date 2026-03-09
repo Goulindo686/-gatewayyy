@@ -83,8 +83,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         {
             const { data: tx, error: txError } = await supabase
                 .from('transactions')
-                .select('id, status, amount, description, pagarme_transaction_id, created_at')
-                .or(`id.eq.${lookupId},pagarme_transaction_id.eq.${lookupId}`)
+                .select('id, status, amount, description, created_at')
+                .eq('id', lookupId)
                 .eq('user_id', keyRecord.user_id)
                 .eq('type', 'api_sale')
                 .single();
@@ -109,7 +109,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             raw_status: transaction.status,
             amount: transaction.amount,
             payment_method: 'pix', // Assumed since this is pix endpoint
-            pagarme_id: transaction.pagarme_transaction_id,
+            pagarme_id: null,
             description: transaction.description,
             customer: {
                 name: 'Cliente', // Not available in transactions table
