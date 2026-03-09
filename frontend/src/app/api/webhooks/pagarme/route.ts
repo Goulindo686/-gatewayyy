@@ -11,21 +11,31 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { type, data } = body;
 
-        console.log('Webhook received:', type, data.id);
+        console.log('Webhook received:', type, 'ID:', data.id, 'Order ID:', data.order?.id);
 
         if (!type || !data) return jsonError('Invalid webhook', 400);
 
         let order;
 
-        // Tentar encontrar o pedido pelo ID da cobrança ou do pedido
-        if (type.startsWith('charge.')) {
+        // ESTRATÉGIA 1: Buscar por ID da Cobrança (Charge ID)
+        if (data.id && type.startsWith('charge.')) {
             const { data: o } = await supabase
                 .from('orders').select('*').eq('pagarme_charge_id', data.id).single();
-            order = o;
-        } else if (type.startsWith('order.')) {
+            if (o) order = o;
+        }
+
+        // ESTRATÉGIA 2: Buscar por ID do Pedido (Order ID) - Se vier dentro do objeto data.order
+        if (!order && data.order && data.order.id) {
+            const { data: o } = await supabase
+                .from('orders').select('*').eq('pagarme_order_id', data.order.id).single();
+            if (o) order = o;
+        }
+
+        // ESTRATÉGIA 3: Buscar por ID do Pedido (Order ID) - Se o evento for direto de pedido
+        if (!order && type.startsWith('order.') && data.id) {
             const { data: o } = await supabase
                 .from('orders').select('*').eq('pagarme_order_id', data.id).single();
-            order = o;
+            if (o) order = o;
         }
 
         if (!order && type.includes('transfer')) {
