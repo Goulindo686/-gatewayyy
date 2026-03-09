@@ -11,23 +11,39 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { type, data } = body;
 
+        console.log('Webhook received:', type, data.id);
+
         if (!type || !data) return jsonError('Invalid webhook', 400);
 
-        const chargeId = data.id;
+        let order;
 
-        // Find order by charge id
-        const { data: order } = await supabase
-            .from('orders').select('*').eq('pagarme_charge_id', chargeId).single();
+        // Tentar encontrar o pedido pelo ID da cobrança ou do pedido
+        if (type.startsWith('charge.')) {
+            const { data: o } = await supabase
+                .from('orders').select('*').eq('pagarme_charge_id', data.id).single();
+            order = o;
+        } else if (type.startsWith('order.')) {
+            const { data: o } = await supabase
+                .from('orders').select('*').eq('pagarme_order_id', data.id).single();
+            order = o;
+        }
 
-        if (!order) return jsonSuccess({ received: true }); // Ignore unknown charges
+        if (!order && type.includes('transfer')) {
+            // Lógica de transferência (mantida abaixo)
+        } else if (!order) {
+            console.log('Order not found for webhook:', type, data.id);
+            return jsonSuccess({ received: true }); 
+        }
 
-        let newStatus = order.status;
+        let newStatus = order?.status;
         let transactionType = 'sale';
 
         switch (type) {
+            case 'order.paid':
             case 'charge.paid':
                 newStatus = 'paid';
                 break;
+            case 'order.payment_failed':
             case 'charge.payment_failed':
                 newStatus = 'failed';
                 break;
