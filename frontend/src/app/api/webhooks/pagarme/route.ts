@@ -181,8 +181,47 @@ export async function POST(req: NextRequest) {
             });
         }
 
+        // NOTIFICAR WEBHOOK DO USUÁRIO
+        try {
+            const { data: seller } = await supabase
+                .from('users')
+                .select('webhook_url')
+                .eq('id', order.seller_id)
+                .single();
+
+            if (seller?.webhook_url) {
+                console.log(`Sending webhook to user ${order.seller_id}: ${seller.webhook_url}`);
+                await fetch(seller.webhook_url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        event: `order.${newStatus}`,
+                        data: {
+                            id: order.id,
+                            status: newStatus,
+                            amount: order.amount,
+                            amount_display: (order.amount / 100).toFixed(2),
+                            description: order.description,
+                            payment_method: order.payment_method,
+                            customer: {
+                                name: order.buyer_name,
+                                email: order.buyer_email,
+                                cpf: order.buyer_cpf,
+                                phone: order.buyer_phone
+                            },
+                            created_at: order.created_at,
+                            updated_at: new Date().toISOString()
+                        }
+                    })
+                });
+            }
+        } catch (webhookError) {
+            console.error('Error sending user webhook:', webhookError);
+        }
+
         return jsonSuccess({ received: true });
     } catch (err) {
+
         console.error('Webhook error:', err);
         return jsonError('Webhook processing error', 500);
     }

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { authAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { FiSave, FiUser, FiCreditCard, FiKey, FiBell, FiCheckCircle, FiCode, FiCopy, FiPlus } from 'react-icons/fi';
+import { FiSave, FiUser, FiCreditCard, FiKey, FiBell, FiCheckCircle, FiCode, FiCopy, FiPlus, FiGlobe } from 'react-icons/fi';
 import axios from 'axios';
 
 export default function SettingsPage() {
@@ -13,7 +13,7 @@ export default function SettingsPage() {
     const [apiKeys, setApiKeys] = useState<any[]>([]);
     const [loadingKeys, setLoadingKeys] = useState(false);
     const [form, setForm] = useState({
-        id: '', telegram_chat_id: '',
+        id: '', telegram_chat_id: '', webhook_url: '',
         name: '', phone: '', cpf_cnpj: '',
         address_street: '', address_number: '', address_complement: '',
         address_neighborhood: '', address_city: '', address_state: '', address_zipcode: '',
@@ -65,6 +65,7 @@ export default function SettingsPage() {
             setForm({
                 id: u.id,
                 telegram_chat_id: u.telegram_chat_id || '',
+                webhook_url: u.webhook_url || '',
                 name: u.name || '', phone: u.phone || '', cpf_cnpj: u.cpf_cnpj || '',
                 address_street: u.address_street || '', address_number: u.address_number || '',
                 address_complement: u.address_complement || '', address_neighborhood: u.address_neighborhood || '',
@@ -302,6 +303,42 @@ export default function SettingsPage() {
                                 )}
                             </div>
                         )}
+
+
+                        <div style={{ marginTop: 32, padding: 20, background: 'var(--bg-card)', borderRadius: 12, border: '1px solid var(--border)' }}>
+                            <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <FiGlobe /> Configuração de Webhook
+                            </h3>
+                            <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 16 }}>
+                                Receba notificações automáticas no seu sistema sempre que uma venda for atualizada (paga, recusada, estornada).
+                            </p>
+                            
+                            <div>
+                                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>URL do Webhook</label>
+                                <div style={{ display: 'flex', gap: 8 }}>
+                                    <input 
+                                        className="input-field" 
+                                        placeholder="https://seu-sistema.com/webhook" 
+                                        value={form.webhook_url || ''} 
+                                        onChange={e => setForm(prev => ({ ...prev, webhook_url: e.target.value }))} 
+                                    />
+                                    <button 
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        style={{ 
+                                            background: '#2563eb', color: 'white', border: 'none', 
+                                            borderRadius: 8, padding: '0 20px', cursor: 'pointer', fontWeight: 500,
+                                            display: 'flex', alignItems: 'center', gap: 8
+                                        }}
+                                    >
+                                        <FiSave /> {saving ? 'Salvando...' : 'Salvar'}
+                                    </button>
+                                </div>
+                                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8 }}>
+                                    Enviaremos um POST JSON com os dados da venda para esta URL.
+                                </p>
+                            </div>
+                        </div>
 
                         <div style={{ marginTop: 32, padding: 20, background: 'rgba(59, 130, 246, 0.05)', borderRadius: 12, border: '1px solid rgba(59, 130, 246, 0.1)' }}>
                             <h4 style={{ fontSize: 14, fontWeight: 600, color: '#2563eb', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>

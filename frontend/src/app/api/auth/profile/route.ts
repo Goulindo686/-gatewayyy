@@ -46,7 +46,8 @@ export async function PUT(req: NextRequest) {
             'pix_key', 'pix_key_type',
             'bank_name', 'bank_agency', 'bank_account', 'bank_account_digit', 'bank_account_type',
             'store_name', 'store_slug', 'store_description', 'store_active',
-            'store_theme', 'store_banner_url'
+            'store_theme', 'store_banner_url',
+            'webhook_url'
         ];
 
         const updateData: any = {};
