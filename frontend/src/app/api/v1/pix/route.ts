@@ -97,23 +97,32 @@ export async function POST(req: NextRequest) {
         const pagarmeOrder = await PagarmeService.createOrder(orderData);
 
         // 7. Extract Pix Data
-        const extractPix = (order: any) => {
-            const charge = order?.charges?.[0];
+        const extractPix = (pagarmeOrder: any) => {
+            const charge = pagarmeOrder?.charges?.[0];
             const lastTransaction = charge?.last_transaction;
-            
+
             const candidates = [
-                lastTransaction?.qr_code,
-                lastTransaction?.qrCode,
-                charge?.last_transaction?.qr_code_url,
-                order?.qr_code
+                lastTransaction?.pix,
+                lastTransaction,
+                charge?.pix,
+                pagarmeOrder?.payments?.[0]?.pix,
+                pagarmeOrder?.payments?.[0],
+                // Fallbacks for direct properties
+                charge?.last_transaction,
+                pagarmeOrder
             ].filter(Boolean);
 
-            // Try to find QR Code and URL
-            // Pagar.me response structure varies
-            let qrCode = charge?.last_transaction?.qr_code || charge?.last_transaction?.qrCode;
-            let qrCodeUrl = charge?.last_transaction?.qr_code_url || charge?.last_transaction?.qrCodeUrl;
+            for (const c of candidates) {
+                const qrCode = c?.qr_code || c?.qrCode;
+                const qrCodeUrl = c?.qr_code_url || c?.qrCodeUrl;
+                const expiresAt = c?.expires_at || c?.expiresAt;
 
-            return { qr_code: qrCode, qr_code_url: qrCodeUrl };
+                if (qrCode || qrCodeUrl) {
+                    return { qr_code: qrCode, qr_code_url: qrCodeUrl, expires_at: expiresAt };
+                }
+            }
+
+            return { qr_code: null, qr_code_url: null, expires_at: null };
         };
 
         const pixData = extractPix(pagarmeOrder);
@@ -146,38 +155,60 @@ export async function POST(req: NextRequest) {
             throw new Error('O Pagar.me recebeu o pedido mas não retornou o QR Code Pix. Verifique os logs.');
         }
 
-        // 8. Save Transaction Record (Optional but recommended)
-        // We save it as 'api_sale' type
+        // 8. Save Transaction Record
+        // We save it as 'api_sale' type, but now we also create an Order to ensure consistency
         const orderId = uuidv4();
-        const { error: insertError } = await supabase.from('transactions').insert({
+        const transactionId = uuidv4();
+
+        // 8.1 Create Order
+        const { error: orderError } = await supabase.from('orders').insert({
             id: orderId,
+            seller_id: userId,
+            product_id: null, // API sale has no specific product
+            buyer_name: customer.name,
+            buyer_email: customer.email,
+            buyer_cpf: customer.cpf,
+            buyer_phone: customer.phone,
+            amount: amount,
+            payment_method: 'pix',
+            status: 'pending',
+            pagarme_order_id: pagarmeOrder.id,
+            pagarme_charge_id: pagarmeOrder.charges?.[0]?.id,
+            pix_qr_code: pixData.qr_code,
+            pix_qr_code_url: pixData.qr_code_url,
+            pix_expires_at: pixData.expires_at
+        });
+
+        if (orderError) {
+            console.error('CRITICAL ERROR: Failed to save API order:', orderError);
+            return jsonError('Erro interno ao salvar pedido. Contate o suporte.', 500);
+        }
+
+        // 8.2 Create Transaction
+        const { error: insertError } = await supabase.from('transactions').insert({
+            id: transactionId,
             user_id: userId,
+            order_id: orderId,
             amount: amount,
             status: 'pending',
             type: 'api_sale',
             description: description || 'Venda via API',
-            payment_method: 'pix',
-            pagarme_id: pagarmeOrder.id,
-            customer_email: customer.email,
-            customer_name: customer.name
+            pagarme_transaction_id: pagarmeOrder.id
         });
 
         if (insertError) {
             console.error('CRITICAL ERROR: Failed to save API transaction:', insertError);
             console.error('Transaction details:', { orderId, userId, amount, pagarme_id: pagarmeOrder.id });
-            // Should we return error? If we return error, the client will think it failed.
-            // But the Pagar.me order WAS created.
-            // It is safer to return error so the client doesn't try to use an ID that doesn't exist in our DB.
             return jsonError('Erro interno: Pagamento criado mas falha ao registrar transação. Contate o suporte.', 500);
         }
 
         return jsonResponse({
             success: true,
-            transaction_id: orderId,
+            transaction_id: orderId, // Return Order ID as the main ID for status lookup
             pix: {
                 qr_code: pixData.qr_code,
                 qr_code_url: pixData.qr_code_url,
-                expires_at: pagarmeOrder.charges?.[0]?.last_transaction?.expires_at
+                expires_at: pixData.expires_at
             },
             amount: amount,
             status: 'pending'

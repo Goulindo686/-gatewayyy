@@ -35,63 +35,68 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         if (!keyRecord.is_active) return jsonError('Chave de API inativa', 403);
 
         let transaction: any = null;
+        let order: any = null;
 
-        // Spy logs for debugging
         console.log(`[API v1 Status] Lookup ID: ${lookupId}, User ID: ${keyRecord.user_id}`);
 
+        // 1. Try to find in Orders table (Preferred)
+        {
+            const { data, error } = await supabase
+                .from('orders')
+                .select('*')
+                .or(`id.eq.${lookupId},pagarme_order_id.eq.${lookupId}`)
+                .eq('seller_id', keyRecord.user_id)
+                .single();
+
+            if (data) {
+                order = data;
+                console.log(`[API v1 Status] Found in Orders: ${order.id}`);
+            }
+        }
+
+        if (order) {
+            const normalizedStatus = order.status === 'paid' ? 'paid' : order.status;
+            return jsonResponse({
+                success: true,
+                transaction_id: order.id,
+                status: normalizedStatus,
+                raw_status: order.status,
+                amount: order.amount,
+                payment_method: order.payment_method,
+                pagarme_id: order.pagarme_order_id,
+                description: 'Venda via API',
+                customer: {
+                    name: order.buyer_name,
+                    email: order.buyer_email,
+                },
+                created_at: order.created_at,
+                pix: {
+                    qr_code: order.pix_qr_code,
+                    qr_code_url: order.pix_qr_code_url,
+                    expires_at: order.pix_expires_at
+                }
+            });
+        }
+
+        // 2. Fallback: Try to find in Transactions table (Legacy/Backup)
+        // Note: Transactions table does not have customer info or payment method in schema
         {
             const { data: tx, error: txError } = await supabase
                 .from('transactions')
-                .select('id, status, amount, description, payment_method, pagarme_id, customer_name, customer_email, created_at')
-                .eq('id', lookupId)
+                .select('id, status, amount, description, pagarme_transaction_id, created_at')
+                .or(`id.eq.${lookupId},pagarme_transaction_id.eq.${lookupId}`)
                 .eq('user_id', keyRecord.user_id)
                 .eq('type', 'api_sale')
                 .single();
             
             if (tx) {
                 transaction = tx;
-                console.log(`[API v1 Status] Found by ID: ${tx.id}`);
-            } else if (txError) {
-                 console.log(`[API v1 Status] Not found by ID (Error: ${txError.message})`);
+                console.log(`[API v1 Status] Found in Transactions: ${tx.id}`);
             }
         }
 
         if (!transaction) {
-            const { data: tx, error: txError } = await supabase
-                .from('transactions')
-                .select('id, status, amount, description, payment_method, pagarme_id, customer_name, customer_email, created_at')
-                .eq('pagarme_id', lookupId)
-                .eq('user_id', keyRecord.user_id)
-                .eq('type', 'api_sale')
-                .single();
-            
-            if (tx) {
-                transaction = tx;
-                console.log(`[API v1 Status] Found by Pagar.me ID: ${tx.id}`);
-            } else if (txError) {
-                 console.log(`[API v1 Status] Not found by Pagar.me ID (Error: ${txError.message})`);
-            }
-        }
-
-        if (!transaction) {
-             // Deep debug: Check if transaction exists at all (ignoring user_id or type)
-             const { data: anyTx } = await supabase
-                .from('transactions')
-                .select('id, user_id, type')
-                .or(`id.eq.${lookupId},pagarme_id.eq.${lookupId}`)
-                .single();
-             
-             if (anyTx) {
-                 console.error(`[API v1 Status] Transaction EXISTS but check failed. Details:`, {
-                     lookupId,
-                     foundTx: anyTx,
-                     expectedUserId: keyRecord.user_id,
-                     expectedType: 'api_sale'
-                 });
-             } else {
-                 console.error(`[API v1 Status] Transaction REALLY NOT FOUND anywhere for ID: ${lookupId}`);
-             }
-
+             console.error(`[API v1 Status] Not found in Orders or Transactions for ID: ${lookupId}`);
              return jsonError('Transação não encontrada', 404);
         }
 
@@ -103,12 +108,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             status: normalizedStatus,
             raw_status: transaction.status,
             amount: transaction.amount,
-            payment_method: transaction.payment_method,
-            pagarme_id: transaction.pagarme_id,
+            payment_method: 'pix', // Assumed since this is pix endpoint
+            pagarme_id: transaction.pagarme_transaction_id,
             description: transaction.description,
             customer: {
-                name: transaction.customer_name,
-                email: transaction.customer_email,
+                name: 'Cliente', // Not available in transactions table
+                email: 'email@nao-disponivel.com', // Not available
             },
             created_at: transaction.created_at,
         });

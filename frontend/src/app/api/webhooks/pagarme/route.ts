@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
                     .from('transactions')
                     .select('id, status')
                     .eq('type', 'api_sale')
-                    .eq('pagarme_id', pagarmeOrderId)
+                    .eq('pagarme_transaction_id', pagarmeOrderId)
                     .single();
 
                 if (apiTx && apiTx.status !== txStatus) {
@@ -151,11 +151,11 @@ export async function POST(req: NextRequest) {
             } catch {}
             const feeAmount = Math.round(order.amount * (feePercentage / 100));
 
-            // Update original 'sale' transaction to confirmed and adjust to net amount
-            // Or keep it as full amount and create a separate 'fee' transaction (matches frontend stats logic)
+            // Update original 'sale' or 'api_sale' transaction to confirmed
             await supabase.from('transactions')
                 .update({ status: 'confirmed' })
-                .eq('order_id', order.id).eq('type', 'sale');
+                .eq('order_id', order.id)
+                .in('type', ['sale', 'api_sale']);
 
             // Create fee transaction
             await supabase.from('transactions').insert({
