@@ -160,7 +160,7 @@ export default function DashboardPage() {
                             <tbody>
                                 {stats.recent_orders.map((order: any) => (
                                     <tr key={order.id}>
-                                        <td style={{ fontWeight: 500 }}>{order.products?.name || '—'}</td>
+                                        <td style={{ fontWeight: 500 }}>{order.product_name || order.products?.name || '—'}</td>
                                         <td style={{ color: 'var(--text-secondary)' }}>{order.buyer_name || '—'}</td>
                                         <td style={{ fontWeight: 600, color: 'var(--success)' }}>R$ {order.amount_display}</td>
                                         <td>

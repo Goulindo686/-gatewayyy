@@ -23,17 +23,17 @@ export async function GET(req: NextRequest) {
     let usedPagarme = false;
 
     // 1. Get stats from local Database (Baseline)
-    const [ordersData, fees, withdrawals, pending] = await Promise.all([
+    const [ordersData, fees, withdrawals, pendingSales] = await Promise.all([
         supabase.from('orders').select('amount').eq('seller_id', userId).eq('status', 'paid'),
         supabase.from('transactions').select('amount').eq('user_id', userId).eq('type', 'fee'),
         supabase.from('transactions').select('amount').eq('user_id', userId).eq('type', 'withdrawal'),
-        supabase.from('transactions').select('amount').eq('user_id', userId).eq('type', 'sale').eq('status', 'pending')
+        supabase.from('transactions').select('amount').eq('user_id', userId).in('type', ['sale', 'api_sale']).eq('status', 'pending')
     ]);
 
     totalSoldDec = (ordersData.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
     totalFeesDec = (fees.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
     totalWithdrawnDec = (withdrawals.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
-    pendingDec = (pending.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
+    pendingDec = (pendingSales.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
 
     // Initial available balance is Gross - Fees - Withdrawn
     availableDec = totalSoldDec - totalFeesDec - totalWithdrawnDec;
@@ -85,8 +85,8 @@ export async function GET(req: NextRequest) {
     }));
 
     // Recent orders
-    const { data: recent_orders } = await supabase
-        .from('orders').select('id, buyer_name, amount_display, payment_method, status, created_at, products(name)')
+    const { data: recent_orders_raw } = await supabase
+        .from('orders').select('id, buyer_name, amount, amount_display, payment_method, status, created_at, description, products(name)')
         .eq('seller_id', userId).order('created_at', { ascending: false }).limit(10);
 
     return jsonSuccess({
@@ -100,6 +100,10 @@ export async function GET(req: NextRequest) {
             net_revenue: (totalSoldDec - totalFeesDec).toFixed(2)
         },
         monthly_sales,
-        recent_orders: recent_orders || []
+        recent_orders: (recent_orders_raw || []).map((o: any) => ({
+            ...o,
+            amount_display: o.amount_display || (o.amount !== undefined ? (o.amount / 100).toFixed(2) : '0.00'),
+            product_name: o.products?.name || o.description || (o.payment_method === 'pix' ? 'API Pix' : '—')
+        }))
     });
 }

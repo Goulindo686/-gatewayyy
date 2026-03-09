@@ -168,6 +168,7 @@ export async function POST(req: NextRequest) {
             buyer_cpf: customer.cpf,
             buyer_phone: customer.phone,
             amount: amount,
+            description: description || 'Venda via API Pix',
             payment_method: 'pix',
             status: 'pending',
             pagarme_order_id: pagarmeOrder.id,
