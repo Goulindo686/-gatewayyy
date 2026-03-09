@@ -83,14 +83,23 @@ export async function POST(req: NextRequest) {
             platform_percentage: feePercentage
         });
 
-        let pagarmeOrder = await PagarmeService.createOrder({
-            amount: product.price,
-            payment_method: normalizedPaymentMethod,
-            customer: buyer,
-            card_data: normalizedPaymentMethod === 'credit_card' ? card_data : undefined,
-            seller_recipient_id: recipient.pagarme_recipient_id,
-            platform_fee_percentage: feePercentage
-        });
+        let pagarmeOrder;
+        try {
+            pagarmeOrder = await PagarmeService.createOrder({
+                amount: product.price,
+                payment_method: normalizedPaymentMethod,
+                customer: buyer,
+                card_data: normalizedPaymentMethod === 'credit_card' ? card_data : undefined,
+                seller_recipient_id: recipient.pagarme_recipient_id,
+                platform_fee_percentage: feePercentage
+            });
+        } catch (pagarmeErr: any) {
+            console.error('Pagar.me API Error:', pagarmeErr.response?.data || pagarmeErr.message);
+            const errorBody = pagarmeErr.response?.data;
+            const errorMsg = errorBody?.message || 
+                           (errorBody?.errors ? JSON.stringify(errorBody.errors) : pagarmeErr.message);
+            return jsonError(`Erro na API de Pagamento: ${errorMsg}`, 400);
+        }
 
         const charge = pagarmeOrder.charges?.[0];
 
