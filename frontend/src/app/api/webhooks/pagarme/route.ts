@@ -38,6 +38,38 @@ export async function POST(req: NextRequest) {
             if (o) order = o;
         }
 
+        const pagarmeOrderId =
+            data?.order?.id ||
+            data?.order_id ||
+            data?.orderId ||
+            (type.startsWith('order.') ? data.id : undefined);
+
+        if (!order && !type.includes('transfer') && pagarmeOrderId) {
+            let txStatus: string | null = null;
+
+            if (type === 'order.paid' || type === 'charge.paid') txStatus = 'confirmed';
+            else if (type === 'order.payment_failed' || type === 'charge.payment_failed') txStatus = 'failed';
+            else if (type === 'charge.refunded') txStatus = 'refunded';
+            else if (type === 'charge.chargedback') txStatus = 'chargeback';
+
+            if (txStatus) {
+                const { data: apiTx } = await supabase
+                    .from('transactions')
+                    .select('id, status')
+                    .eq('type', 'api_sale')
+                    .eq('pagarme_id', pagarmeOrderId)
+                    .single();
+
+                if (apiTx && apiTx.status !== txStatus) {
+                    await supabase.from('transactions')
+                        .update({ status: txStatus })
+                        .eq('id', apiTx.id);
+                }
+
+                return jsonSuccess({ received: true });
+            }
+        }
+
         if (!order && type.includes('transfer')) {
             // Lógica de transferência (mantida abaixo)
         } else if (!order) {
