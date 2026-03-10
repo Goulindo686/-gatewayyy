@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { FiHome, FiPackage, FiDollarSign, FiSettings, FiLogOut, FiMenu, FiX, FiPercent, FiBookOpen, FiUser, FiMessageCircle, FiShoppingBag, FiShoppingCart, FiCalendar } from 'react-icons/fi';
+import { FiHome, FiPackage, FiDollarSign, FiSettings, FiLogOut, FiMenu, FiX, FiPercent, FiBookOpen, FiUser, FiMessageCircle, FiShoppingBag, FiShoppingCart, FiCalendar, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { dashboardAPI } from '@/lib/api';
 
@@ -22,6 +22,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [endDate, setEndDate] = useState('');
     const [applying, setApplying] = useState(false);
     const [showConfig, setShowConfig] = useState(false);
+    const [viewDate, setViewDate] = useState<Date>(new Date());
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
@@ -161,6 +162,61 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             return `${m} ${day}, ${y}`;
         };
         return `${fmt(s)} - ${fmt(e)}`;
+    };
+    const toISODate = (d: Date) => {
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${y}-${m}-${day}`;
+    };
+    const setPresetRange = (preset: string) => {
+        const now = new Date();
+        if (preset === 'today') {
+            setStartDate(toISODate(now));
+            setEndDate(toISODate(now));
+        } else if (preset === 'yesterday') {
+            const y = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+            setStartDate(toISODate(y));
+            setEndDate(toISODate(y));
+        } else if (preset === 'last7') {
+            const s = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            setStartDate(toISODate(s));
+            setEndDate(toISODate(now));
+        } else if (preset === 'last30') {
+            const s = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            setStartDate(toISODate(s));
+            setEndDate(toISODate(now));
+        } else if (preset === 'thisWeek') {
+            const d = new Date(now);
+            const day = d.getDay();
+            const sunday = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day);
+            const saturday = new Date(d.getFullYear(), d.getMonth(), d.getDate() + (6 - day));
+            setStartDate(toISODate(sunday));
+            setEndDate(toISODate(saturday));
+        } else if (preset === 'lastWeek') {
+            const d = new Date(now);
+            const day = d.getDay();
+            const sundayLast = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day - 7);
+            const saturdayLast = new Date(d.getFullYear(), d.getMonth(), d.getDate() - day - 1);
+            setStartDate(toISODate(sundayLast));
+            setEndDate(toISODate(saturdayLast));
+        } else if (preset === 'thisMonth') {
+            const s = new Date(now.getFullYear(), now.getMonth(), 1);
+            const e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+            setStartDate(toISODate(s));
+            setEndDate(toISODate(e));
+        } else if (preset === 'lastMonth') {
+            const s = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+            const e = new Date(now.getFullYear(), now.getMonth(), 0);
+            setStartDate(toISODate(s));
+            setEndDate(toISODate(e));
+        }
+        setRangePreset(preset);
+        setViewDate(now);
+    };
+    const monthLabelPT = (d: Date) => {
+        const month = d.toLocaleString('pt-BR', { month: 'long' }).toLowerCase();
+        return `${month} ${d.getFullYear()}`;
     };
     const navItems = [
         { href: '/dashboard', icon: <FiHome size={18} />, label: 'Dashboard' },
@@ -329,30 +385,100 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                 {pathname === '/dashboard' && showConfig && (
                     <div style={{ padding: '0 32px 12px', display: 'flex', justifyContent: 'flex-end' }}>
-                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
-                            <div style={{ minWidth: 200 }}>
-                                <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Preset</label>
-                                <select className="input-field" value={rangePreset} onChange={(e) => setRangePreset(e.target.value)} style={{ height: 42, borderRadius: 12 }}>
-                                    <option value="today">Hoje</option>
-                                    <option value="yesterday">Ontem</option>
-                                    <option value="last7">Últimos 7 dias</option>
-                                    <option value="thisMonth">Este mês</option>
-                                    <option value="lastMonth">Mês passado</option>
-                                    <option value="custom">Personalizado</option>
-                                </select>
+                        <div style={{
+                            display: 'flex', gap: 16, background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                            borderRadius: 16, boxShadow: '0 16px 48px rgba(0,0,0,0.45)', padding: 16
+                        }}>
+                            <div style={{ width: 180, borderRight: '1px solid var(--border-color)', paddingRight: 12 }}>
+                                {[
+                                    {key:'today', label:'Hoje'},
+                                    {key:'yesterday', label:'Ontem'},
+                                    {key:'last7', label:'Últimos 7 dias'},
+                                    {key:'last30', label:'Últimos 30 dias'},
+                                    {key:'thisWeek', label:'Esta semana'},
+                                    {key:'lastWeek', label:'Última semana'},
+                                    {key:'thisMonth', label:'Este mês'},
+                                    {key:'lastMonth', label:'Último mês'},
+                                ].map(item => (
+                                    <button
+                                        key={item.key}
+                                        onClick={() => setPresetRange(item.key)}
+                                        style={{
+                                            width: '100%', textAlign: 'left', padding: '10px 12px', borderRadius: 10,
+                                            border: 'none', background: rangePreset === item.key ? 'rgba(255,255,255,0.06)' : 'transparent',
+                                            color: 'var(--text-primary)', cursor: 'pointer', fontSize: 13, fontWeight: 600
+                                        }}
+                                    >
+                                        {item.label}
+                                    </button>
+                                ))}
                             </div>
-                            {rangePreset === 'custom' && (
-                                <>
-                                    <div style={{ minWidth: 180 }}>
-                                        <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Início</label>
-                                        <input type="date" className="input-field" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ height: 42, borderRadius: 12 }} />
-                                    </div>
-                                    <div style={{ minWidth: 180 }}>
-                                        <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Fim</label>
-                                        <input type="date" className="input-field" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ height: 42, borderRadius: 12 }} />
-                                    </div>
-                                </>
-                            )}
+                            <div style={{ width: 360 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                    <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1))} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                                        <FiChevronLeft size={18} />
+                                    </button>
+                                    <div style={{ fontSize: 14, fontWeight: 700, textTransform: 'lowercase' }}>{monthLabelPT(viewDate)}</div>
+                                    <button onClick={() => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1))} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                                        <FiChevronRight size={18} />
+                                    </button>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8, fontSize: 12, color: 'var(--text-secondary)', marginBottom: 8 }}>
+                                    {['dom','seg','ter','qua','qui','sex','sab'].map((w) => (
+                                        <div key={w} style={{ textAlign: 'center', fontWeight: 700 }}>{w}</div>
+                                    ))}
+                                </div>
+                                {(() => {
+                                    const year = viewDate.getFullYear();
+                                    const month = viewDate.getMonth();
+                                    const first = new Date(year, month, 1);
+                                    const lastDay = new Date(year, month + 1, 0).getDate();
+                                    const startOffset = first.getDay();
+                                    const cells: Array<number | null> = [];
+                                    for (let i = 0; i < startOffset; i++) cells.push(null);
+                                    for (let d = 1; d <= lastDay; d++) cells.push(d);
+                                    const selectedDay = startDate ? new Date(startDate + 'T00:00:00') : null;
+                                    const isSelected = (d: number) => {
+                                        if (!selectedDay) return false;
+                                        return selectedDay.getFullYear() === year &&
+                                            selectedDay.getMonth() === month &&
+                                            selectedDay.getDate() === d;
+                                    };
+                                    return (
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 8 }}>
+                                            {cells.map((c, idx) => c === null ? (
+                                                <div key={idx} />
+                                            ) : (
+                                                <button
+                                                    key={idx}
+                                                    onClick={() => { 
+                                                        const picked = new Date(year, month, c);
+                                                        setStartDate(toISODate(picked));
+                                                        setEndDate(toISODate(picked));
+                                                        setRangePreset('custom');
+                                                    }}
+                                                    style={{
+                                                        height: 36, borderRadius: 12, border: '1px solid var(--border-color)',
+                                                        background: isSelected(c) ? 'var(--accent-gradient)' : 'transparent',
+                                                        color: isSelected(c) ? 'white' : 'var(--text-primary)',
+                                                        cursor: 'pointer', fontWeight: 700
+                                                    }}
+                                                >
+                                                    {c}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    );
+                                })()}
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 12 }}>
+                                    <button onClick={() => setShowConfig(false)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontWeight: 700 }}>
+                                        Cancelar
+                                    </button>
+                                    <button onClick={() => setShowConfig(false)} className="btn-primary" style={{ height: 38, padding: '0 16px', borderRadius: 12, fontWeight: 700 }}>
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}
