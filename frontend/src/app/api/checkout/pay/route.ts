@@ -62,6 +62,12 @@ export async function POST(req: NextRequest) {
 
         if (!recipient) return jsonError('Vendedor não configurado para receber', 400);
 
+        const { data: sellerUser } = await supabase
+            .from('users')
+            .select('role')
+            .eq('id', product.user_id)
+            .single();
+
         let feePercentage = parseFloat(process.env.PLATFORM_FEE_PERCENTAGE || '2');
         try {
             const { data: settingsRow } = await supabase
@@ -73,6 +79,9 @@ export async function POST(req: NextRequest) {
                 feePercentage = settingsRow.fee_percentage;
             }
         } catch {}
+        if (sellerUser?.role === 'admin') {
+            feePercentage = 0;
+        }
 
         // Create Pagar.me order
         const platformRecipientId = process.env.PLATFORM_RECIPIENT_ID;
@@ -157,13 +166,14 @@ export async function POST(req: NextRequest) {
         let buyerUser: any = null;
         if (charge?.status === 'paid') {
             const feeAmount = Math.round(product.price * (feePercentage / 100));
-
-            await supabase.from('transactions').insert({
-                id: uuidv4(), user_id: product.user_id, order_id: orderId,
-                type: 'fee', amount: feeAmount,
-                status: 'confirmed',
-                description: `Taxa de plataforma (${feePercentage}%) - Pedido ${orderId}`
-            });
+            if (feeAmount > 0) {
+                await supabase.from('transactions').insert({
+                    id: uuidv4(), user_id: product.user_id, order_id: orderId,
+                    type: 'fee', amount: feeAmount,
+                    status: 'confirmed',
+                    description: `Taxa de plataforma (${feePercentage}%) - Pedido ${orderId}`
+                });
+            }
 
             await supabase.from('products')
                 .update({ sales_count: (product.sales_count || 0) + 1 })

@@ -149,6 +149,16 @@ export async function POST(req: NextRequest) {
                     feePercentage = settingsRow.fee_percentage;
                 }
             } catch {}
+            try {
+                const { data: sellerUser } = await supabase
+                    .from('users')
+                    .select('role')
+                    .eq('id', order.seller_id)
+                    .single();
+                if (sellerUser?.role === 'admin') {
+                    feePercentage = 0;
+                }
+            } catch {}
             const feeAmount = Math.round(order.amount * (feePercentage / 100));
 
             // Update original 'sale' or 'api_sale' transaction to confirmed
@@ -157,15 +167,16 @@ export async function POST(req: NextRequest) {
                 .eq('order_id', order.id)
                 .in('type', ['sale', 'api_sale']);
 
-            // Create fee transaction
-            await supabase.from('transactions').insert({
-                user_id: order.seller_id,
-                order_id: order.id,
-                type: 'fee',
-                amount: feeAmount,
-                status: 'confirmed',
-                description: `Taxa de plataforma (${feePercentage}%) - Pedido ${order.id}`
-            });
+            if (feeAmount > 0) {
+                await supabase.from('transactions').insert({
+                    user_id: order.seller_id,
+                    order_id: order.id,
+                    type: 'fee',
+                    amount: feeAmount,
+                    status: 'confirmed',
+                    description: `Taxa de plataforma (${feePercentage}%) - Pedido ${order.id}`
+                });
+            }
 
             // Fetch product data for notification and stats
             let productName = 'Produto';

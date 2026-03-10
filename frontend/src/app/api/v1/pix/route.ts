@@ -78,6 +78,16 @@ export async function POST(req: NextRequest) {
                 feePercentage = settingsRow.fee_percentage;
             }
         } catch {}
+        try {
+            const { data: userRow } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', userId)
+                .single();
+            if (userRow?.role === 'admin') {
+                feePercentage = 0;
+            }
+        } catch {}
 
         // 6. Create Transaction on Pagar.me
         const orderData = {

@@ -80,6 +80,16 @@ export async function POST(req: Request) {
             }
         } catch {}
         const platformRecipientId = process.env.PLATFORM_RECIPIENT_ID;
+        try {
+            const { data: sellerUser } = await supabase
+                .from('users')
+                .select('role')
+                .eq('id', sellerId)
+                .single();
+            if (sellerUser?.role === 'admin') {
+                feePercentage = 0;
+            }
+        } catch {}
 
         // Diagnostic log for server-side troubleshooting
         console.log('DIAGNOSTIC - Checkout Config:', {
