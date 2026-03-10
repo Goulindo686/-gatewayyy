@@ -21,6 +21,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [applying, setApplying] = useState(false);
+    const [showConfig, setShowConfig] = useState(false);
 
     useEffect(() => {
         const userData = localStorage.getItem('user');
@@ -127,6 +128,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }
     };
 
+    const getDisplayRange = () => {
+        const now = new Date();
+        const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+        const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+        let s = startDate ? new Date(startDate + 'T00:00:00') : startOfDay(now);
+        let e = endDate ? new Date(endDate + 'T23:59:59') : endOfDay(now);
+        if (rangePreset !== 'custom') {
+            if (rangePreset === 'today') {
+                s = startOfDay(now);
+                e = endOfDay(now);
+            } else if (rangePreset === 'yesterday') {
+                const y = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                s = startOfDay(y);
+                e = endOfDay(y);
+            } else if (rangePreset === 'last7') {
+                const seven = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                s = startOfDay(seven);
+                e = endOfDay(now);
+            } else if (rangePreset === 'thisMonth') {
+                s = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+                e = endOfDay(now);
+            } else if (rangePreset === 'lastMonth') {
+                s = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+                e = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+            }
+        }
+        const fmt = (d: Date) => {
+            const m = d.toLocaleString('en-US', { month: 'short' }).toLowerCase();
+            const day = d.toLocaleString('en-US', { day: '2-digit' });
+            const y = d.getFullYear();
+            return `${m} ${day}, ${y}`;
+        };
+        return `${fmt(s)} - ${fmt(e)}`;
+    };
     const navItems = [
         { href: '/dashboard', icon: <FiHome size={18} />, label: 'Dashboard' },
         { href: '/dashboard/products', icon: <FiPackage size={18} />, label: 'Produtos' },
@@ -260,20 +295,44 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* Dashboard Filters below header (right aligned) */}
                 {pathname === '/dashboard' && (
                     <div style={{ padding: '12px 32px', display: 'flex', justifyContent: 'flex-end' }}>
-                        <div style={{
-                            display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, flexWrap: 'wrap'
-                        }}>
-                            <div style={{ minWidth: 220 }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, justifyContent: 'flex-end' }}>
-                                    <FiCalendar size={14} style={{ color: 'var(--text-secondary)' }} />
-                                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>Período</span>
-                                </div>
-                                <select
-                                    className="input-field"
-                                    value={rangePreset}
-                                    onChange={(e) => setRangePreset(e.target.value)}
-                                    style={{ height: 42, padding: '8px 12px', borderRadius: 12 }}
-                                >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                            <button
+                                onClick={() => setShowConfig(!showConfig)}
+                                style={{
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: 10,
+                                    height: 42,
+                                    padding: '0 14px',
+                                    borderRadius: 14,
+                                    border: '1px solid var(--border-color)',
+                                    background: 'var(--bg-card)',
+                                    color: 'var(--text-primary)',
+                                    cursor: 'pointer',
+                                    boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.04)'
+                                }}
+                            >
+                                <FiCalendar size={16} style={{ color: 'var(--text-secondary)' }} />
+                                <span style={{ fontSize: 13, fontWeight: 600 }}>{getDisplayRange()}</span>
+                            </button>
+                            <button
+                                className="btn-primary"
+                                onClick={applyDashboardFilters}
+                                disabled={applying}
+                                style={{ height: 42, padding: '0 18px', borderRadius: 12, fontWeight: 700 }}
+                            >
+                                {applying ? 'Filtrando...' : 'Aplicar Filtros'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {pathname === '/dashboard' && showConfig && (
+                    <div style={{ padding: '0 32px 12px', display: 'flex', justifyContent: 'flex-end' }}>
+                        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 12, flexWrap: 'wrap' }}>
+                            <div style={{ minWidth: 200 }}>
+                                <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Preset</label>
+                                <select className="input-field" value={rangePreset} onChange={(e) => setRangePreset(e.target.value)} style={{ height: 42, borderRadius: 12 }}>
                                     <option value="today">Hoje</option>
                                     <option value="yesterday">Ontem</option>
                                     <option value="last7">Últimos 7 dias</option>
@@ -286,34 +345,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 <>
                                     <div style={{ minWidth: 180 }}>
                                         <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Início</label>
-                                        <input
-                                            type="date"
-                                            className="input-field"
-                                            value={startDate}
-                                            onChange={(e) => setStartDate(e.target.value)}
-                                            style={{ height: 42, padding: '8px 12px', borderRadius: 12 }}
-                                        />
+                                        <input type="date" className="input-field" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ height: 42, borderRadius: 12 }} />
                                     </div>
                                     <div style={{ minWidth: 180 }}>
                                         <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Fim</label>
-                                        <input
-                                            type="date"
-                                            className="input-field"
-                                            value={endDate}
-                                            onChange={(e) => setEndDate(e.target.value)}
-                                            style={{ height: 42, padding: '8px 12px', borderRadius: 12 }}
-                                        />
+                                        <input type="date" className="input-field" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ height: 42, borderRadius: 12 }} />
                                     </div>
                                 </>
                             )}
-                            <button
-                                className="btn-primary"
-                                onClick={applyDashboardFilters}
-                                disabled={applying}
-                                style={{ height: 42, padding: '0 18px', borderRadius: 12, fontWeight: 700 }}
-                            >
-                                {applying ? 'Filtrando...' : 'Aplicar Filtros'}
-                            </button>
                         </div>
                     </div>
                 )}
