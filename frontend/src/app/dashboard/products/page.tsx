@@ -269,12 +269,6 @@ export default function ProductsPage() {
                                     value={form.name} onChange={e => update('name', e.target.value)} />
                             </div>
 
-                            <div style={{ marginBottom: 16 }}>
-                                <label style={{ display: 'block', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Descrição</label>
-                                <textarea className="input-field" placeholder="Descreva seu produto..." rows={2}
-                                    value={form.description} onChange={e => update('description', e.target.value)}
-                                    style={{ resize: 'vertical' }} />
-                            </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
                                 <div>
