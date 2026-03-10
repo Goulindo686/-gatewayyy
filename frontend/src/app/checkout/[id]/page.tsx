@@ -349,13 +349,7 @@ export default function CheckoutPage() {
                 </div>
             )}
 
-            {/* Header */}
-            <div style={{ maxWidth: 1000, margin: '0 auto', padding: '20px 24px 40px', textAlign: 'center' }}>
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-                    <img src="/logo.png" alt="GouPay Logo" style={{ width: 48, height: 48, objectFit: 'contain', flexShrink: 0 }} />
-                    <span style={{ fontSize: 15, fontWeight: 600, color: textSecondary }}>GouPay</span>
-                </div>
-            </div>
+            {/* Header removido: logo será exibida abaixo do botão de pagar */}
 
             <div
                 style={{ maxWidth: 1000, margin: '0 auto', padding: '0 24px 40px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 32, alignItems: 'start' }}
@@ -502,7 +496,13 @@ export default function CheckoutPage() {
                                 </>
                             )}
                         </button>
-                        <p style={{ textAlign: 'center', fontSize: 11, color: textMuted, marginTop: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'center', marginTop: 14 }}>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                <img src="/logo.png" alt="GouPay Logo" style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                                <span style={{ fontSize: 14, fontWeight: 700, color: textSecondary }}>GouPay</span>
+                            </div>
+                        </div>
+                        <p style={{ textAlign: 'center', fontSize: 11, color: textMuted, marginTop: 10 }}>
                             🔒 Pagamento seguro processado via Pagar.me
                         </p>
                     </form>
