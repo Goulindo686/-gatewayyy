@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { FiHome, FiPackage, FiDollarSign, FiSettings, FiLogOut, FiMenu, FiX, FiPercent, FiBookOpen, FiUser, FiMessageCircle, FiShoppingBag, FiShoppingCart } from 'react-icons/fi';
+import { FiHome, FiPackage, FiDollarSign, FiSettings, FiLogOut, FiMenu, FiX, FiPercent, FiBookOpen, FiUser, FiMessageCircle, FiShoppingBag, FiShoppingCart, FiCalendar } from 'react-icons/fi';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { dashboardAPI } from '@/lib/api';
 
@@ -260,10 +260,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {/* Dashboard Filters below header (right aligned) */}
                 {pathname === '/dashboard' && (
                     <div style={{ padding: '12px 32px', display: 'flex', justifyContent: 'flex-end' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
-                            <div style={{ minWidth: 200 }}>
-                                <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Período</label>
-                                <select className="input-field" value={rangePreset} onChange={(e) => setRangePreset(e.target.value)}>
+                        <div style={{
+                            display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 12, flexWrap: 'wrap'
+                        }}>
+                            <div style={{ minWidth: 220 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6, justifyContent: 'flex-end' }}>
+                                    <FiCalendar size={14} style={{ color: 'var(--text-secondary)' }} />
+                                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 600 }}>Período</span>
+                                </div>
+                                <select
+                                    className="input-field"
+                                    value={rangePreset}
+                                    onChange={(e) => setRangePreset(e.target.value)}
+                                    style={{ height: 42, padding: '8px 12px', borderRadius: 12 }}
+                                >
                                     <option value="today">Hoje</option>
                                     <option value="yesterday">Ontem</option>
                                     <option value="last7">Últimos 7 dias</option>
@@ -274,17 +284,34 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             </div>
                             {rangePreset === 'custom' && (
                                 <>
-                                    <div style={{ minWidth: 170 }}>
+                                    <div style={{ minWidth: 180 }}>
                                         <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Início</label>
-                                        <input type="date" className="input-field" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                                        <input
+                                            type="date"
+                                            className="input-field"
+                                            value={startDate}
+                                            onChange={(e) => setStartDate(e.target.value)}
+                                            style={{ height: 42, padding: '8px 12px', borderRadius: 12 }}
+                                        />
                                     </div>
-                                    <div style={{ minWidth: 170 }}>
+                                    <div style={{ minWidth: 180 }}>
                                         <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Fim</label>
-                                        <input type="date" className="input-field" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                                        <input
+                                            type="date"
+                                            className="input-field"
+                                            value={endDate}
+                                            onChange={(e) => setEndDate(e.target.value)}
+                                            style={{ height: 42, padding: '8px 12px', borderRadius: 12 }}
+                                        />
                                     </div>
                                 </>
                             )}
-                            <button className="btn-primary" onClick={applyDashboardFilters} disabled={applying} style={{ padding: '10px 18px' }}>
+                            <button
+                                className="btn-primary"
+                                onClick={applyDashboardFilters}
+                                disabled={applying}
+                                style={{ height: 42, padding: '0 18px', borderRadius: 12, fontWeight: 700 }}
+                            >
                                 {applying ? 'Filtrando...' : 'Aplicar Filtros'}
                             </button>
                         </div>
