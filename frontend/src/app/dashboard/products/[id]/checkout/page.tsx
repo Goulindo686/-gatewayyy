@@ -436,7 +436,6 @@ export default function CheckoutCustomizationPage() {
                                     </div>
                                 )}
                                 <div style={{ padding: 12 }}>
-                                    <div style={{ fontSize: 10, color: previewMuted }}>Vendido por Vendedor</div>
                                     <div style={{ fontSize: 13, fontWeight: 700, marginTop: 4, color: previewText }}>{product?.name || 'Nome do Produto'}</div>
                                     <div style={{ fontSize: 16, fontWeight: 800, marginTop: 8, color: settings.accent_color }}>
                                         R$ {product?.price_display || '97,00'}

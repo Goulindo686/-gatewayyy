@@ -17,7 +17,7 @@ export default function StoreProductsPage() {
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<any>(null);
     const [form, setForm] = useState({
-        name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active'
+        name: '', price: '', image_url: '', type: 'digital', status: 'active'
     });
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -73,7 +73,7 @@ export default function StoreProductsPage() {
     // --- Product Creation Methods ---
     const openCreate = () => {
         setEditing(null);
-        setForm({ name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active' });
+        setForm({ name: '', price: '', image_url: '', type: 'digital', status: 'active' });
         setSelectedFile(null);
         setImagePreview(null);
         setShowModal(true);
@@ -83,7 +83,6 @@ export default function StoreProductsPage() {
         setEditing(product);
         setForm({
             name: product.name,
-            description: product.description || '',
             price: product.price_display || (product.price / 100).toFixed(2),
             image_url: product.image_url || '',
             type: product.type,

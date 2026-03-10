@@ -18,7 +18,7 @@ export default function ProductsPage() {
     const [selectedProductForEnroll, setSelectedProductForEnroll] = useState<any>(null);
     const [editing, setEditing] = useState<any>(null);
     const [form, setForm] = useState({
-        name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active',
+        name: '', price: '', image_url: '', type: 'digital', status: 'active',
         facebook_pixel_id: '', facebook_api_token: ''
     });
     const [uploading, setUploading] = useState(false);
@@ -40,7 +40,7 @@ export default function ProductsPage() {
 
     const openCreate = () => {
         setEditing(null);
-        setForm({ name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active', facebook_pixel_id: '', facebook_api_token: '' });
+        setForm({ name: '', price: '', image_url: '', type: 'digital', status: 'active', facebook_pixel_id: '', facebook_api_token: '' });
         setSelectedFile(null);
         setImagePreview(null);
         setShowModal(true);
@@ -50,7 +50,6 @@ export default function ProductsPage() {
         setEditing(product);
         setForm({
             name: product.name,
-            description: product.description || '',
             price: product.price_display || (product.price / 100).toFixed(2),
             image_url: product.image_url || '',
             type: product.type,

@@ -391,7 +391,6 @@ export default function CheckoutPage() {
                         </div>
                     )}
                     <div style={{ padding: 28 }} className="checkoutCardBody">
-                        <span style={{ fontSize: 12, color: textMuted, fontWeight: 500 }}>Vendido por {product.seller_name}</span>
                         <h1 style={{ fontSize: 24, fontWeight: 700, marginTop: 8, marginBottom: 12, color: textPrimary }}>{product.name}</h1>
                         <p style={{ color: textSecondary, fontSize: 14, lineHeight: 1.7, marginBottom: 20 }}>
                             {product.description || 'Sem descrição disponível'}
