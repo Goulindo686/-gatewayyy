@@ -10,6 +10,10 @@ export default function SalesPage() {
     const [refreshing, setRefreshing] = useState(false);
     const [statusFilter, setStatusFilter] = useState('');
     const [methodFilter, setMethodFilter] = useState('');
+    const [rangePreset, setRangePreset] = useState('last7');
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+    const [summary, setSummary] = useState<{ count: number; total_amount_display: string } | null>(null);
 
     useEffect(() => {
         loadSales();
@@ -20,6 +24,7 @@ export default function SalesPage() {
         try {
             const { data } = await dashboardAPI.getSales(filters || {});
             setSales(data?.sales || []);
+            setSummary(data?.summary ? { count: data.summary.count, total_amount_display: data.summary.total_amount_display } : null);
         } catch {
             setSales([]);
         } finally {
@@ -30,10 +35,43 @@ export default function SalesPage() {
     const handleRefresh = async () => {
         setRefreshing(true);
         try {
-            await loadSales({
+            const params: any = {
                 status: statusFilter || undefined,
                 method: methodFilter || undefined
-            });
+            };
+            const now = new Date();
+            const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 0, 0, 0);
+            const endOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59);
+
+            if (rangePreset !== 'custom') {
+                if (rangePreset === 'today') {
+                    params.start = startOfDay(now).toISOString();
+                    params.end = endOfDay(now).toISOString();
+                } else if (rangePreset === 'yesterday') {
+                    const y = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                    params.start = startOfDay(y).toISOString();
+                    params.end = endOfDay(y).toISOString();
+                } else if (rangePreset === 'last7') {
+                    const s = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    params.start = startOfDay(s).toISOString();
+                    params.end = endOfDay(now).toISOString();
+                } else if (rangePreset === 'thisMonth') {
+                    const s = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
+                    const e = endOfDay(now);
+                    params.start = s.toISOString();
+                    params.end = e.toISOString();
+                } else if (rangePreset === 'lastMonth') {
+                    const s = new Date(now.getFullYear(), now.getMonth() - 1, 1, 0, 0, 0);
+                    const e = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+                    params.start = s.toISOString();
+                    params.end = e.toISOString();
+                }
+            } else {
+                if (startDate) params.start = new Date(startDate + 'T00:00:00').toISOString();
+                if (endDate) params.end = new Date(endDate + 'T23:59:59').toISOString();
+            }
+
+            await loadSales(params);
         } finally {
             setRefreshing(false);
         }
@@ -82,6 +120,29 @@ export default function SalesPage() {
                         <option value="credit_card">Cartão</option>
                     </select>
                 </div>
+                <div style={{ minWidth: 200 }}>
+                    <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Período</label>
+                    <select className="input-field" value={rangePreset} onChange={(e) => setRangePreset(e.target.value)}>
+                        <option value="today">Hoje</option>
+                        <option value="yesterday">Ontem</option>
+                        <option value="last7">Últimos 7 dias</option>
+                        <option value="thisMonth">Este mês</option>
+                        <option value="lastMonth">Mês passado</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+                {rangePreset === 'custom' && (
+                    <>
+                        <div style={{ minWidth: 170 }}>
+                            <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Início</label>
+                            <input type="date" className="input-field" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
+                        </div>
+                        <div style={{ minWidth: 170 }}>
+                            <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Fim</label>
+                            <input type="date" className="input-field" value={endDate} onChange={(e) => setEndDate(e.target.value)} />
+                        </div>
+                    </>
+                )}
                 <button className="btn-primary" onClick={handleRefresh} disabled={refreshing} style={{ padding: '12px 20px', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                     <FiRefreshCw size={16} />
                     {refreshing ? 'Atualizando...' : 'Aplicar Filtros'}
@@ -89,6 +150,16 @@ export default function SalesPage() {
             </div>
 
             <div className="glass-card" style={{ padding: 24 }}>
+                {summary && (
+                    <div style={{ display: 'flex', gap: 16, marginBottom: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                            Vendas no período: <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{summary.count}</span>
+                        </div>
+                        <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+                            Total: <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>R$ {summary.total_amount_display}</span>
+                        </div>
+                    </div>
+                )}
                 {sales.length > 0 ? (
                     <div style={{ overflowX: 'auto' }}>
                         <table className="data-table">

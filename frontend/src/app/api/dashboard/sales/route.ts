@@ -13,6 +13,8 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const status = url.searchParams.get('status') || '';
     const method = url.searchParams.get('method') || '';
+    const start = url.searchParams.get('start') || '';
+    const end = url.searchParams.get('end') || '';
 
     let query = supabase
         .from('orders')
@@ -22,6 +24,14 @@ export async function GET(req: NextRequest) {
 
     if (status) query = query.eq('status', status);
     if (method) query = query.eq('payment_method', method);
+    if (start) {
+        const sIso = new Date(start).toISOString();
+        query = query.gte('created_at', sIso);
+    }
+    if (end) {
+        const eIso = new Date(end).toISOString();
+        query = query.lte('created_at', eIso);
+    }
 
     const { data: rows } = await query;
 
@@ -42,5 +52,6 @@ export async function GET(req: NextRequest) {
         created_at: o.created_at
     }));
 
-    return jsonSuccess({ sales });
+    const totalAmount = sales.reduce((sum, s) => sum + (s.amount || 0), 0);
+    return jsonSuccess({ sales, summary: { count: sales.length, total_amount: totalAmount, total_amount_display: (totalAmount / 100).toFixed(2) } });
 }
