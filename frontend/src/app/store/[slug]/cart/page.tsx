@@ -114,7 +114,7 @@ export default function CartPage() {
 
     return (
         <div style={{ minHeight: '100vh', background: '#0a0a0c', color: '#e2e8f0', fontFamily: 'Outfit, Inter, sans-serif', padding: '40px 24px' }} className="storeCartPage">
-            <div style={{ maxWidth: isOverlay ? 1200 : 1400, margin: '0 auto' }}>
+            <div style={{ maxWidth: isOverlay ? 1400 : 1400, margin: '0 auto' }}>
                 <button
                     onClick={() => router.back()}
                     style={{ background: 'transparent', border: 'none', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 32, fontWeight: 600 }}
@@ -125,7 +125,7 @@ export default function CartPage() {
                 <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Carrinho de compras</h1>
                 <p style={{ color: '#64748b', marginBottom: 40, fontSize: 14 }}>Nesta página, você encontra os produtos adicionados ao seu carrinho.</p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: isOverlay ? '370px 370px 370px' : 'minmax(420px, 1.5fr) minmax(380px, 1.2fr) 420px', gap: isOverlay ? 30 : 40, justifyContent: isOverlay ? 'center' : 'stretch', justifyItems: isOverlay ? 'center' : 'stretch' }} className="storeCartGrid">
+                <div style={{ display: 'grid', gridTemplateColumns: isOverlay ? '420px 420px 420px' : 'minmax(420px, 1.5fr) minmax(380px, 1.2fr) 420px', gap: isOverlay ? 32 : 40, justifyContent: isOverlay ? 'center' : 'stretch', justifyItems: isOverlay ? 'center' : 'stretch' }} className="storeCartGrid">
 
                     {isOverlay ? (
                         <>
