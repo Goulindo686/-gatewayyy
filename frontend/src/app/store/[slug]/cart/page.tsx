@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
-import { FiArrowLeft, FiTrash2, FiMinus, FiPlus, FiZap, FiCreditCard, FiTag, FiPackage } from 'react-icons/fi';
+import { FiArrowLeft, FiTrash2, FiMinus, FiPlus, FiZap, FiTag, FiPackage } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { storeAPI, productsAPI } from '@/lib/api';
 
@@ -12,22 +12,12 @@ export default function CartPage() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const { items, addItem, updateQuantity, removeItem, totalAmount, clearCart } = useCart();
-    const enableCreditCard = process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD === 'true';
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [confirmEmail, setConfirmEmail] = useState('');
     const [cpf, setCpf] = useState('');
     const [phone, setPhone] = useState('');
-    const [cardData, setCardData] = useState({
-        number: '',
-        holder_name: '',
-        exp_month: '',
-        exp_year: '',
-        cvv: '',
-        installments: 1
-    });
-    const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
     const [loading, setLoading] = useState(false);
     // Endereço removido: não obrigatório na integração atual
     const [details, setDetails] = useState<Record<string, any>>({});
@@ -68,11 +58,6 @@ export default function CartPage() {
         fetchDetails();
         return () => { cancelled = true; };
     }, [items]);
-    const formatCardNumber = (value: string) => {
-        const digits = value.replace(/\D/g, '');
-        const groups = digits.match(/.{1,4}/g) || [];
-        return groups.join(' ').substring(0, 19);
-    };
 
     const handleCheckout = async () => {
         if (items.length === 0) return toast.error("Carrinho vazio!");
@@ -84,7 +69,6 @@ export default function CartPage() {
         try {
             setLoading(true);
 
-            const methodToSend = enableCreditCard ? paymentMethod : 'pix';
             const payload = {
                 store_slug: params.slug,
                 buyer: {
@@ -94,9 +78,8 @@ export default function CartPage() {
                     phone
                 },
                 items: items.map(i => ({ id: i.id, quantity: i.quantity, price: i.price, name: i.name })),
-                payment_method: methodToSend,
-                total: totalAmount,
-                card_data: enableCreditCard && methodToSend === 'card' ? cardData : undefined
+                payment_method: 'pix',
+                total: totalAmount
             };
 
             const { data } = await storeAPI.createOrder(payload);
@@ -133,40 +116,22 @@ export default function CartPage() {
                                 <div style={{ background: '#141417', borderRadius: 24, padding: 32, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
                                     <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Informações de pagamento</h2>
                                     <div style={{ marginBottom: 24 }}>
-                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 12 }}>Selecione o método</label>
+                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 12 }}>Método</label>
                                         <div style={{ display: 'flex', gap: 12 }} className="storeCartPayMethods">
-                                            <button
-                                                onClick={() => setPaymentMethod('pix')}
+                                            <div
                                                 style={{
                                                     flex: 1, padding: '16px', borderRadius: 12, border: '1px solid',
-                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
-                                                    background: paymentMethod === 'pix' ? 'rgba(0, 206, 201, 0.1)' : 'transparent',
-                                                    borderColor: paymentMethod === 'pix' ? '#00cec9' : 'rgba(255,255,255,0.05)',
-                                                    color: paymentMethod === 'pix' ? '#00cec9' : '#94a3b8'
+                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700,
+                                                    background: 'rgba(0, 206, 201, 0.1)',
+                                                    borderColor: '#00cec9',
+                                                    color: '#00cec9'
                                                 }}
                                             >
                                                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#00cec9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black' }}>
                                                     <FiZap size={14} />
                                                 </div>
                                                 Pix
-                                            </button>
-                                            {enableCreditCard && (
-                                                <button
-                                                    onClick={() => setPaymentMethod('card')}
-                                                    style={{
-                                                        flex: 1, padding: '16px', borderRadius: 12, border: '1px solid',
-                                                        display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
-                                                        background: paymentMethod === 'card' ? 'rgba(108, 92, 231, 0.1)' : 'transparent',
-                                                        borderColor: paymentMethod === 'card' ? '#6c5ce7' : 'rgba(255,255,255,0.05)',
-                                                        color: paymentMethod === 'card' ? '#6c5ce7' : '#94a3b8'
-                                                    }}
-                                                >
-                                                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#6c5ce7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                                                        <FiCreditCard size={14} />
-                                                    </div>
-                                                    Cartão
-                                                </button>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                     <div style={{ marginBottom: 20 }}>
@@ -220,73 +185,6 @@ export default function CartPage() {
                                             />
                                         </div>
                                     </div>
-                                    {enableCreditCard && paymentMethod === 'card' && (
-                                        <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 20, color: '#6c5ce7' }}>Dados do Cartão</h3>
-                                            <div style={{ marginBottom: 16 }}>
-                                                <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Número do cartão</label>
-                                                <input
-                                                    placeholder="0000 0000 0000 0000"
-                                                    value={cardData.number}
-                                                    onChange={e => setCardData({ ...cardData, number: formatCardNumber(e.target.value) })}
-                                                    style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                />
-                                            </div>
-                                            <div style={{ marginBottom: 16 }}>
-                                                <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Nome no cartão</label>
-                                                <input
-                                                    placeholder="VALDIR S SILVA"
-                                                    value={cardData.holder_name}
-                                                    onChange={e => setCardData({ ...cardData, holder_name: e.target.value.toUpperCase() })}
-                                                    style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                />
-                                            </div>
-                                            <div style={{ marginBottom: 16 }}>
-                                                <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Parcelamento</label>
-                                                <select
-                                                    value={cardData.installments}
-                                                    onChange={e => setCardData({ ...cardData, installments: parseInt(e.target.value) })}
-                                                    style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box', outline: 'none' }}
-                                                >
-                                                    {[...Array(12)].map((_, i) => (
-                                                        <option key={i + 1} value={i + 1}>{i + 1}x de R$ {(totalAmount / (i + 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                                                <div>
-                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Mês</label>
-                                                    <input
-                                                        placeholder="MM"
-                                                        maxLength={2}
-                                                        value={cardData.exp_month}
-                                                        onChange={e => setCardData({ ...cardData, exp_month: e.target.value })}
-                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Ano</label>
-                                                    <input
-                                                        placeholder="AA"
-                                                        maxLength={2}
-                                                        value={cardData.exp_year}
-                                                        onChange={e => setCardData({ ...cardData, exp_year: e.target.value })}
-                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>CVV</label>
-                                                    <input
-                                                        placeholder="123"
-                                                        maxLength={4}
-                                                        value={cardData.cvv}
-                                                        onChange={e => setCardData({ ...cardData, cvv: e.target.value })}
-                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                     <button style={{ marginTop: 32, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, color: '#64748b', cursor: 'pointer' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                             <FiTag /> Cupom de desconto
@@ -346,9 +244,9 @@ export default function CartPage() {
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
                                             <span>Método</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: paymentMethod === 'pix' ? '#00cec9' : '#6c5ce7', fontWeight: 700 }}>
-                                                {paymentMethod === 'pix' ? <FiZap size={14} /> : <FiCreditCard size={14} />}
-                                                {paymentMethod === 'pix' ? 'Pix' : 'Cartão'}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#00cec9', fontWeight: 700 }}>
+                                                <FiZap size={14} />
+                                                Pix
                                             </div>
                                         </div>
                                         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '8px 0' }} />
@@ -418,40 +316,22 @@ export default function CartPage() {
                                 <div style={{ background: '#141417', borderRadius: 24, padding: 32, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
                                     <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Informações de pagamento</h2>
                                     <div style={{ marginBottom: 24 }}>
-                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 12 }}>Selecione o método</label>
+                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 12 }}>Método</label>
                                         <div style={{ display: 'flex', gap: 12 }} className="storeCartPayMethods">
-                                            <button
-                                                onClick={() => setPaymentMethod('pix')}
+                                            <div
                                                 style={{
                                                     flex: 1, padding: '16px', borderRadius: 12, border: '1px solid',
-                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
-                                                    background: paymentMethod === 'pix' ? 'rgba(0, 206, 201, 0.1)' : 'transparent',
-                                                    borderColor: paymentMethod === 'pix' ? '#00cec9' : 'rgba(255,255,255,0.05)',
-                                                    color: paymentMethod === 'pix' ? '#00cec9' : '#94a3b8'
+                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700,
+                                                    background: 'rgba(0, 206, 201, 0.1)',
+                                                    borderColor: '#00cec9',
+                                                    color: '#00cec9'
                                                 }}
                                             >
                                                 <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#00cec9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black' }}>
                                                     <FiZap size={14} />
                                                 </div>
                                                 Pix
-                                            </button>
-                                            {enableCreditCard && (
-                                                <button
-                                                    onClick={() => setPaymentMethod('card')}
-                                                    style={{
-                                                        flex: 1, padding: '16px', borderRadius: 12, border: '1px solid',
-                                                        display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
-                                                        background: paymentMethod === 'card' ? 'rgba(108, 92, 231, 0.1)' : 'transparent',
-                                                        borderColor: paymentMethod === 'card' ? '#6c5ce7' : 'rgba(255,255,255,0.05)',
-                                                        color: paymentMethod === 'card' ? '#6c5ce7' : '#94a3b8'
-                                                    }}
-                                                >
-                                                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#6c5ce7', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-                                                        <FiCreditCard size={14} />
-                                                    </div>
-                                                    Cartão
-                                                </button>
-                                            )}
+                                            </div>
                                         </div>
                                     </div>
                                     <div style={{ marginBottom: 20 }}>
@@ -505,73 +385,6 @@ export default function CartPage() {
                                             />
                                         </div>
                                     </div>
-                                    {enableCreditCard && paymentMethod === 'card' && (
-                                        <div style={{ marginTop: 24, padding: 24, background: 'rgba(255,255,255,0.02)', borderRadius: 16, border: '1px solid rgba(255,255,255,0.05)' }}>
-                                            <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 20, color: '#6c5ce7' }}>Dados do Cartão</h3>
-                                            <div style={{ marginBottom: 16 }}>
-                                                <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Número do cartão</label>
-                                                <input
-                                                    placeholder="0000 0000 0000 0000"
-                                                    value={cardData.number}
-                                                    onChange={e => setCardData({ ...cardData, number: formatCardNumber(e.target.value) })}
-                                                    style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                />
-                                            </div>
-                                            <div style={{ marginBottom: 16 }}>
-                                                <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Nome no cartão</label>
-                                                <input
-                                                    placeholder="VALDIR S SILVA"
-                                                    value={cardData.holder_name}
-                                                    onChange={e => setCardData({ ...cardData, holder_name: e.target.value.toUpperCase() })}
-                                                    style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                />
-                                            </div>
-                                            <div style={{ marginBottom: 16 }}>
-                                                <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Parcelamento</label>
-                                                <select
-                                                    value={cardData.installments}
-                                                    onChange={e => setCardData({ ...cardData, installments: parseInt(e.target.value) })}
-                                                    style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box', outline: 'none' }}
-                                                >
-                                                    {[...Array(12)].map((_, i) => (
-                                                        <option key={i + 1} value={i + 1}>{i + 1}x de R$ {(totalAmount / (i + 1)).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
-                                                <div>
-                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Mês</label>
-                                                    <input
-                                                        placeholder="MM"
-                                                        maxLength={2}
-                                                        value={cardData.exp_month}
-                                                        onChange={e => setCardData({ ...cardData, exp_month: e.target.value })}
-                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Ano</label>
-                                                    <input
-                                                        placeholder="AA"
-                                                        maxLength={2}
-                                                        value={cardData.exp_year}
-                                                        onChange={e => setCardData({ ...cardData, exp_year: e.target.value })}
-                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                    />
-                                                </div>
-                                                <div>
-                                                    <label style={{ fontSize: 12, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>CVV</label>
-                                                    <input
-                                                        placeholder="123"
-                                                        maxLength={4}
-                                                        value={cardData.cvv}
-                                                        onChange={e => setCardData({ ...cardData, cvv: e.target.value })}
-                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
                                     <button style={{ marginTop: 32, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, color: '#64748b', cursor: 'pointer' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                             <FiTag /> Cupom de desconto
@@ -590,9 +403,9 @@ export default function CartPage() {
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
                                             <span>Método</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: paymentMethod === 'pix' ? '#00cec9' : '#6c5ce7', fontWeight: 700 }}>
-                                                {paymentMethod === 'pix' ? <FiZap size={14} /> : <FiCreditCard size={14} />}
-                                                {paymentMethod === 'pix' ? 'Pix' : 'Cartão'}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#00cec9', fontWeight: 700 }}>
+                                                <FiZap size={14} />
+                                                Pix
                                             </div>
                                         </div>
                                         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '8px 0' }} />

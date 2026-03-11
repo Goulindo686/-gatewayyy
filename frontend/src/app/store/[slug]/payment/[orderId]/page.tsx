@@ -275,7 +275,7 @@ export default function PaymentPage() {
                     <div style={{ background: '#141417', borderRadius: 32, padding: 48, textAlign: 'center', border: '1px solid rgba(255,255,255,0.03)' }}>
                         <FiCheckCircle size={64} style={{ color: '#00cec9', marginBottom: 24 }} />
                         <h2 style={{ fontSize: 24, fontWeight: 800, color: 'white', marginBottom: 12 }}>Pagamento em processamento</h2>
-                        <p style={{ color: '#94a3b8' }}>Estamos aguardando a confirmação da sua operadora de cartão.</p>
+                        <p style={{ color: '#94a3b8' }}>Estamos aguardando a confirmação do seu pagamento via Pix.</p>
                     </div>
                 )}
 

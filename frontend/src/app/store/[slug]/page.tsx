@@ -270,9 +270,7 @@ export default function StorePage() {
                                 </div>
 
                                 <div style={{ display: 'flex', gap: 8, marginBottom: 24 }}>
-                                    {/* Small dots representing payment methods as per Image 1 */}
                                     <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#00cec9' }} />
-                                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff7675' }} />
                                 </div>
 
                                 <div style={{ display: 'flex', gap: 12 }}>
@@ -380,9 +378,7 @@ export default function StorePage() {
                                     </div>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                         <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#00cec9' }} />
-                                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#6c5ce7' }} />
-                                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff7675' }} />
-                                        <div style={{ marginLeft: 10, fontSize: 13, color: '#64748b', fontWeight: 600 }}>Pix • Cartão • Boleto</div>
+                                        <div style={{ marginLeft: 10, fontSize: 13, color: '#64748b', fontWeight: 600 }}>Pix</div>
                                     </div>
                                 </div>
                             </div>
