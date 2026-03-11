@@ -113,7 +113,7 @@ export default function CartPage() {
 
     return (
         <div style={{ minHeight: '100vh', background: '#0a0a0c', color: '#e2e8f0', fontFamily: 'Outfit, Inter, sans-serif', padding: '40px 24px' }} className="storeCartPage">
-            <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ maxWidth: 1400, margin: '0 auto' }}>
                 <button
                     onClick={() => router.back()}
                     style={{ background: 'transparent', border: 'none', color: '#94a3b8', display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: 32, fontWeight: 600 }}
@@ -124,7 +124,7 @@ export default function CartPage() {
                 <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Carrinho de compras</h1>
                 <p style={{ color: '#64748b', marginBottom: 40, fontSize: 14 }}>Nesta página, você encontra os produtos adicionados ao seu carrinho.</p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 380px', gap: 32 }} className="storeCartGrid">
+                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(420px, 1.5fr) minmax(380px, 1.2fr) 420px', gap: 40 }} className="storeCartGrid">
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                         <div style={{ background: '#141417', borderRadius: 24, padding: 32, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
