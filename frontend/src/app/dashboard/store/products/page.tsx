@@ -17,7 +17,7 @@ export default function StoreProductsPage() {
     const [showModal, setShowModal] = useState(false);
     const [editing, setEditing] = useState<any>(null);
     const [form, setForm] = useState({
-        name: '', price: '', image_url: '', type: 'digital', status: 'active'
+        name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active'
     });
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -73,7 +73,7 @@ export default function StoreProductsPage() {
     // --- Product Creation Methods ---
     const openCreate = () => {
         setEditing(null);
-        setForm({ name: '', price: '', image_url: '', type: 'digital', status: 'active' });
+        setForm({ name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active' });
         setSelectedFile(null);
         setImagePreview(null);
         setShowModal(true);
@@ -83,6 +83,7 @@ export default function StoreProductsPage() {
         setEditing(product);
         setForm({
             name: product.name,
+            description: product.description || '',
             price: product.price_display || (product.price / 100).toFixed(2),
             image_url: product.image_url || '',
             type: product.type,
@@ -311,6 +312,12 @@ export default function StoreProductsPage() {
                                 <label style={{ display: 'block', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome do produto</label>
                                 <input type="text" className="input-field" placeholder="Ex: E-book de Vendas" required
                                     value={form.name} onChange={e => updateForm('name', e.target.value)} />
+                            </div>
+
+                            <div style={{ marginBottom: 16 }}>
+                                <label style={{ display: 'block', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Descrição do produto</label>
+                                <textarea className="input-field" rows={4} placeholder="Explique os benefícios, conteúdo ou detalhes do produto"
+                                    value={form.description} onChange={e => updateForm('description', e.target.value)} />
                             </div>
 
 
