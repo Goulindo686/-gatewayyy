@@ -324,8 +324,9 @@ export default function CartPage() {
                                                             <button onClick={() => removeItem(item.id)} style={{ background: 'transparent', border: 'none', color: '#ff7675', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                                                                 <FiTrash2 size={16} /> Remover
                                                             </button>
-                                                            <div style={{ marginLeft: 'auto', fontSize: 16, fontWeight: 800, color: 'white' }}>
-                                                                R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap', color: 'white', fontWeight: 800, fontSize: 16 }}>
+                                                                <span>R$</span>
+                                                                <span>{(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -401,8 +402,9 @@ export default function CartPage() {
                                                             <button onClick={() => removeItem(item.id)} style={{ background: 'transparent', border: 'none', color: '#ff7675', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                                                                 <FiTrash2 size={16} /> Remover
                                                             </button>
-                                                            <div style={{ marginLeft: 'auto', fontSize: 16, fontWeight: 800, color: 'white' }}>
-                                                                R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'baseline', gap: 6, whiteSpace: 'nowrap', color: 'white', fontWeight: 800, fontSize: 16 }}>
+                                                                <span>R$</span>
+                                                                <span>{(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                                             </div>
                                                         </div>
                                                     </div>
