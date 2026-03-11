@@ -96,7 +96,7 @@ export default function CartPage() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', background: '#0a0a0c', color: '#e2e8f0', fontFamily: 'Outfit, Inter, sans-serif', padding: '40px 24px' }} className="storeCartPage">
+        <div style={{ minHeight: '100vh', background: '#0a0a0c', color: '#e2e8f0', fontFamily: 'Outfit, Inter, sans-serif', padding: isOverlay ? '40px 24px' : '80px 24px' }} className="storeCartPage">
             <div style={{ maxWidth: isOverlay ? 1400 : 1400, margin: '0 auto' }}>
                 <button
                     onClick={() => router.back()}
