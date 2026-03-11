@@ -316,9 +316,12 @@ export default function StorePage() {
                         background: 'rgba(0,0,0,0.85)',
                         zIndex: 9999,
                         display: 'flex',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         justifyContent: 'center',
-                        padding: 20
+                        padding: 40,
+                        overflowY: 'auto',
+                        WebkitOverflowScrolling: 'touch',
+                        touchAction: 'pan-y'
                     }}
                 >
                     <div
@@ -327,7 +330,8 @@ export default function StorePage() {
                         style={{
                             width: '100%',
                             maxWidth: 940,
-                            maxHeight: 'calc(100vh - 40px)',
+                            maxHeight: 'calc(100vh - 80px)',
+                            margin: '0 auto',
                             overflowY: 'auto',
                             background: '#141417',
                             borderRadius: 28,
@@ -480,6 +484,10 @@ export default function StorePage() {
                     }
                 }
                 @media (max-width: 640px) {
+                    .quickModalOverlay {
+                        padding: 24px 12px !important;
+                        overflow-y: auto !important;
+                    }
                     .quickModalHeader {
                         padding: 16px !important;
                     }
