@@ -30,6 +30,7 @@ export default function CartPage() {
     const [paymentMethod, setPaymentMethod] = useState<'pix' | 'card'>('pix');
     const [loading, setLoading] = useState(false);
     // Endereço removido: não obrigatório na integração atual
+    const [details, setDetails] = useState<Record<string, any>>({});
     useEffect(() => {
         const addId = searchParams.get('add');
         const run = async () => {
@@ -48,6 +49,24 @@ export default function CartPage() {
         run();
     }, [searchParams]);
 
+    useEffect(() => {
+        let cancelled = false;
+        const fetchDetails = async () => {
+            try {
+                const idsToFetch = items.filter(i => !details[i.id]).map(i => i.id);
+                for (const id of idsToFetch) {
+                    try {
+                        const { data } = await productsAPI.getPublic(id);
+                        if (!cancelled && data?.product) {
+                            setDetails(prev => ({ ...prev, [id]: data.product }));
+                        }
+                    } catch {}
+                }
+            } catch {}
+        };
+        fetchDetails();
+        return () => { cancelled = true; };
+    }, [items]);
     const formatCardNumber = (value: string) => {
         const digits = value.replace(/\D/g, '');
         const groups = digits.match(/.{1,4}/g) || [];
@@ -105,12 +124,50 @@ export default function CartPage() {
                 <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Carrinho de compras</h1>
                 <p style={{ color: '#64748b', marginBottom: 40, fontSize: 14 }}>Nesta página, você encontra os produtos adicionados ao seu carrinho.</p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 32 }} className="storeCartGrid">
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 380px', gap: 32 }} className="storeCartGrid">
 
-                    {/* Left Column: Payment & Cart Items */}
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                        <div style={{ background: '#141417', borderRadius: 24, padding: 32, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                                <h2 style={{ fontSize: 18, fontWeight: 700 }}>Informações do produto</h2>
+                                <span style={{ color: '#64748b', fontSize: 13, fontWeight: 600 }}>{items.length} itens</span>
+                            </div>
+                            {items.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '20px 0', color: '#64748b' }}>Seu carrinho está vazio.</div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+                                    {items.map(item => (
+                                        <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: 16, background: '#0a0a0c', padding: 12, borderRadius: 16, border: '1px solid rgba(255,255,255,0.03)' }}>
+                                            <div style={{ width: 80, height: 80, borderRadius: 12, overflow: 'hidden', background: '#141417' }}>
+                                                {item.image_url ? <img src={item.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <FiPackage style={{ margin: 28, opacity: 0.1 }} />}
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                <div style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>{item.name}</div>
+                                                <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
+                                                    {(details[item.id]?.description || 'Sem descrição')}
+                                                </div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#141417', borderRadius: 8, padding: '4px 8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                        <FiMinus size={14} style={{ cursor: 'pointer' }} onClick={() => updateQuantity(item.id, -1)} />
+                                                        <span style={{ fontSize: 14, fontWeight: 800 }}>{item.quantity}</span>
+                                                        <FiPlus size={14} style={{ cursor: 'pointer' }} onClick={() => updateQuantity(item.id, 1)} />
+                                                    </div>
+                                                    <button onClick={() => removeItem(item.id)} style={{ background: 'transparent', border: 'none', color: '#ff7675', fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                                        <FiTrash2 size={16} /> Remover
+                                                    </button>
+                                                    <div style={{ marginLeft: 'auto', fontSize: 16, fontWeight: 800, color: 'white' }}>
+                                                        R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
-                        {/* Payment Info (Image 3 inspired) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
                         <div style={{ background: '#141417', borderRadius: 24, padding: 32, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
                             <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Informações de pagamento</h2>
 
@@ -287,48 +344,6 @@ export default function CartPage() {
                                 </div>
                                 <div style={{ color: 'white', fontWeight: 700 }}>Adicionar</div>
                             </button>
-                        </div>
-
-                        {/* Products in Cart (Image 3 inspired) */}
-                        <div style={{ background: '#141417', borderRadius: 24, padding: 32, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-                                <h2 style={{ fontSize: 18, fontWeight: 700 }}>Produtos no carrinho</h2>
-                                <span style={{ color: '#64748b', fontSize: 13, fontWeight: 600 }}>{items.length} itens</span>
-                            </div>
-
-                            {items.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '20px 0', color: '#64748b' }}>Seu carrinho está vazio.</div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                                    {items.map(item => (
-                                        <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#0a0a0c', padding: 12, borderRadius: 16, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartItemRow">
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-                                                <div style={{ width: 60, height: 60, borderRadius: 12, overflow: 'hidden', background: '#141417' }}>
-                                                    {item.image_url ? <img src={item.image_url} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <FiPackage style={{ margin: 20, opacity: 0.1 }} />}
-                                                </div>
-                                                <div>
-                                                    <div style={{ fontSize: 15, fontWeight: 700, color: 'white', marginBottom: 4 }}>{item.name}</div>
-                                                    <div style={{ display: 'flex', gap: 8 }}>
-                                                        <FiTrash2 size={16} style={{ color: '#ff7675', cursor: 'pointer' }} onClick={() => removeItem(item.id)} />
-                                                        <FiZap size={16} style={{ color: '#00cec9' }} />
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }} className="storeCartItemControls">
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#141417', borderRadius: 8, padding: '4px 8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                                                    <FiMinus size={14} style={{ cursor: 'pointer' }} onClick={() => updateQuantity(item.id, -1)} />
-                                                    <span style={{ fontSize: 14, fontWeight: 800 }}>{item.quantity}</span>
-                                                    <FiPlus size={14} style={{ cursor: 'pointer' }} onClick={() => updateQuantity(item.id, 1)} />
-                                                </div>
-                                                <div style={{ fontSize: 16, fontWeight: 800, color: 'white', minWidth: 80, textAlign: 'right' }}>
-                                                    R$ {(item.price * item.quantity).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
                         </div>
                     </div>
 
