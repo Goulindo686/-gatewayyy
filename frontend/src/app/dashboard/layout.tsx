@@ -13,6 +13,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const pathname = usePathname();
     const [user, setUser] = useState<any>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
     const [profileOpen, setProfileOpen] = useState(false);
     const [salesTotal, setSalesTotal] = useState<number | null>(null);
     const profileRef = useRef<HTMLDivElement>(null);
@@ -30,12 +31,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     useEffect(() => {
         const userData = localStorage.getItem('user');
         const token = localStorage.getItem('token');
+        const sc = localStorage.getItem('sidebarCollapsed');
         if (!token || !userData) {
             router.push('/login');
             return;
         }
         setUser(JSON.parse(userData));
+        if (sc) setSidebarCollapsed(sc === '1' || sc === 'true');
     }, [router]);
+    useEffect(() => {
+        try { localStorage.setItem('sidebarCollapsed', sidebarCollapsed ? '1' : '0'); } catch {}
+    }, [sidebarCollapsed]);
 
     useEffect(() => {
         let cancelled = false;
@@ -290,17 +296,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             {/* Sidebar */}
             <aside style={{
-                width: 260, background: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)',
+                width: sidebarCollapsed ? 72 : 260, background: 'var(--bg-secondary)', borderRight: '1px solid var(--border-color)',
                 display: 'flex', flexDirection: 'column', position: 'fixed', top: 0, bottom: 0, left: 0, zIndex: 50,
                 transition: 'transform 0.3s ease',
             }} className={`dashboard-aside${sidebarOpen ? ' open' : ''}`}>
                 {/* Logo */}
-                <div style={{ padding: '24px 20px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <img src="/logo.png" alt="GouPay Logo" style={{ width: 56, height: 56, objectFit: 'contain', flexShrink: 0 }} />
-                    <span style={{ fontSize: 18, fontWeight: 700 }}>Gou<span className="gradient-text">Pay</span></span>
+                <div style={{ padding: '24px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <img src="/logo.png" alt="GouPay Logo" style={{ width: 56, height: 56, objectFit: 'contain', flexShrink: 0 }} />
+                        <span style={{ fontSize: 18, fontWeight: 700, display: sidebarCollapsed ? 'none' : 'inline' }}>Gou<span className="gradient-text">Pay</span></span>
+                    </div>
+                    <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{
+                        width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-color)',
+                        background: 'var(--bg-card)', color: 'var(--text-primary)', display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', cursor: 'pointer'
+                    }}>
+                        {sidebarCollapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
+                    </button>
                 </div>
 
                 {/* Sidebar Progress Card */}
+                {!sidebarCollapsed && (
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)' }}>
                     <div style={{
                         background: 'var(--bg-card)',
@@ -339,15 +355,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         </div>
                     </div>
                 </div>
+                )}
 
                 {/* Navigation */}
                 <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {navItems.map((item) => (
                         <Link key={item.href} href={item.href}
                             className={`sidebar-link ${pathname === item.href ? 'active' : ''}`}
-                            onClick={() => setSidebarOpen(false)}>
-                            {item.icon}
-                            {item.label}
+                            onClick={() => setSidebarOpen(false)}
+                            title={item.label}
+                            style={{
+                                display: 'flex', alignItems: 'center',
+                                justifyContent: sidebarCollapsed ? 'center' : 'flex-start',
+                                gap: sidebarCollapsed ? 0 : 12,
+                                paddingLeft: sidebarCollapsed ? 0 : 12,
+                                paddingRight: sidebarCollapsed ? 0 : 12,
+                            }}>
+                            <span style={{ display: 'inline-flex', alignItems: 'center' }}>{item.icon}</span>
+                            <span style={{ display: sidebarCollapsed ? 'none' : 'inline' }}>{item.label}</span>
                         </Link>
                     ))}
                 </nav>
@@ -379,7 +404,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </aside>
 
             {/* Main content */}
-            <main style={{ flex: 1, paddingLeft: 260, minHeight: '100vh', overflowX: 'hidden' }}>
+            <main style={{ flex: 1, paddingLeft: sidebarCollapsed ? 72 : 260, minHeight: '100vh', overflowX: 'hidden' }}>
                 {/* Top bar */}
                 <header style={{
                     borderBottom: '1px solid var(--border-color)',
