@@ -15,6 +15,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, T
 export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [period, setPeriod] = useState<{ monthly_sales: any[]; recent_orders: any[] } | null>(null);
     const searchParams = useSearchParams();
 
     useEffect(() => {
@@ -25,7 +26,10 @@ export default function DashboardPage() {
         const start = searchParams.get('start') || undefined;
         const end = searchParams.get('end') || undefined;
         if (start || end) {
-            loadStats({ start, end });
+            loadPeriod({ start, end });
+        } else {
+            setPeriod(null);
+            loadStats();
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
@@ -41,14 +45,25 @@ export default function DashboardPage() {
             setLoading(false);
         }
     };
+    const loadPeriod = async (params?: any) => {
+        try {
+            const { data } = await dashboardAPI.getStats(params || {});
+            setPeriod({
+                monthly_sales: data?.monthly_sales || [],
+                recent_orders: data?.recent_orders || []
+            });
+        } catch (err) {
+            console.error('Failed to load period stats:', err);
+        }
+    };
 
  
 
     const chartData = {
-        labels: stats?.monthly_sales?.map((m: any) => m.month) || [],
+        labels: (period?.monthly_sales || stats?.monthly_sales || []).map((m: any) => m.month),
         datasets: [{
             label: 'Vendas (R$)',
-            data: stats?.monthly_sales?.map((m: any) => m.amount) || [],
+            data: (period?.monthly_sales || stats?.monthly_sales || []).map((m: any) => m.amount),
             borderColor: '#6c5ce7',
             backgroundColor: 'rgba(108, 92, 231, 0.1)',
             fill: true,
@@ -172,7 +187,7 @@ export default function DashboardPage() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {stats.recent_orders.map((order: any) => (
+                {(period?.recent_orders || stats?.recent_orders || []).map((order: any) => (
                                     <tr key={order.id}>
                                         <td style={{ fontWeight: 500 }}>{order.product_name || order.products?.name || '—'}</td>
                                         <td style={{ color: 'var(--text-secondary)' }}>{order.buyer_name || '—'}</td>
