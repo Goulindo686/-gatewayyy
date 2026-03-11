@@ -434,11 +434,20 @@ export default function CartPage() {
             </div>
             <style jsx>{`
                 @media (max-width: 980px) {
+                    .storeCartPage {
+                        -webkit-text-size-adjust: 100% !important;
+                        text-size-adjust: 100% !important;
+                    }
                     .storeCartGrid {
                         grid-template-columns: 1fr !important;
                         justify-content: center !important;
                         justify-items: stretch !important;
                         gap: 18px !important;
+                    }
+                    .storeCartPage input,
+                    .storeCartPage select,
+                    .storeCartPage textarea {
+                        font-size: 16px !important;
                     }
                     .storeCartSummaryWrap {
                         position: static !important;
