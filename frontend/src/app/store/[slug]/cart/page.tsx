@@ -182,7 +182,7 @@ export default function CartPage() {
                 <h1 style={{ fontSize: 24, fontWeight: 800, marginBottom: 8 }}>Carrinho de compras</h1>
                 <p style={{ color: '#64748b', marginBottom: 40, fontSize: 14 }}>Nesta página, você encontra os produtos adicionados ao seu carrinho.</p>
 
-                <div style={{ display: 'grid', gridTemplateColumns: isOverlay ? '420px 420px 480px' : 'minmax(420px, 1.5fr) minmax(380px, 1.2fr) 480px', gap: isOverlay ? 32 : 40, justifyContent: isOverlay ? 'center' : 'stretch', justifyItems: isOverlay ? 'center' : 'stretch' }} className="storeCartGrid">
+                <div style={{ display: 'grid', gridTemplateColumns: isOverlay ? '420px 420px 560px' : 'minmax(420px, 1.5fr) minmax(380px, 1.2fr) 560px', gap: isOverlay ? 32 : 40, justifyContent: isOverlay ? 'center' : 'stretch', justifyItems: isOverlay ? 'center' : 'stretch' }} className="storeCartGrid">
 
                     {isOverlay ? (
                         <>
@@ -465,16 +465,16 @@ export default function CartPage() {
                                 </div>
                             </div>
                             <div style={{ position: 'sticky', top: 40 }} className="storeCartSummaryWrap">
-                                <div style={{ background: '#141417', borderRadius: 24, padding: 36, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
+                                <div style={{ background: '#141417', borderRadius: 24, padding: 40, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
                                     <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Resumo da compra</h2>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 32 }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
                                             <span>Subtotal</span>
                                             <span style={{ color: 'white', fontWeight: 700 }}>R$ {totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
-                                            <span>Método</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, whiteSpace: 'nowrap', fontWeight: 700, color: paymentMethod === 'pix' ? '#00cec9' : '#6366f1' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', fontSize: 14, color: '#64748b', fontWeight: 500, columnGap: 16 }}>
+                                            <span style={{ whiteSpace: 'nowrap' }}>Método</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, whiteSpace: 'nowrap', fontWeight: 700, color: paymentMethod === 'pix' ? '#00cec9' : '#6366f1', justifySelf: 'start' }}>
                                                 {paymentMethod === 'pix' ? <FiZap size={14} /> : <FiCreditCard size={14} />}
                                                 {paymentMethod === 'pix' ? 'Pix' : 'Cartão de crédito'}
                                             </div>
@@ -644,16 +644,16 @@ export default function CartPage() {
                                 </div>
                             </div>
                             <div style={{ position: 'sticky', top: 40 }} className="storeCartSummaryWrap">
-                                <div style={{ background: '#141417', borderRadius: 24, padding: 36, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
+                                <div style={{ background: '#141417', borderRadius: 24, padding: 40, border: '1px solid rgba(255,255,255,0.03)' }} className="storeCartCard">
                                     <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Resumo da compra</h2>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 32 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, marginBottom: 32 }}>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
                                             <span>Subtotal</span>
                                             <span style={{ color: 'white', fontWeight: 700 }}>R$ {totalAmount.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                                         </div>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
-                                            <span>Método</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, whiteSpace: 'nowrap', fontWeight: 700, color: paymentMethod === 'pix' ? '#00cec9' : '#6366f1' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'auto 1fr', alignItems: 'center', fontSize: 14, color: '#64748b', fontWeight: 500, columnGap: 16 }}>
+                                            <span style={{ whiteSpace: 'nowrap' }}>Método</span>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, whiteSpace: 'nowrap', fontWeight: 700, color: paymentMethod === 'pix' ? '#00cec9' : '#6366f1', justifySelf: 'start' }}>
                                                 {paymentMethod === 'pix' ? <FiZap size={14} /> : <FiCreditCard size={14} />}
                                                 {paymentMethod === 'pix' ? 'Pix' : 'Cartão de crédito'}
                                             </div>
