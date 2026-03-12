@@ -97,13 +97,18 @@ export async function POST(req: NextRequest) {
             const amountCents = typeof product.price === 'number'
                 ? (product.price >= 100 ? Math.round(product.price) : Math.round(product.price * 100))
                 : Math.round(parseFloat(product.price_display) * 100);
+            const ipHeader = req.headers.get('x-forwarded-for') || '';
+            const ip = ipHeader.split(',')[0].trim() || undefined;
+            const sessionId = uuidv4();
             pagarmeOrder = await PagarmeService.createOrder({
                 amount: amountCents,
                 payment_method: normalizedPaymentMethod,
                 customer: buyer,
                 card_data: normalizedPaymentMethod === 'credit_card' ? card_data : undefined,
                 seller_recipient_id: recipient.pagarme_recipient_id,
-                platform_fee_percentage: feePercentage
+                platform_fee_percentage: feePercentage,
+                ip,
+                session_id: sessionId
             });
         } catch (pagarmeErr: any) {
             console.error('Pagar.me API Error:', pagarmeErr.response?.data || pagarmeErr.message);

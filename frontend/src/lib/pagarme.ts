@@ -44,6 +44,7 @@ export class PagarmeService {
     static async createOrder(data: {
         amount: number; payment_method: string; customer: any;
         card_data?: any; seller_recipient_id: string; platform_fee_percentage: number;
+        ip?: string; session_id?: string;
     }) {
         const sellerPercentage = 100 - (data.platform_fee_percentage || 0);
 
@@ -80,7 +81,12 @@ export class PagarmeService {
                 quantity: 1,
                 code: 'pay-001'
             }],
-            payments: []
+            payments: [],
+            ip: data.ip,
+            session_id: data.session_id,
+            antifraud: (process.env.PAGARME_API_KEY || '').startsWith('sk_test')
+                ? { enabled: false }
+                : undefined
         };
 
         const platId = (process.env.PLATFORM_RECIPIENT_ID || '').trim();
@@ -161,6 +167,7 @@ export class PagarmeService {
     static async createMultiItemOrder(data: {
         items: any[]; payment_method: string; customer: any;
         card_data?: any; seller_recipient_id: string; platform_fee_percentage: number;
+        ip?: string; session_id?: string;
     }) {
         const sellerPercentage = 100 - (data.platform_fee_percentage || 0);
 
@@ -196,7 +203,12 @@ export class PagarmeService {
                 quantity: item.quantity,
                 code: item.id
             })),
-            payments: []
+            payments: [],
+            ip: data.ip,
+            session_id: data.session_id,
+            antifraud: (process.env.PAGARME_API_KEY || '').startsWith('sk_test')
+                ? { enabled: false }
+                : undefined
         };
 
         const platId = (process.env.PLATFORM_RECIPIENT_ID || '').trim();
