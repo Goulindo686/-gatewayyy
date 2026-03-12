@@ -30,7 +30,7 @@ const DEFAULT_SETTINGS = {
 export default function CheckoutPage() {
     const params = useParams();
     const router = useRouter();
-    const enableCreditCard = process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD === 'true';
+    const enableCreditCard = process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD ? (process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD === 'true') : true;
     const [product, setProduct] = useState<any>(null);
     const [settings, setSettings] = useState(DEFAULT_SETTINGS);
     const [loading, setLoading] = useState(true);
