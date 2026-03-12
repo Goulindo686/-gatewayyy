@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
-import { FiArrowLeft, FiTrash2, FiMinus, FiPlus, FiZap, FiTag, FiPackage } from 'react-icons/fi';
+import { FiArrowLeft, FiTrash2, FiMinus, FiPlus, FiZap, FiTag, FiPackage, FiCreditCard } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import { storeAPI, productsAPI } from '@/lib/api';
 
@@ -13,13 +13,41 @@ export default function CartPage() {
     const searchParams = useSearchParams();
     const { items, addItem, updateQuantity, removeItem, totalAmount, clearCart } = useCart();
 
+    const enableCreditCard = process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD ? (process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD === 'true') : true;
+    const [paymentMethod, setPaymentMethod] = useState<'pix' | 'credit_card'>('pix');
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [confirmEmail, setConfirmEmail] = useState('');
     const [cpf, setCpf] = useState('');
     const [phone, setPhone] = useState('');
     const [loading, setLoading] = useState(false);
-    // Endereço removido: não obrigatório na integração atual
+    const [cep, setCep] = useState('');
+    const [street, setStreet] = useState('');
+    const [number, setNumber] = useState('');
+    const [neighborhood, setNeighborhood] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [cardNumber, setCardNumber] = useState('');
+    const [cardHolder, setCardHolder] = useState('');
+    const [cardExpMonth, setCardExpMonth] = useState('');
+    const [cardExpYear, setCardExpYear] = useState('');
+    const [cardCvv, setCardCvv] = useState('');
+    const [installments, setInstallments] = useState(1);
+    const isValidCPF = (v: string) => {
+        const s = (v || '').replace(/\D/g, '');
+        if (!s || s.length !== 11 || /^(\d)\1+$/.test(s)) return false;
+        let sum = 0; for (let i = 0; i < 9; i++) sum += parseInt(s[i]) * (10 - i);
+        let d1 = (sum * 10) % 11; if (d1 === 10) d1 = 0; if (d1 !== parseInt(s[9])) return false;
+        sum = 0; for (let i = 0; i < 10; i++) sum += parseInt(s[i]) * (11 - i);
+        let d2 = (sum * 10) % 11; if (d2 === 10) d2 = 0; return d2 === parseInt(s[10]);
+    };
+    const isValidCEP = (v: string) => /^\d{8}$/.test((v || '').replace(/\D/g, ''));
+    const UFs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+    const isValidUF = (v: string) => UFs.includes((v || '').toUpperCase());
+    const isValidPhone = (v: string) => {
+        const d = (v || '').replace(/\D/g, '');
+        return d.length >= 10 && d.length <= 11;
+    };
     const [details, setDetails] = useState<Record<string, any>>({});
     const isOverlay = searchParams.get('overlay') === '1';
     useEffect(() => {
@@ -66,6 +94,16 @@ export default function CartPage() {
         if (!emailRegex.test(email)) return toast.error("Por favor, insira um e-mail válido!");
         if (email !== confirmEmail) return toast.error("Os e-mails não coincidem!");
 
+        if (!isValidCPF(cpf)) return toast.error("CPF inválido!");
+        if (!isValidPhone(phone)) return toast.error("Telefone inválido!");
+
+        const methodToSend = enableCreditCard ? paymentMethod : 'pix';
+        if (methodToSend === 'credit_card') {
+            if (!isValidCEP(cep)) return toast.error("CEP inválido!");
+            if (!city || !isValidUF(state) || !street || !number) return toast.error("Preencha o endereço completo.");
+            if (!cardNumber || !cardHolder || !cardExpMonth || !cardExpYear || !cardCvv) return toast.error("Preencha os dados do cartão.");
+        }
+
         try {
             setLoading(true);
 
@@ -75,10 +113,28 @@ export default function CartPage() {
                     name,
                     email,
                     cpf,
-                    phone
+                    phone,
+                    address: {
+                        street,
+                        number,
+                        neighborhood,
+                        zipcode: (cep || '').replace(/\D/g, ''),
+                        city,
+                        state: (state || '').toUpperCase(),
+                        country: 'BR',
+                        line_1: `${street || ''}, ${number || ''}, ${neighborhood || ''}`
+                    }
                 },
                 items: items.map(i => ({ id: i.id, quantity: i.quantity, price: i.price, name: i.name })),
-                payment_method: 'pix',
+                payment_method: methodToSend,
+                card_data: methodToSend === 'credit_card' ? {
+                    number: (cardNumber || '').replace(/\s/g, ''),
+                    holder_name: cardHolder,
+                    exp_month: parseInt(cardExpMonth),
+                    exp_year: parseInt(cardExpYear.length === 2 ? `20${cardExpYear}` : cardExpYear),
+                    cvv: cardCvv,
+                    installments
+                } : undefined,
                 total: totalAmount
             };
 
@@ -117,21 +173,41 @@ export default function CartPage() {
                                     <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Informações de pagamento</h2>
                                     <div style={{ marginBottom: 24 }}>
                                         <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 12 }}>Método</label>
-                                        <div style={{ display: 'flex', gap: 12 }} className="storeCartPayMethods">
-                                            <div
+                                        <div style={{ display: 'grid', gridTemplateColumns: enableCreditCard ? '1fr 1fr' : '1fr', gap: 12 }} className="storeCartPayMethods">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPaymentMethod('pix')}
                                                 style={{
-                                                    flex: 1, padding: '16px', borderRadius: 12, border: '1px solid',
-                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700,
-                                                    background: 'rgba(0, 206, 201, 0.1)',
-                                                    borderColor: '#00cec9',
-                                                    color: '#00cec9'
+                                                    padding: '16px', borderRadius: 12, border: '1px solid',
+                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
+                                                    background: paymentMethod === 'pix' ? 'rgba(0, 206, 201, 0.12)' : '#0a0a0c',
+                                                    borderColor: paymentMethod === 'pix' ? '#00cec9' : 'rgba(255,255,255,0.08)',
+                                                    color: paymentMethod === 'pix' ? '#00cec9' : '#94a3b8'
                                                 }}
                                             >
-                                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#00cec9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black' }}>
+                                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: paymentMethod === 'pix' ? '#00cec9' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: paymentMethod === 'pix' ? 'black' : '#94a3b8' }}>
                                                     <FiZap size={14} />
                                                 </div>
                                                 Pix
-                                            </div>
+                                            </button>
+                                            {enableCreditCard && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPaymentMethod('credit_card')}
+                                                    style={{
+                                                        padding: '16px', borderRadius: 12, border: '1px solid',
+                                                        display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
+                                                        background: paymentMethod === 'credit_card' ? 'rgba(99, 102, 241, 0.12)' : '#0a0a0c',
+                                                        borderColor: paymentMethod === 'credit_card' ? '#6366f1' : 'rgba(255,255,255,0.08)',
+                                                        color: paymentMethod === 'credit_card' ? '#6366f1' : '#94a3b8'
+                                                    }}
+                                                >
+                                                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: paymentMethod === 'credit_card' ? '#6366f1' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: paymentMethod === 'credit_card' ? 'white' : '#94a3b8' }}>
+                                                        <FiCreditCard size={14} />
+                                                    </div>
+                                                    Cartão de crédito
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                     <div style={{ marginBottom: 20 }}>
@@ -185,6 +261,138 @@ export default function CartPage() {
                                             />
                                         </div>
                                     </div>
+                                    {enableCreditCard && paymentMethod === 'credit_card' && (
+                                        <>
+                                            <div style={{ marginTop: 20 }}>
+                                                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', marginBottom: 10 }}>Endereço de cobrança</h3>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>CEP</label>
+                                                        <input
+                                                            placeholder="00000-000"
+                                                            value={cep}
+                                                            onChange={e => setCep(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Cidade</label>
+                                                        <input
+                                                            placeholder="Cidade"
+                                                            value={city}
+                                                            onChange={e => setCity(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginTop: 12 }}>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Estado</label>
+                                                        <input
+                                                            placeholder="UF"
+                                                            maxLength={2}
+                                                            value={state}
+                                                            onChange={e => setState(e.target.value.toUpperCase())}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Bairro</label>
+                                                        <input
+                                                            placeholder="Bairro"
+                                                            value={neighborhood}
+                                                            onChange={e => setNeighborhood(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16, marginTop: 12 }}>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Rua</label>
+                                                        <input
+                                                            placeholder="Rua"
+                                                            value={street}
+                                                            onChange={e => setStreet(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Número</label>
+                                                        <input
+                                                            placeholder="Nº"
+                                                            value={number}
+                                                            onChange={e => setNumber(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div style={{ marginTop: 20 }}>
+                                                <h3 style={{ fontSize: 13, fontWeight: 800, color: '#94a3b8', marginBottom: 10 }}>Dados do cartão</h3>
+                                                <div style={{ marginBottom: 12 }}>
+                                                    <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Número do cartão</label>
+                                                    <input
+                                                        placeholder="0000 0000 0000 0000"
+                                                        value={cardNumber}
+                                                        onChange={e => setCardNumber(e.target.value)}
+                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                    />
+                                                </div>
+                                                <div style={{ marginBottom: 12 }}>
+                                                    <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Nome no cartão</label>
+                                                    <input
+                                                        placeholder="Nome como está no cartão"
+                                                        value={cardHolder}
+                                                        onChange={e => setCardHolder(e.target.value)}
+                                                        style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                    />
+                                                </div>
+                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16 }}>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Mês</label>
+                                                        <input
+                                                            placeholder="MM"
+                                                            maxLength={2}
+                                                            value={cardExpMonth}
+                                                            onChange={e => setCardExpMonth(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Ano</label>
+                                                        <input
+                                                            placeholder="AA"
+                                                            maxLength={2}
+                                                            value={cardExpYear}
+                                                            onChange={e => setCardExpYear(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>CVV</label>
+                                                        <input
+                                                            placeholder="000"
+                                                            maxLength={4}
+                                                            value={cardCvv}
+                                                            onChange={e => setCardCvv(e.target.value)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 8 }}>Parcelas</label>
+                                                        <input
+                                                            type="number"
+                                                            min={1}
+                                                            max={12}
+                                                            value={installments}
+                                                            onChange={e => setInstallments(parseInt(e.target.value) || 1)}
+                                                            style={{ width: '100%', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, padding: '14px 16px', color: 'white', boxSizing: 'border-box' }}
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </>
+                                    )}
                                     <button style={{ marginTop: 32, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, color: '#64748b', cursor: 'pointer' }}>
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                                             <FiTag /> Cupom de desconto
@@ -244,9 +452,9 @@ export default function CartPage() {
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
                                             <span>Método</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#00cec9', fontWeight: 700 }}>
-                                                <FiZap size={14} />
-                                                Pix
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: paymentMethod === 'pix' ? '#00cec9' : '#6366f1' }}>
+                                                {paymentMethod === 'pix' ? <FiZap size={14} /> : <FiCreditCard size={14} />}
+                                                {paymentMethod === 'pix' ? 'Pix' : 'Cartão de crédito'}
                                             </div>
                                         </div>
                                         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '8px 0' }} />
@@ -317,21 +525,41 @@ export default function CartPage() {
                                     <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 24 }}>Informações de pagamento</h2>
                                     <div style={{ marginBottom: 24 }}>
                                         <label style={{ fontSize: 13, fontWeight: 600, color: '#64748b', display: 'block', marginBottom: 12 }}>Método</label>
-                                        <div style={{ display: 'flex', gap: 12 }} className="storeCartPayMethods">
-                                            <div
+                                        <div style={{ display: 'grid', gridTemplateColumns: enableCreditCard ? '1fr 1fr' : '1fr', gap: 12 }} className="storeCartPayMethods">
+                                            <button
+                                                type="button"
+                                                onClick={() => setPaymentMethod('pix')}
                                                 style={{
-                                                    flex: 1, padding: '16px', borderRadius: 12, border: '1px solid',
-                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700,
-                                                    background: 'rgba(0, 206, 201, 0.1)',
-                                                    borderColor: '#00cec9',
-                                                    color: '#00cec9'
+                                                    padding: '16px', borderRadius: 12, border: '1px solid',
+                                                    display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
+                                                    background: paymentMethod === 'pix' ? 'rgba(0, 206, 201, 0.12)' : '#0a0a0c',
+                                                    borderColor: paymentMethod === 'pix' ? '#00cec9' : 'rgba(255,255,255,0.08)',
+                                                    color: paymentMethod === 'pix' ? '#00cec9' : '#94a3b8'
                                                 }}
                                             >
-                                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#00cec9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'black' }}>
+                                                <div style={{ width: 24, height: 24, borderRadius: '50%', background: paymentMethod === 'pix' ? '#00cec9' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: paymentMethod === 'pix' ? 'black' : '#94a3b8' }}>
                                                     <FiZap size={14} />
                                                 </div>
                                                 Pix
-                                            </div>
+                                            </button>
+                                            {enableCreditCard && (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setPaymentMethod('credit_card')}
+                                                    style={{
+                                                        padding: '16px', borderRadius: 12, border: '1px solid',
+                                                        display: 'flex', alignItems: 'center', gap: 12, fontWeight: 700, cursor: 'pointer',
+                                                        background: paymentMethod === 'credit_card' ? 'rgba(99, 102, 241, 0.12)' : '#0a0a0c',
+                                                        borderColor: paymentMethod === 'credit_card' ? '#6366f1' : 'rgba(255,255,255,0.08)',
+                                                        color: paymentMethod === 'credit_card' ? '#6366f1' : '#94a3b8'
+                                                    }}
+                                                >
+                                                    <div style={{ width: 24, height: 24, borderRadius: '50%', background: paymentMethod === 'credit_card' ? '#6366f1' : 'rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: paymentMethod === 'credit_card' ? 'white' : '#94a3b8' }}>
+                                                        <FiCreditCard size={14} />
+                                                    </div>
+                                                    Cartão de crédito
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                     <div style={{ marginBottom: 20 }}>
@@ -403,9 +631,9 @@ export default function CartPage() {
                                         </div>
                                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: '#64748b', fontWeight: 500 }}>
                                             <span>Método</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#00cec9', fontWeight: 700 }}>
-                                                <FiZap size={14} />
-                                                Pix
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontWeight: 700, color: paymentMethod === 'pix' ? '#00cec9' : '#6366f1' }}>
+                                                {paymentMethod === 'pix' ? <FiZap size={14} /> : <FiCreditCard size={14} />}
+                                                {paymentMethod === 'pix' ? 'Pix' : 'Cartão de crédito'}
                                             </div>
                                         </div>
                                         <div style={{ height: 1, background: 'rgba(255,255,255,0.05)', margin: '8px 0' }} />
