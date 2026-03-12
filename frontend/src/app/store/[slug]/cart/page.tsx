@@ -118,7 +118,7 @@ export default function CartPage() {
                         street,
                         number,
                         neighborhood,
-                        zipcode: (cep || '').replace(/\D/g, ''),
+                        zip_code: (cep || '').replace(/\D/g, ''),
                         city,
                         state: (state || '').toUpperCase(),
                         country: 'BR',
