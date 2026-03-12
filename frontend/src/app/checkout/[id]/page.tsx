@@ -543,7 +543,7 @@ export default function CheckoutPage() {
                                     <input placeholder="Nome como está no cartão" required value={form.card_holder} onChange={e => update('card_holder', e.target.value)}
                                         style={{ width: '100%', padding: '12px 16px', borderRadius: 10, border: `1px solid ${borderColor}`, background: inputBg, color: textPrimary, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
                                 </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }} className="checkoutGrid3">
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 12 }} className="checkoutGrid3">
                                     <div>
                                         <label style={{ fontSize: 13, fontWeight: 500, color: textSecondary, marginBottom: 6, display: 'block' }}>Mês</label>
                                         <input placeholder="MM" maxLength={2} required value={form.card_exp_month} onChange={e => update('card_exp_month', e.target.value)}
@@ -557,6 +557,11 @@ export default function CheckoutPage() {
                                     <div>
                                         <label style={{ fontSize: 13, fontWeight: 500, color: textSecondary, marginBottom: 6, display: 'block' }}>CVV</label>
                                         <input placeholder="000" maxLength={4} required value={form.card_cvv} onChange={e => update('card_cvv', e.target.value)}
+                                            style={{ width: '100%', padding: '12px 16px', borderRadius: 10, border: `1px solid ${borderColor}`, background: inputBg, color: textPrimary, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: 13, fontWeight: 500, color: textSecondary, marginBottom: 6, display: 'block' }}>Parcelas</label>
+                                        <input type="number" min={1} max={12} required value={String(form.installments)} onChange={e => update('installments', e.target.value)}
                                             style={{ width: '100%', padding: '12px 16px', borderRadius: 10, border: `1px solid ${borderColor}`, background: inputBg, color: textPrimary, fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
                                     </div>
                                 </div>
