@@ -49,6 +49,22 @@ export default function CheckoutPage() {
         card_number: '', card_holder: '', card_exp_month: '', card_exp_year: '', card_cvv: '', installments: 1
     });
 
+    const isValidCPF = (v: string) => {
+        const s = (v || '').replace(/\D/g, '');
+        if (!s || s.length !== 11 || /^(\d)\1+$/.test(s)) return false;
+        let sum = 0; for (let i = 0; i < 9; i++) sum += parseInt(s[i]) * (10 - i);
+        let d1 = (sum * 10) % 11; if (d1 === 10) d1 = 0; if (d1 !== parseInt(s[9])) return false;
+        sum = 0; for (let i = 0; i < 10; i++) sum += parseInt(s[i]) * (11 - i);
+        let d2 = (sum * 10) % 11; if (d2 === 10) d2 = 0; return d2 === parseInt(s[10]);
+    };
+    const isValidCEP = (v: string) => /^\d{8}$/.test((v || '').replace(/\D/g, ''));
+    const UFs = ['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'];
+    const isValidUF = (v: string) => UFs.includes((v || '').toUpperCase());
+    const isValidPhone = (v: string) => {
+        const d = (v || '').replace(/\D/g, '');
+        return d.length >= 10 && d.length <= 11;
+    };
+ 
     useEffect(() => {
         if (params.id) loadProduct(params.id as string);
         return () => {
@@ -118,6 +134,13 @@ export default function CheckoutPage() {
         setProcessing(true);
         try {
             const methodToSend = enableCreditCard ? paymentMethod : 'pix';
+            if (!isValidCPF(form.cpf)) { toast.error('CPF inválido'); setProcessing(false); return; }
+            if (!isValidPhone(form.phone)) { toast.error('Telefone inválido'); setProcessing(false); return; }
+            if (methodToSend === 'credit_card') {
+                if (!isValidCEP(form.cep)) { toast.error('CEP inválido'); setProcessing(false); return; }
+                if (!isValidUF(form.state)) { toast.error('UF inválida'); setProcessing(false); return; }
+                if (!form.street || !form.number || !form.neighborhood || !form.city) { toast.error('Endereço incompleto'); setProcessing(false); return; }
+            }
             const payload: any = {
                 product_id: params.id,
                 payment_method: methodToSend,
