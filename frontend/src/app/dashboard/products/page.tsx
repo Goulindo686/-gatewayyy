@@ -306,8 +306,7 @@ export default function ProductsPage() {
                                             <div
                                                 key={idx}
                                                 style={{
-                                                    display: 'grid',
-                                                    gridTemplateColumns: '1fr 140px auto',
+                                                    display: 'flex',
                                                     gap: 10,
                                                     alignItems: 'center',
                                                     width: '100%'
@@ -317,7 +316,7 @@ export default function ProductsPage() {
                                                     type="text"
                                                     placeholder="Nome do plano (ex: Diário, Semanal)"
                                                     className="input-field"
-                                                    style={{ height: 48, pointerEvents: 'auto', width: '100%' }}
+                                                    style={{ height: 48, pointerEvents: 'auto', flex: 1, minWidth: 220 }}
                                                     value={pl.name}
                                                     onChange={e => setPlans(prev => prev.map((p, i) => i === idx ? { ...p, name: e.target.value } : p))}
                                                 />
@@ -327,7 +326,7 @@ export default function ProductsPage() {
                                                     min="0.01"
                                                     placeholder="Preço (R$)"
                                                     className="input-field"
-                                                    style={{ height: 48, pointerEvents: 'auto', width: '100%' }}
+                                                    style={{ height: 48, pointerEvents: 'auto', width: 160 }}
                                                     value={pl.price}
                                                     onChange={e => setPlans(prev => prev.map((p, i) => i === idx ? { ...p, price: e.target.value } : p))}
                                                 />
