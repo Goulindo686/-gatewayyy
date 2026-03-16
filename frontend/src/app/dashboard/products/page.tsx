@@ -299,15 +299,25 @@ export default function ProductsPage() {
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, marginBottom: 16 }}>
-                                <div>
+                                <div style={{ width: '100%' }}>
                                     <label style={{ display: 'block', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Plano e preço</label>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                         {plans.map((pl, idx) => (
-                                            <div key={idx} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr auto', gap: 8 }}>
+                                            <div
+                                                key={idx}
+                                                style={{
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'minmax(200px, 1.2fr) minmax(140px, 0.8fr) auto',
+                                                    gap: 10,
+                                                    alignItems: 'center',
+                                                    width: '100%'
+                                                }}
+                                            >
                                                 <input
                                                     type="text"
                                                     placeholder="Nome do plano (ex: Diário, Semanal)"
                                                     className="input-field"
+                                                    style={{ height: 48, pointerEvents: 'auto' }}
                                                     value={pl.name}
                                                     onChange={e => setPlans(prev => prev.map((p, i) => i === idx ? { ...p, name: e.target.value } : p))}
                                                 />
@@ -317,12 +327,14 @@ export default function ProductsPage() {
                                                     min="0.01"
                                                     placeholder="Preço (R$)"
                                                     className="input-field"
+                                                    style={{ height: 48, pointerEvents: 'auto' }}
                                                     value={pl.price}
                                                     onChange={e => setPlans(prev => prev.map((p, i) => i === idx ? { ...p, price: e.target.value } : p))}
                                                 />
                                                 <button
                                                     type="button"
                                                     className="btn-danger"
+                                                    style={{ height: 48, padding: '0 16px' }}
                                                     onClick={() => setPlans(prev => prev.filter((_, i) => i !== idx))}
                                                     disabled={plans.length <= 1}
                                                 >
@@ -333,6 +345,7 @@ export default function ProductsPage() {
                                         <button
                                             type="button"
                                             className="btn-secondary"
+                                            style={{ height: 46, alignSelf: 'flex-start' }}
                                             onClick={() => setPlans(prev => [...prev, { name: '', price: '' }])}
                                         >
                                             Adicionar plano
