@@ -48,8 +48,15 @@ export class PagarmeService {
     }) {
         const sellerPercentage = 100 - (data.platform_fee_percentage || 0);
 
-        // Robust Address Object with fallback to dummy only if absolutely missing
-        const address = data.customer.address || {
+        // Robust Address Object with fallback to dummy only if absolutely missing or incomplete
+        const isAddressComplete = (addr: any) => {
+            return addr && 
+                   addr.zip_code && addr.zip_code.length >= 8 &&
+                   addr.city && addr.city.trim() !== '' &&
+                   addr.state && addr.state.trim() !== '';
+        };
+
+        const address = isAddressComplete(data.customer.address) ? data.customer.address : {
             line_1: 'Rua Teste, 123, Centro',
             zip_code: '01001000',
             city: 'São Paulo',
@@ -172,7 +179,15 @@ export class PagarmeService {
     }) {
         const sellerPercentage = 100 - (data.platform_fee_percentage || 0);
 
-        const address = data.customer.address || {
+        // Robust Address Object with fallback to dummy only if absolutely missing or incomplete
+        const isAddressComplete = (addr: any) => {
+            return addr && 
+                   addr.zip_code && addr.zip_code.length >= 8 &&
+                   addr.city && addr.city.trim() !== '' &&
+                   addr.state && addr.state.trim() !== '';
+        };
+
+        const address = isAddressComplete(data.customer.address) ? data.customer.address : {
             line_1: 'Rua Teste, 123, Centro',
             zip_code: '01001000',
             city: 'São Paulo',

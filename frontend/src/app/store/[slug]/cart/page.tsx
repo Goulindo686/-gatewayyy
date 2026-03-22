@@ -133,16 +133,18 @@ export default function CartPage() {
                     email,
                     cpf,
                     phone,
-                    address: {
-                        street,
-                        number,
-                        neighborhood,
-                        zip_code: (cep || '').replace(/\D/g, ''),
-                        city,
-                        state: (state || '').toUpperCase(),
-                        country: 'BR',
-                        line_1: `${street || ''}, ${number || ''}, ${neighborhood || ''}`
-                    }
+                    ...(methodToSend === 'credit_card' ? {
+                        address: {
+                            street,
+                            number,
+                            neighborhood,
+                            zip_code: (cep || '').replace(/\D/g, ''),
+                            city,
+                            state: (state || '').toUpperCase(),
+                            country: 'BR',
+                            line_1: `${street || ''}, ${number || ''}, ${neighborhood || ''}`
+                        }
+                    } : {})
                 },
                 items: items.map(i => ({ id: i.id, quantity: i.quantity, price: i.price, name: i.name })),
                 payment_method: methodToSend,
