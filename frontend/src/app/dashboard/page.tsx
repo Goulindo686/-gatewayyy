@@ -147,7 +147,7 @@ export default function DashboardPage() {
                 position: 'relative'
             }}>
                 <img
-                    src="https://i.imgur.com/20tNSps.png"
+                    src="https://i.imgur.com/mJLULn8.jpeg"
                     alt="Banner do Dashboard"
                     loading="eager"
                     onError={(e) => {
