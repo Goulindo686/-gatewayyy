@@ -139,7 +139,7 @@ export default function DashboardPage() {
 
             <div className="dashboardBanner">
                 <img
-                    src="https://i.imgur.com/mJLULn8.jpeg"
+                    src="https://i.imgur.com/4H7HuXf.jpeg"
                     alt="Banner do Dashboard"
                     loading="eager"
                     onError={(e) => {
