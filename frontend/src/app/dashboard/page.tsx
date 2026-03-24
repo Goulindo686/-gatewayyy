@@ -147,11 +147,11 @@ export default function DashboardPage() {
                 position: 'relative'
             }}>
                 <img
-                    src="https://i.imgur.com/kBTtbPh.png"
+                    src="https://i.imgur.com/20tNSps.png"
                     alt="Banner do Dashboard"
                     loading="eager"
                     onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = 'https://i.imgur.com/kBTtbPh.jpg';
+                        (e.currentTarget as HTMLImageElement).src = 'https://i.imgur.com/20tNSps.jpg';
                     }}
                     style={{
                         width: '100%',
