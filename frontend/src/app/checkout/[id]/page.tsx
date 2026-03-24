@@ -39,19 +39,37 @@ const DEFAULT_SETTINGS = {
 function VideoPlayer({ settings, borderColor }: { settings: any, borderColor: string }) {
     if (!settings.show_video || !settings.video_url) return null;
 
-    const getDirectLink = (url: string) => {
-        if (!url) return '';
+    const getEmbedUrl = (url: string) => {
+        if (!url) return null;
+        
+        // YouTube
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            const id = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('/').pop()?.split('?')[0];
+            if (id) return `https://www.youtube.com/embed/${id}?autoplay=${settings.video_autoplay ? 1 : 0}&mute=${settings.video_muted ? 1 : 0}&loop=${settings.video_loop ? 1 : 0}&playlist=${id}&controls=${settings.video_controls ? 1 : 0}`;
+        }
+        
+        // Vimeo
+        if (url.includes('vimeo.com')) {
+            const id = url.split('/').pop()?.split('?')[0];
+            if (id) return `https://player.vimeo.com/video/${id}?autoplay=${settings.video_autoplay ? 1 : 0}&muted=${settings.video_muted ? 1 : 0}&loop=${settings.video_loop ? 1 : 0}&controls=${settings.video_controls ? 1 : 0}`;
+        }
+
+        // Google Drive
         if (url.includes('drive.google.com')) {
             const id = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1]?.split('&')[0];
             if (id) return `https://drive.google.com/uc?id=${id}&export=download`;
         }
+
+        // Dropbox
         if (url.includes('dropbox.com')) {
             return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
         }
+
         return url;
     };
 
-    const videoSrc = getDirectLink(settings.video_url);
+    const videoSrc = getEmbedUrl(settings.video_url);
+    const isIframe = videoSrc?.includes('youtube.com/embed') || videoSrc?.includes('player.vimeo.com/video');
 
     return (
         <div style={{ 
@@ -61,21 +79,32 @@ function VideoPlayer({ settings, borderColor }: { settings: any, borderColor: st
             background: '#000',
             border: `1px solid ${borderColor}`,
             lineHeight: 0,
-            marginBottom: 16
+            marginBottom: 16,
+            aspectRatio: '16/9',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
         }}>
-            <video
-                key={videoSrc}
-                controls={settings.video_controls}
-                autoPlay={settings.video_autoplay}
-                loop={settings.video_loop}
-                muted={settings.video_muted}
-                playsInline
-                preload="metadata"
-                style={{ width: '100%', display: 'block' }}
-            >
-                <source src={videoSrc} />
-                Seu navegador não suporta a tag de vídeo.
-            </video>
+            {isIframe ? (
+                <iframe
+                    src={videoSrc!}
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                />
+            ) : (
+                <video
+                    key={videoSrc}
+                    controls={settings.video_controls}
+                    autoPlay={settings.video_autoplay}
+                    loop={settings.video_loop}
+                    muted={settings.video_muted}
+                    playsInline
+                    preload="auto"
+                    style={{ width: '100%', height: '100%', display: 'block', objectFit: 'contain' }}
+                >
+                    <source src={videoSrc!} />
+                    Seu navegador não suporta a tag de vídeo.
+                </video>
+            )}
         </div>
     );
 }
@@ -459,11 +488,11 @@ export default function CheckoutPage() {
 
             <div
                 style={{ 
-                    maxWidth: 1000, 
+                    maxWidth: 1100, 
                     margin: `${hasBanner ? (hasCountdown ? '32px' : '0') : '0'} auto`, 
                     padding: hasBanner ? '0 24px 40px' : '40px 24px', 
                     display: 'grid', 
-                    gridTemplateColumns: '1fr 1fr', 
+                    gridTemplateColumns: 'minmax(0, 1.2fr) minmax(0, 0.8fr)', 
                     gap: 32, 
                     alignItems: 'start',
                     flex: 1,

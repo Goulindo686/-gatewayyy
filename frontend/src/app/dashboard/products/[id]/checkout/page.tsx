@@ -126,6 +126,38 @@ export default function CheckoutCustomizationPage() {
         }
     };
 
+    const getEmbedUrl = (url: string) => {
+        if (!url) return null;
+        
+        // YouTube
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+            const id = url.includes('v=') ? url.split('v=')[1]?.split('&')[0] : url.split('/').pop()?.split('?')[0];
+            if (id) return `https://www.youtube.com/embed/${id}?autoplay=${settings.video_autoplay ? 1 : 0}&mute=${settings.video_muted ? 1 : 0}&loop=${settings.video_loop ? 1 : 0}&playlist=${id}&controls=${settings.video_controls ? 1 : 0}`;
+        }
+        
+        // Vimeo
+        if (url.includes('vimeo.com')) {
+            const id = url.split('/').pop()?.split('?')[0];
+            if (id) return `https://player.vimeo.com/video/${id}?autoplay=${settings.video_autoplay ? 1 : 0}&muted=${settings.video_muted ? 1 : 0}&loop=${settings.video_loop ? 1 : 0}&controls=${settings.video_controls ? 1 : 0}`;
+        }
+
+        // Google Drive
+        if (url.includes('drive.google.com')) {
+            const id = url.split('/d/')[1]?.split('/')[0] || url.split('id=')[1]?.split('&')[0];
+            if (id) return `https://drive.google.com/uc?id=${id}&export=download`;
+        }
+
+        // Dropbox
+        if (url.includes('dropbox.com')) {
+            return url.replace('www.dropbox.com', 'dl.dropboxusercontent.com').replace('?dl=0', '').replace('&dl=0', '');
+        }
+
+        return url;
+    };
+
+    const videoSrcPreview = getEmbedUrl(settings.video_url);
+    const isIframePreview = videoSrcPreview?.includes('youtube.com/embed') || videoSrcPreview?.includes('player.vimeo.com/video');
+
     if (loading) {
         return (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>
@@ -284,15 +316,30 @@ export default function CheckoutCustomizationPage() {
                                          </div>
 
                                         {settings.video_url && (
-                                            <div style={{ position: 'relative', borderRadius: 10, overflow: 'hidden', border: '1px solid var(--border-color)', background: '#000' }}>
-                                                <video 
-                                                    key={settings.video_url}
-                                                    src={settings.video_url} 
-                                                    controls 
-                                                    muted
-                                                    playsInline
-                                                    style={{ width: '100%', height: 120, objectFit: 'contain' }} 
-                                                />
+                                            <div style={{ 
+                                                position: 'relative', 
+                                                borderRadius: 10, 
+                                                overflow: 'hidden', 
+                                                border: '1px solid var(--border-color)', 
+                                                background: '#000',
+                                                aspectRatio: '16/9',
+                                                width: '100%'
+                                            }}>
+                                                {isIframePreview ? (
+                                                    <iframe 
+                                                        src={videoSrcPreview!} 
+                                                        style={{ width: '100%', height: '100%', border: 'none' }} 
+                                                    />
+                                                ) : (
+                                                    <video 
+                                                        key={videoSrcPreview}
+                                                        src={videoSrcPreview!} 
+                                                        controls 
+                                                        muted
+                                                        playsInline
+                                                        style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                                                    />
+                                                )}
                                                 <button onClick={() => update('video_url', '')} style={{
                                                     position: 'absolute', top: 6, right: 6, width: 28, height: 28, borderRadius: 8,
                                                     background: 'rgba(0,0,0,0.7)', border: 'none', cursor: 'pointer', color: '#ff6b6b',
@@ -597,7 +644,7 @@ export default function CheckoutCustomizationPage() {
                             {/* Product card mini */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 {settings.show_video && settings.video_position === 'above_product' && (
-                                    <div style={{ background: '#000', borderRadius: 8, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ background: '#000', borderRadius: 8, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: 8 }}>
                                         <FiPlay size={20} color="white" />
                                     </div>
                                 )}
@@ -615,7 +662,7 @@ export default function CheckoutCustomizationPage() {
                                     </div>
                                 </div>
                                 {settings.show_video && settings.video_position === 'below_product' && (
-                                    <div style={{ background: '#000', borderRadius: 8, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ background: '#000', borderRadius: 8, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', marginTop: 8 }}>
                                         <FiPlay size={20} color="white" />
                                     </div>
                                 )}
@@ -624,7 +671,7 @@ export default function CheckoutCustomizationPage() {
                             {/* Form mini */}
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                 {settings.show_video && settings.video_position === 'above_checkout' && (
-                                    <div style={{ background: '#000', borderRadius: 8, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ background: '#000', borderRadius: 8, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: 8 }}>
                                         <FiPlay size={20} color="white" />
                                     </div>
                                 )}
@@ -644,7 +691,7 @@ export default function CheckoutCustomizationPage() {
                                     </div>
                                 </div>
                                 {settings.show_video && settings.video_position === 'below_checkout' && (
-                                    <div style={{ background: '#000', borderRadius: 8, height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                    <div style={{ background: '#000', borderRadius: 8, aspectRatio: '16/9', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', marginTop: 8 }}>
                                         <FiPlay size={20} color="white" />
                                     </div>
                                 )}
