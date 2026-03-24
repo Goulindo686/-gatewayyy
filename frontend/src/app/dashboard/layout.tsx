@@ -319,9 +319,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             onError={(e) => {
                                 (e.currentTarget as HTMLImageElement).src = '/logo.png';
                             }}
-                            style={{ width: 56, height: 56, objectFit: 'contain', flexShrink: 0 }}
+                            style={{ width: 72, height: 72, objectFit: 'contain', flexShrink: 0 }}
                         />
-                        <span style={{ fontSize: 18, fontWeight: 700, display: effectiveCollapsed ? 'none' : 'inline' }}>Gou<span className="gradient-text">Pay</span></span>
                     </div>
                     {!isMobile && (
                         <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} style={{
