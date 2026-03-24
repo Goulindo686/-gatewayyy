@@ -137,6 +137,31 @@ export default function DashboardPage() {
                 <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Visão geral do seu negócio</p>
             </div>
 
+            <div style={{
+                borderRadius: 18,
+                overflow: 'hidden',
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-card)',
+                marginBottom: 24,
+                height: 'clamp(120px, 18vw, 200px)',
+                position: 'relative'
+            }}>
+                <img
+                    src="https://i.imgur.com/kBTtbPh.png"
+                    alt="Banner do Dashboard"
+                    loading="eager"
+                    onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = 'https://i.imgur.com/kBTtbPh.jpg';
+                    }}
+                    style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        display: 'block'
+                    }}
+                />
+            </div>
+
             {/* Stat Cards */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16, marginBottom: 32 }}>
                 {statCards.map((card, i) => (
