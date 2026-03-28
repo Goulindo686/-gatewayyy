@@ -312,21 +312,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             }} className={`dashboard-aside${sidebarOpen ? ' open' : ''}`}>
                 {/* Logo */}
                 <div style={{
-                    padding: effectiveCollapsed ? '20px 10px' : '24px 16px',
+                    padding: effectiveCollapsed ? '20px 10px' : '20px 16px',
                     borderBottom: '1px solid var(--border-color)',
-                    display: effectiveCollapsed ? 'grid' : 'flex',
-                    gridTemplateColumns: effectiveCollapsed ? '32px 1fr 32px' : undefined,
+                    display: 'flex',
                     alignItems: 'center',
-                    justifyContent: effectiveCollapsed ? undefined : 'space-between',
+                    justifyContent: 'center',
+                    position: 'relative',
                     gap: 10
                 }}>
                     <div style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 10,
-                        justifyContent: effectiveCollapsed ? 'center' : 'flex-start',
-                        gridColumn: effectiveCollapsed ? '2' : undefined,
-                        justifySelf: effectiveCollapsed ? 'center' : undefined
+                        justifyContent: 'center',
                     }}>
                         {effectiveCollapsed ? (
                             <div style={{
@@ -368,8 +366,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border-color)',
                             background: 'var(--bg-card)', color: 'var(--text-primary)', display: 'flex',
                             alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                            gridColumn: effectiveCollapsed ? '3' : undefined,
-                            justifySelf: effectiveCollapsed ? 'end' : undefined
+                            position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)'
                         }}>
                             {sidebarCollapsed ? <FiChevronRight size={16} /> : <FiChevronLeft size={16} />}
                         </button>
