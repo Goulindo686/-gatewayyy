@@ -392,6 +392,7 @@ body {
   .landingHeaderBar {
     gap: 10px !important;
     padding: 8px 10px !important;
+    justify-content: space-between !important;
   }
 
   .landingHeaderCenter {
@@ -399,8 +400,13 @@ body {
   }
 
   .landingLogo img {
-    width: 36px !important;
-    height: 36px !important;
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .landingLogo {
+    gap: 6px !important;
+    flex-shrink: 0 !important;
   }
 
   .landingLogoText {

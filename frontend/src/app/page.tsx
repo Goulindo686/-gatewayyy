@@ -97,7 +97,7 @@ export default function LandingPage() {
                   alt="GouPay"
                   style={{ height: 32, width: 32, objectFit: 'contain', flexShrink: 0, display: 'block' }}
                 />
-                <span style={{ fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>GouPay</span>
+                <span className="landingLogoText" style={{ fontWeight: 800, fontSize: 18, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>GouPay</span>
               </div>
 
               <div style={{ flex: 1, display: 'flex', justifyContent: 'center' }} className="landingHeaderCenter">
