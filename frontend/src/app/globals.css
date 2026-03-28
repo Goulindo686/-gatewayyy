@@ -390,27 +390,31 @@ body {
   }
 
   .landingHeaderBar {
-    gap: 10px !important;
-    padding: 8px 10px !important;
-    justify-content: space-between !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 10px 14px !important;
+    align-items: center !important;
   }
 
   .landingHeaderCenter {
     display: none !important;
   }
 
-  .landingLogo img {
-    width: 28px !important;
-    height: 28px !important;
+  .landingLogo {
+    gap: 8px !important;
+    flex-shrink: 0 !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
 
-  .landingLogo {
-    gap: 6px !important;
-    flex-shrink: 0 !important;
+  .landingLogo img {
+    width: 30px !important;
+    height: 30px !important;
   }
 
   .landingLogoText {
-    font-size: 16px !important;
+    font-size: 20px !important;
+    font-weight: 800 !important;
   }
 
   .landingActions a {
