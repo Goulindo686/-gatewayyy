@@ -342,14 +342,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 overflow: 'hidden'
                             }}>
                                 <img
-                                    src="https://i.imgur.com/m8FJnz2.png"
+                                    src="/favicon.png"
                                     alt="GouPay"
-                                    onError={(e) => {
-                                        (e.currentTarget as HTMLImageElement).src = '/logo.png';
-                                    }}
                                     style={{
-                                        width: 56,
-                                        height: 56,
+                                        width: 40,
+                                        height: 40,
                                         objectFit: 'contain',
                                         display: 'block'
                                     }}
@@ -358,13 +355,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         ) : (
                             <>
                                 <img
-                                    src="https://i.imgur.com/vXgH6Mn.png"
+                                    src="/favicon.png"
                                     alt="GouPay Logo"
-                                    onError={(e) => {
-                                        (e.currentTarget as HTMLImageElement).src = '/logo.png';
-                                    }}
-                                    style={{ width: 160, height: 56, objectFit: 'contain', flexShrink: 0 }}
+                                    style={{ width: 32, height: 32, objectFit: 'contain', flexShrink: 0 }}
                                 />
+                                <span style={{ fontWeight: 800, fontSize: 20, color: 'var(--text-primary)', letterSpacing: '-0.5px' }}>GouPay</span>
                             </>
                         )}
                     </div>
