@@ -55,14 +55,33 @@ export default function SettingsPage() {
     };
 
     const enablePush = async () => {
+        // Detecta iOS
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+        
+        // Verifica suporte básico
         if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-            return toast.error('Seu navegador nao suporta notificacoes push.');
+            if (isIOS) {
+                return toast.error('Notificações push requerem iOS 16.4+ e Safari. Certifique-se de estar usando o Safari e que seu iOS está atualizado.', { duration: 6000 });
+            }
+            return toast.error('Seu navegador não suporta notificações push.');
         }
+
+        // No iOS, precisa adicionar à tela inicial primeiro
+        if (isIOS) {
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || 
+                               (window.navigator as any).standalone === true;
+            
+            if (!isStandalone) {
+                return toast.error('No iOS, você precisa adicionar este site à tela inicial primeiro. Toque no botão de compartilhar e selecione "Adicionar à Tela de Início".', { duration: 8000 });
+            }
+        }
+
         setPushLoading(true);
         try {
             const permission = await Notification.requestPermission();
             if (permission !== 'granted') {
-                toast.error('Permissao de notificacao negada.');
+                toast.error('Permissão de notificação negada.');
                 return;
             }
 
@@ -84,10 +103,10 @@ export default function SettingsPage() {
 
             setPushSubscribed(true);
             setPushSubscription(sub);
-            toast.success('Notificacoes push ativadas!');
+            toast.success('Notificações push ativadas!');
         } catch (err: any) {
             console.error(err);
-            toast.error(err.response?.data?.error || 'Erro ao ativar notificacoes push.');
+            toast.error(err.response?.data?.error || 'Erro ao ativar notificações push.');
         } finally {
             setPushLoading(false);
         }
@@ -592,6 +611,28 @@ console.log(data.pix.qr_code); // Pix Copia e Cola`}
                                     <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 16 }}>
                                         Receba notificações nativas no seu celular ou computador — igual à Kiwify e Cakto. Funciona em Chrome, Edge, Firefox e Safari (iOS 16.4+).
                                     </p>
+
+                                    {/* Aviso iOS */}
+                                    {(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) && (
+                                        <div style={{ 
+                                            padding: 16, 
+                                            background: 'rgba(245, 158, 11, 0.1)', 
+                                            border: '1px solid rgba(245, 158, 11, 0.3)',
+                                            borderRadius: 8, 
+                                            marginBottom: 16,
+                                            fontSize: 13,
+                                            color: '#d97706',
+                                            lineHeight: 1.6
+                                        }}>
+                                            <strong>📱 Usuários iOS:</strong> Para ativar notificações push no iPhone/iPad:
+                                            <ol style={{ marginTop: 8, marginLeft: 20, marginBottom: 0 }}>
+                                                <li>Certifique-se de estar usando o Safari (não Chrome ou outros navegadores)</li>
+                                                <li>Toque no botão de compartilhar (ícone de quadrado com seta)</li>
+                                                <li>Selecione "Adicionar à Tela de Início"</li>
+                                                <li>Abra o app pela tela inicial e ative as notificações aqui</li>
+                                            </ol>
+                                        </div>
+                                    )}
 
                                     {pushSubscribed ? (
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
