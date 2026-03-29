@@ -34,13 +34,24 @@ export default function WithdrawalsPage() {
 
     const handleVerify = async () => {
         setVerifying(true);
+        // Abre a janela ANTES do await para não ser bloqueado pelo Safari no iPhone
+        const newWindow = window.open('', '_blank');
         try {
             const { data } = await authAPI.getKycLink();
             if (data.url) {
-                window.open(data.url, '_blank');
-                toast.success('Link de verificação aberto em nova aba!');
+                if (newWindow) {
+                    newWindow.location.href = data.url;
+                } else {
+                    // Fallback: redireciona na mesma aba se popup foi bloqueado
+                    window.location.href = data.url;
+                }
+                toast.success('Link de verificação aberto!');
+            } else {
+                newWindow?.close();
+                toast.error('Não foi possível gerar o link de verificação');
             }
         } catch (err: any) {
+            newWindow?.close();
             toast.error(err.response?.data?.error || 'Erro ao gerar link de verificação');
         } finally {
             setVerifying(false);
