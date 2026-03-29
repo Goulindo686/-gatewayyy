@@ -643,7 +643,6 @@ console.log(data.pix.qr_code); // Pix Copia e Cola`}
                                                 <li>Ative as notificações aqui</li>
                                             </ol>
                                         </div>
-                                    )}                                        </div>
                                     )}
 
                                     {pushSubscribed ? (
