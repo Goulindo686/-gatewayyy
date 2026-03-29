@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { dashboardAPI } from '@/lib/api';
@@ -200,8 +200,17 @@ export default function DashboardPage() {
                 background: 'var(--bg-card)', border: '1px solid var(--border-color)',
                 borderRadius: 16, padding: 24, marginBottom: 32
             }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 24 }}>Vendas por Mês</h3>
-                <div style={{ height: 300 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+                    <div>
+                        <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 4 }}>Vendas por Mês</h3>
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)' }}>Receita acumulada nos últimos meses</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#6c5ce7' }} />
+                        <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Vendas (R$)</span>
+                    </div>
+                </div>
+                <div style={{ height: 340 }}>
                     <Line data={chartData} options={chartOptions as any} />
                 </div>
             </div>
