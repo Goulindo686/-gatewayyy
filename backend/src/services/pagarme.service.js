@@ -7,23 +7,15 @@ class PagarmeService {
      */
     async createRecipient(seller) {
         try {
-            const cleanDoc = (seller.cpf_cnpj || '').replace(/[^\d]/g, '');
-
-            if (!cleanDoc || cleanDoc.length < 11) {
-                throw new Error('CPF/CNPJ inválido ou não informado');
-            }
-
-            const isCompany = cleanDoc.length > 11;
-
             const recipientData = {
                 name: seller.name,
                 email: seller.email,
-                document: cleanDoc,
-                type: isCompany ? 'company' : 'individual',
+                document: seller.cpf_cnpj?.replace(/[^\d]/g, ''),
+                type: seller.cpf_cnpj?.replace(/[^\d]/g, '').length > 11 ? 'company' : 'individual',
                 default_bank_account: {
                     holder_name: seller.name?.substring(0, 30),
-                    holder_type: isCompany ? 'company' : 'individual',
-                    holder_document: cleanDoc,
+                    holder_type: seller.cpf_cnpj?.replace(/[^\d]/g, '').length > 11 ? 'company' : 'individual',
+                    holder_document: seller.cpf_cnpj?.replace(/[^\d]/g, ''),
                     bank: seller.bank_name || '001',
                     branch_number: seller.bank_agency || '0001',
                     branch_check_digit: '0',

@@ -317,40 +317,6 @@ class AuthController {
                 store_active: user.store_active
             }));
 
-            // Tentar criar/atualizar recipient no Pagar.me se dados bancários foram salvos
-            // e o recipient ainda está pendente
-            const hasBankData = user.bank_name && user.bank_agency && user.bank_account;
-            const hasDocument = user.cpf_cnpj && user.cpf_cnpj.replace(/[^\d]/g, '').length >= 11;
-
-            if (hasBankData && hasDocument) {
-                const { data: recipient } = await supabase
-                    .from('recipients')
-                    .select('*')
-                    .eq('user_id', user.id)
-                    .single();
-
-                if (!recipient?.pagarme_recipient_id) {
-                    try {
-                        const pagarmeRecipient = await pagarmeService.createRecipient(user);
-                        await supabase
-                            .from('recipients')
-                            .upsert({
-                                user_id: user.id,
-                                pagarme_recipient_id: pagarmeRecipient.id,
-                                status: pagarmeRecipient.status || 'active'
-                            }, { onConflict: 'user_id' });
-                        console.log(`[BACKEND AUTH] Recipient created on Pagar.me: ${pagarmeRecipient.id}`);
-                        return res.json({ user, message: 'Perfil e dados bancários salvos com sucesso!' });
-                    } catch (pagarmeError) {
-                        console.error('[BACKEND AUTH] Failed to create Pagar.me recipient:', pagarmeError.response?.data || pagarmeError.message);
-                        const pagarmeMsg = pagarmeError.response?.data?.errors?.[0]?.message
-                            || pagarmeError.response?.data?.message
-                            || pagarmeError.message;
-                        return res.json({ user, message: `Perfil salvo, mas erro no Pagar.me: ${pagarmeMsg}` });
-                    }
-                }
-            }
-
             res.json({ user, message: 'Perfil atualizado com sucesso!' });
         } catch (error) {
             console.error('[BACKEND AUTH] updateProfile error:', error);
