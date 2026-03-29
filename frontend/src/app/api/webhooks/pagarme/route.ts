@@ -261,7 +261,6 @@ export async function POST(req: NextRequest) {
                     title: '💰 Venda Aprovada!',
                     body: `${productName} • ${amountFormatted}`,
                     url: '/dashboard',
-                    icon: '/favicon.png',
                 });
             } catch (pushError) {
                 console.error('Error sending Push notification:', pushError);
