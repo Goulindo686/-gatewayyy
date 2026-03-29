@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { dashboardAPI } from '@/lib/api';
-import { FiDollarSign, FiTrendingUp, FiPackage, FiShoppingCart, FiArrowDown, FiPercent, FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi';
+import { FiDollarSign, FiTrendingUp, FiPackage, FiShoppingCart, FiArrowDown, FiArrowUpRight, FiArrowDownRight } from 'react-icons/fi';
 import { Line, Bar } from 'react-chartjs-2';
 import { useSearchParams } from 'next/navigation';
 import {
@@ -35,7 +35,7 @@ export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState<{ monthly_sales: any[]; recent_orders: any[] } | null>(null);
-    const [activeTab, setActiveTab] = useState<'vendas' | 'receita' | 'taxas'>('vendas');
+    const [activeTab, setActiveTab] = useState<'vendas' | 'receita'>('vendas');
     const chartRef = useRef<any>(null);
     const searchParams = useSearchParams();
 
@@ -71,7 +71,6 @@ export default function DashboardPage() {
     const datasetMap = {
         vendas: { key: 'amount', color: '#6c5ce7', label: 'Vendas Brutas' },
         receita: { key: 'net_revenue', color: '#00cec9', label: 'Receita Líquida' },
-        taxas: { key: 'fees', color: '#ff6b6b', label: 'Taxas Pagas' },
     };
 
     const active = datasetMap[activeTab];
@@ -184,11 +183,6 @@ export default function DashboardPage() {
             label: 'Total Sacado', value: stats?.stats?.total_withdrawn || '0.00',
             icon: <FiArrowDown size={18} />, color: '#74b9ff', trend: '-2%', up: false,
             spark: [50, 45, 48, 42, 46, 40, 44, 38]
-        },
-        {
-            label: 'Taxas Pagas', value: stats?.stats?.total_fees || '0.00',
-            icon: <FiPercent size={18} />, color: '#ff6b6b', trend: '+1%', up: false,
-            spark: [10, 14, 12, 16, 14, 18, 16, 20]
         },
         {
             label: 'Produtos', value: stats?.stats?.total_products || 0,
@@ -304,11 +298,11 @@ export default function DashboardPage() {
                             <p style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Evolução mensal das métricas</p>
                         </div>
                         <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 4 }}>
-                            {(['vendas', 'receita', 'taxas'] as const).map(tab => (
+                            {(['vendas', 'receita'] as const).map(tab => (
                                 <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`}
                                     style={activeTab === tab ? { background: datasetMap[tab].color } : {}}
                                     onClick={() => setActiveTab(tab)}>
-                                    {tab === 'vendas' ? 'Vendas' : tab === 'receita' ? 'Receita' : 'Taxas'}
+                                    {tab === 'vendas' ? 'Vendas' : 'Receita'}
                                 </button>
                             ))}
                         </div>
@@ -355,7 +349,6 @@ export default function DashboardPage() {
                         {[
                             { label: 'Vendas Brutas', color: '#6c5ce7', pct: 100 },
                             { label: 'Receita Líquida', color: '#00cec9', pct: 95 },
-                            { label: 'Taxas', color: '#ff6b6b', pct: 5 },
                         ].map((item, i) => (
                             <div key={i} style={{ marginBottom: 14 }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
