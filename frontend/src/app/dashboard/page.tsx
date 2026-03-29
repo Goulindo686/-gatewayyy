@@ -12,10 +12,263 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Filler, Legend);
 
+// TypeScript Interfaces
+interface MonthlySale {
+    month: string;
+    amount: number;
+    net_revenue?: number;
+    fees?: number;
+}
+
+interface ChartDataset {
+    label: string;
+    data: number[];
+    borderColor: string;
+    backgroundColor: string | CanvasGradient;
+    fill: boolean;
+    tension: number;
+    pointBackgroundColor: string;
+    pointBorderColor: string;
+    pointBorderWidth: number;
+    pointRadius: number;
+    pointHoverRadius?: number;
+    pointHoverBorderWidth?: number;
+}
+
+interface ChartConfiguration {
+    labels: string[];
+    datasets: ChartDataset[];
+}
+
+// Helper function to calculate derived metrics
+function calculateDerivedMetrics(monthlySales: MonthlySale[]): MonthlySale[] {
+    return monthlySales.map(sale => ({
+        ...sale,
+        fees: sale.fees ?? sale.amount * 0.05,
+        net_revenue: sale.net_revenue ?? sale.amount * 0.95,
+    }));
+}
+
+/**
+ * Creates a linear gradient for chart dataset background
+ * @param ctx - Canvas rendering context (can be null)
+ * @param color - Hex color string (e.g., '#6c5ce7')
+ * @param opacity - Starting opacity value (0-1), defaults to 0.4
+ * @returns CanvasGradient if context available, otherwise color string with opacity
+ */
+function createGradient(
+    ctx: CanvasRenderingContext2D | null,
+    color: string,
+    opacity: number = 0.4
+): string | CanvasGradient {
+    // Fallback to solid color with opacity when context not available
+    if (!ctx) {
+        const opacityHex = Math.round(opacity * 255).toString(16).padStart(2, '0');
+        return `${color}${opacityHex}`;
+    }
+
+    // Create linear gradient from top (40% opacity) to bottom (0% opacity)
+    const gradient = ctx.createLinearGradient(0, 0, 0, 340);
+    const startOpacityHex = Math.round(opacity * 255).toString(16).padStart(2, '0');
+    gradient.addColorStop(0, `${color}${startOpacityHex}`);
+    gradient.addColorStop(1, `${color}00`);
+    
+    return gradient;
+}
+
+/**
+ * Gets a CSS variable value from the document with fallback
+ * @param variable - CSS variable name (e.g., '--bg-card')
+ * @param fallback - Fallback value if variable not defined
+ * @returns The CSS variable value or fallback
+ */
+function getThemeColor(variable: string, fallback: string): string {
+    if (typeof window === 'undefined') return fallback;
+    
+    const value = getComputedStyle(document.documentElement)
+        .getPropertyValue(variable)
+        .trim();
+    
+    return value || fallback;
+}
+
+/**
+ * Creates chart configuration with responsive options based on viewport
+ * @param monthlySalesData - Array of monthly sales data with metrics
+ * @param viewportWidth - Current viewport width in pixels
+ * @returns Chart.js configuration object
+ */
+function createChartData(monthlySalesData: MonthlySale[], viewportWidth: number): ChartConfiguration {
+    return {
+        labels: monthlySalesData.map((m: any) => m.month),
+        datasets: [
+            {
+                label: 'Vendas Brutas',
+                data: monthlySalesData.map((m: any) => m.amount),
+                borderColor: '#6c5ce7',
+                backgroundColor: createGradient(null, '#6c5ce7', 0.4),
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#6c5ce7',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            },
+            {
+                label: 'Receita Líquida',
+                data: monthlySalesData.map((m: any) => m.net_revenue),
+                borderColor: '#00cec9',
+                backgroundColor: createGradient(null, '#00cec9', 0.4),
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#00cec9',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            },
+            {
+                label: 'Taxas Pagas',
+                data: monthlySalesData.map((m: any) => m.fees),
+                borderColor: '#ff6b6b',
+                backgroundColor: createGradient(null, '#ff6b6b', 0.4),
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: '#ff6b6b',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2,
+                pointRadius: 5,
+                pointHoverRadius: 7,
+            }
+        ]
+    };
+}
+
+/**
+ * Creates responsive chart options based on viewport width
+ * @param viewportWidth - Current viewport width in pixels
+ * @returns Chart.js options configuration
+ */
+function createChartOptions(viewportWidth: number) {
+    // Responsive font size: 20% smaller on screens < 640px
+    const baseFontSize = viewportWidth < 640 ? 9.6 : 12;
+    
+    // Responsive legend position: bottom on mobile, top on desktop
+    const legendPosition: 'bottom' | 'top' = viewportWidth < 768 ? 'bottom' : 'top';
+
+    return {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: {
+            duration: 1500,
+            easing: 'easeInOutQuart' as const,
+        },
+        plugins: {
+            legend: {
+                display: true,
+                position: legendPosition,
+                align: 'end' as const,
+                labels: {
+                    usePointStyle: true,
+                    pointStyle: 'circle' as const,
+                    font: {
+                        size: baseFontSize,
+                        family: 'Inter',
+                        weight: '500',
+                    },
+                    color: getThemeColor('--text-secondary', '#55556a'),
+                    generateLabels: (chart: any) => {
+                        const datasets = chart.data.datasets;
+                        return datasets.map((dataset: any, i: number) => {
+                            const meta = chart.getDatasetMeta(i);
+                            const isHidden = meta.hidden;
+                            
+                            return {
+                                text: dataset.label,
+                                fillStyle: dataset.borderColor,
+                                strokeStyle: dataset.borderColor,
+                                lineWidth: 2,
+                                hidden: isHidden,
+                                datasetIndex: i,
+                                // Apply 50% opacity when dataset is hidden
+                                fontColor: isHidden ? 'rgba(85, 85, 106, 0.5)' : getThemeColor('--text-secondary', '#55556a'),
+                            };
+                        });
+                    },
+                },
+                onClick: (_e: any, legendItem: any, legend: any) => {
+                    const index = legendItem.datasetIndex;
+                    const chart = legend.chart;
+                    const meta = chart.getDatasetMeta(index);
+                    
+                    // Toggle dataset visibility
+                    meta.hidden = meta.hidden === null ? !chart.data.datasets[index].hidden : !meta.hidden;
+                    
+                    // Update chart to reflect changes
+                    chart.update();
+                }
+            },
+            tooltip: {
+                mode: 'index',
+                intersect: false,
+                backgroundColor: getThemeColor('--bg-card', '#16161f'),
+                borderColor: getThemeColor('--border-color', '#2a2a3a'),
+                borderWidth: 1,
+                titleColor: getThemeColor('--text-primary', '#ffffff'),
+                bodyColor: getThemeColor('--text-secondary', '#55556a'),
+                padding: 12,
+                cornerRadius: 10,
+                callbacks: {
+                    label: (ctx: any) => {
+                        const label = ctx.dataset.label || '';
+                        const value = ctx.parsed.y;
+                        const formattedValue = value.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        });
+                        return `${label}: R$ ${formattedValue}`;
+                    }
+                }
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    color: `rgba(${getThemeColor('--border-color-rgb', '42, 42, 58')}, 0.2)`,
+                    lineWidth: 1,
+                    drawBorder: false,
+                    drawTicks: false,
+                    borderDash: [5, 5],
+                },
+                ticks: { 
+                    color: getThemeColor('--text-muted', '#55556a'), 
+                    font: { size: baseFontSize } 
+                }
+            },
+            y: {
+                grid: {
+                    color: `rgba(${getThemeColor('--border-color-rgb', '42, 42, 58')}, 0.2)`,
+                    lineWidth: 1,
+                    drawBorder: false,
+                    drawTicks: false,
+                    borderDash: [5, 5],
+                },
+                ticks: { 
+                    color: getThemeColor('--text-muted', '#55556a'), 
+                    font: { size: baseFontSize }, 
+                    callback: (v: any) => `R${v}` 
+                }
+            }
+        }
+    };
+}
+
 export default function DashboardPage() {
     const [stats, setStats] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [period, setPeriod] = useState<{ monthly_sales: any[]; recent_orders: any[] } | null>(null);
+    const [viewportWidth, setViewportWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 1024);
     const searchParams = useSearchParams();
 
     useEffect(() => {
@@ -34,6 +287,24 @@ export default function DashboardPage() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
 
+    // Responsive resize listener with throttling (300ms debounce)
+    useEffect(() => {
+        let timeoutId: NodeJS.Timeout;
+        
+        const handleResize = () => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                setViewportWidth(window.innerWidth);
+            }, 300);
+        };
+        
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(timeoutId);
+        };
+    }, []);
+
     const loadStats = async (params?: any) => {
         setLoading(true);
         try {
@@ -45,6 +316,7 @@ export default function DashboardPage() {
             setLoading(false);
         }
     };
+    
     const loadPeriod = async (params?: any) => {
         try {
             const { data } = await dashboardAPI.getStats(params || {});
@@ -57,53 +329,15 @@ export default function DashboardPage() {
         }
     };
 
- 
+    // Get monthly sales data with derived metrics
+    const monthlySalesData = calculateDerivedMetrics(period?.monthly_sales || stats?.monthly_sales || []);
 
-    const chartData = {
-        labels: (period?.monthly_sales || stats?.monthly_sales || []).map((m: any) => m.month),
-        datasets: [{
-            label: 'Vendas (R$)',
-            data: (period?.monthly_sales || stats?.monthly_sales || []).map((m: any) => m.amount),
-            borderColor: '#6c5ce7',
-            backgroundColor: 'rgba(108, 92, 231, 0.1)',
-            fill: true,
-            tension: 0.4,
-            pointBackgroundColor: '#6c5ce7',
-            pointBorderColor: '#fff',
-            pointBorderWidth: 2,
-            pointRadius: 5,
-        }]
-    };
+    // Responsive chart height: 250px for mobile (< 768px), 340px for desktop
+    const chartHeight = viewportWidth < 768 ? 250 : 340;
 
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                backgroundColor: 'var(--bg-card)',
-                borderColor: 'var(--border-color)',
-                borderWidth: 1,
-                titleColor: 'var(--text-primary)',
-                bodyColor: 'var(--text-secondary)',
-                padding: 12,
-                cornerRadius: 10,
-                callbacks: {
-                    label: (ctx: any) => `R$ ${ctx.parsed.y.toFixed(2)}`
-                }
-            }
-        },
-        scales: {
-            x: {
-                grid: { color: 'rgba(42,42,58,0.3)' },
-                ticks: { color: '#55556a', font: { size: 12 } }
-            },
-            y: {
-                grid: { color: 'rgba(42,42,58,0.3)' },
-                ticks: { color: '#55556a', font: { size: 12 }, callback: (v: any) => `R$${v}` }
-            }
-        }
-    };
+    // Create chart data and options with responsive configuration
+    const chartData = createChartData(monthlySalesData, viewportWidth);
+    const chartOptions = createChartOptions(viewportWidth);
 
     const statCards = [
         { label: 'Saldo Disponível', value: stats?.stats?.available_balance || '0.00', icon: <FiDollarSign size={20} />, color: '#00cec9' },
@@ -210,8 +444,24 @@ export default function DashboardPage() {
                         <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Vendas (R$)</span>
                     </div>
                 </div>
-                <div style={{ height: 340 }}>
-                    <Line data={chartData} options={chartOptions as any} />
+                <div style={{ height: chartHeight, transition: 'opacity 300ms ease-in-out' }}>
+                    {monthlySalesData.length === 0 ? (
+                        <div style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            height: '100%',
+                            color: 'var(--text-muted)'
+                        }}>
+                            <FiTrendingUp size={48} style={{ marginBottom: 16, opacity: 0.5 }} />
+                            <p style={{ fontSize: 14, textAlign: 'center' }}>
+                                Nenhum dado de vendas disponível para o período selecionado
+                            </p>
+                        </div>
+                    ) : (
+                        <Line data={chartData} options={chartOptions as any} />
+                    )}
                 </div>
             </div>
 
