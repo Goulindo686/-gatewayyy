@@ -572,7 +572,7 @@ export default function CheckoutCustomizationPage() {
                 </div>
 
                 {/* LIVE PREVIEW */}
-                <div className="glass-card" style={{ padding: 0, overflow: 'hidden', position: isMobile ? 'relative' : 'sticky', top: isMobile ? undefined : 80 }}>
+                <div className="glass-card" style={{ padding: 0, overflow: 'hidden', position: isMobile ? 'relative' : 'sticky', top: isMobile ? undefined : 80, width: '100%' }}>
                     <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 600 }}>
                         <FiEye size={14} /> Preview ao Vivo
                     </div>
@@ -636,7 +636,7 @@ export default function CheckoutCustomizationPage() {
                         <div style={{ 
                             padding: '16px', 
                             display: 'grid', 
-                            gridTemplateColumns: '1fr 1fr', 
+                            gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', 
                             gap: 12,
                             flex: 1,
                             alignContent: (settings.banner_url || settings.banner_text) ? 'start' : 'center'
