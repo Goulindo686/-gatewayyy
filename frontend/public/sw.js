@@ -1,5 +1,16 @@
 // Service Worker — Web Push Notifications
 // Registrado automaticamente pelo painel quando o vendedor ativa as notificacoes
+// v2 — icone atualizado
+
+const CACHE_VERSION = 'v2';
+
+self.addEventListener('install', function(event) {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', function(event) {
+    event.waitUntil(clients.claim());
+});
 
 self.addEventListener('push', function (event) {
     if (!event.data) return;
