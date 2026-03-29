@@ -634,13 +634,20 @@ console.log(data.pix.qr_code); // Pix Copia e Cola`}
                                             color: '#d97706',
                                             lineHeight: 1.6
                                         }}>
-                                            <strong>📱 Usuários iOS:</strong> Para ativar notificações push no iPhone/iPad:
-                                            <ol style={{ marginTop: 8, marginLeft: 20, marginBottom: 0 }}>
-                                                <li>Certifique-se de estar usando o Safari (não Chrome ou outros navegadores)</li>
-                                                <li>Toque no botão de compartilhar (ícone de quadrado com seta)</li>
-                                                <li>Selecione "Adicionar à Tela de Início"</li>
-                                                <li>Abra o app pela tela inicial e ative as notificações aqui</li>
+                                            <strong style={{ fontSize: 14, display: 'block', marginBottom: 8 }}>📱 iPhone/iPad - Como Ativar Push</strong>
+                                            <p style={{ marginBottom: 8, fontSize: 12 }}>
+                                                Seu iPhone <strong>suporta notificações push</strong>, mas precisa seguir estes passos:
+                                            </p>
+                                            <ol style={{ marginTop: 8, marginLeft: 20, marginBottom: 8, fontSize: 12 }}>
+                                                <li style={{ marginBottom: 4 }}>Abra este site no <strong>Safari</strong> (não funciona no Chrome)</li>
+                                                <li style={{ marginBottom: 4 }}>Toque no botão <strong>Compartilhar</strong> (quadrado com seta para cima)</li>
+                                                <li style={{ marginBottom: 4 }}>Role para baixo e toque em <strong>"Adicionar à Tela de Início"</strong></li>
+                                                <li style={{ marginBottom: 4 }}>Abra o app GouPay pela <strong>tela inicial</strong> (não pelo Safari)</li>
+                                                <li>Volte aqui e clique em <strong>"Ativar Notificações Push"</strong></li>
                                             </ol>
+                                            <p style={{ fontSize: 11, marginTop: 8, opacity: 0.9 }}>
+                                                ℹ️ Isso é uma limitação do iOS. Funciona perfeitamente após instalar como PWA.
+                                            </p>
                                         </div>
                                     )}
 
