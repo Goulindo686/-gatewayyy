@@ -204,31 +204,31 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section ref={heroRef} style={{ position: 'relative', height: 'clamp(520px, 78vh, 820px)', overflow: 'hidden', background: '#07071a' }} className="landingHero">
+      <section ref={heroRef} style={{ position: 'relative', height: 'clamp(520px, 78vh, 820px)', overflow: 'hidden', background: '#f8f8fc' }} className="landingHero">
         {/* Banner animado exclusivo GouPay */}
         <HeroBanner />
         <div style={{ position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', height: '100%', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }} className="landingHeroInner">
             <div style={{ width: 'min(520px, 100%)', pointerEvents: 'auto', transform: 'translateX(180px)' }} className="landingHeroCopy">
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: 'rgba(0,206,201,0.12)', border: '1px solid rgba(0,206,201,0.18)', color: '#00cec9', fontSize: 12, fontWeight: 800, letterSpacing: 0.4, marginBottom: 14 }}>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, padding: '8px 14px', borderRadius: 999, background: 'rgba(108,92,231,0.1)', border: '1px solid rgba(108,92,231,0.2)', color: '#6c5ce7', fontSize: 12, fontWeight: 800, letterSpacing: 0.4, marginBottom: 14 }}>
                 <FiTrendingUp size={16} />
                 Aumente sua conversão hoje
               </div>
 
-              <div style={{ borderRadius: 22, border: '1px solid rgba(255,255,255,0.14)', background: 'rgba(10,10,15,0.55)', backdropFilter: 'blur(14px)', boxShadow: '0 26px 88px rgba(0,0,0,0.45)', padding: 22 }} className="landingHeroCard">
-                <h1 style={{ fontSize: 42, lineHeight: 1.05, letterSpacing: -1.2, fontWeight: 900, marginBottom: 12, color: 'white' }} className="landingHeroTitle">
+              <div style={{ borderRadius: 22, border: '1px solid rgba(108,92,231,0.12)', background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', boxShadow: '0 26px 88px rgba(108,92,231,0.12)', padding: 22 }} className="landingHeroCard">
+                <h1 style={{ fontSize: 42, lineHeight: 1.05, letterSpacing: -1.2, fontWeight: 900, marginBottom: 12, color: '#1a1a2e' }} className="landingHeroTitle">
                   Venda mais.<br />Pague menos.
                 </h1>
-                <p style={{ color: 'rgba(255,255,255,0.78)', fontSize: 15, lineHeight: 1.75, marginBottom: 12 }} className="landingHeroSubtitle">
-                  Checkout de alta conversão, Pix instantâneo e a taxa mais justa do mercado: apenas <span style={{ color: '#00cec9', fontWeight: 700 }}>R$1,50 + 1,09%</span> por venda.
+                <p style={{ color: '#4a4a6a', fontSize: 15, lineHeight: 1.75, marginBottom: 12 }} className="landingHeroSubtitle">
+                  Checkout de alta conversão, Pix instantâneo e a taxa mais justa do mercado: apenas <span style={{ color: '#6c5ce7', fontWeight: 700 }}>R$1,50 + 1,09%</span> por venda.
                 </p>
 
                 {/* Taxa destaque */}
                 <div style={{ display: 'flex', gap: 10, marginBottom: 16, flexWrap: 'wrap' }}>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, background: 'rgba(0,206,201,0.15)', border: '1px solid rgba(0,206,201,0.25)', color: '#00cec9', fontSize: 13, fontWeight: 700 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, background: 'rgba(108,92,231,0.1)', border: '1px solid rgba(108,92,231,0.2)', color: '#6c5ce7', fontSize: 13, fontWeight: 700 }}>
                     <FiZap size={14} /> R$1,50 fixo por venda
                   </div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.14)', color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: 600 }}>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '7px 13px', borderRadius: 999, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.08)', color: '#4a4a6a', fontSize: 13, fontWeight: 600 }}>
                     + 1,09% do gateway
                   </div>
                 </div>
@@ -237,7 +237,7 @@ export default function LandingPage() {
                   <Link href="/register" className="btn-primary" style={{ padding: '14px 20px', fontSize: 14, display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999 }}>
                     Criar conta grátis <FiArrowRight size={16} />
                   </Link>
-                  <Link href="#features" className="btn-secondary" style={{ padding: '14px 20px', fontSize: 14, borderRadius: 999, background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.16)', color: 'white' }}>
+                  <Link href="#features" style={{ padding: '14px 20px', fontSize: 14, borderRadius: 999, background: 'rgba(108,92,231,0.08)', border: '1px solid rgba(108,92,231,0.15)', color: '#6c5ce7', textDecoration: 'none', fontWeight: 600, display: 'inline-flex', alignItems: 'center' }}>
                     Ver recursos
                   </Link>
                 </div>
