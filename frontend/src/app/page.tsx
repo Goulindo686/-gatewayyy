@@ -204,7 +204,7 @@ export default function LandingPage() {
       </header>
 
       {/* Hero */}
-      <section ref={heroRef} style={{ position: 'relative', height: 'clamp(520px, 78vh, 820px)', overflow: 'hidden', background: '#0a0a0f' }} className="landingHero">
+      <section ref={heroRef} style={{ position: 'relative', height: 'clamp(680px, 92vh, 1000px)', overflow: 'hidden', background: '#0a0a0f' }} className="landingHero">
         {/* Vídeo de fundo */}
         <video
           autoPlay
@@ -218,7 +218,7 @@ export default function LandingPage() {
             display: 'block',
           }}
         >
-          <source src="https://i.imgur.com/B7vEUT1.mp4" type="video/mp4" />
+          <source src="https://i.imgur.com/15GSPhI.mp4" type="video/mp4" />
         </video>
         <div style={{ position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', height: '100%', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }} className="landingHeroInner">
