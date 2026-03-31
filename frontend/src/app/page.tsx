@@ -203,7 +203,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero — estilo roxo 3D com globo e cards flutuantes */}
+      {/* Hero — fundo imagem + texto esquerda */}
       <section
         ref={heroRef}
         style={{
@@ -213,48 +213,39 @@ export default function LandingPage() {
           paddingTop: 'calc(env(safe-area-inset-top) + 110px)',
           paddingBottom: 60,
           minHeight: 'clamp(600px, 88vh, 900px)',
+          display: 'flex',
+          alignItems: 'center',
         }}
         className="landingHero"
       >
-        {/* Formas 3D de fundo */}
-        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
-          {/* Esfera grande fundo esquerdo */}
-          <div style={{ position: 'absolute', top: '-15%', left: '-8%', width: 420, height: 420, borderRadius: '50%', background: 'radial-gradient(circle at 35% 35%, rgba(255,255,255,0.25) 0%, rgba(167,139,250,0.4) 40%, transparent 70%)', boxShadow: 'inset -20px -20px 40px rgba(109,40,217,0.3)' }} />
-          {/* Esfera média fundo direito */}
-          <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle at 40% 30%, rgba(255,255,255,0.2) 0%, rgba(139,92,246,0.35) 50%, transparent 70%)', boxShadow: 'inset -15px -15px 30px rgba(109,40,217,0.25)' }} />
-          {/* Esfera pequena topo direito */}
-          <div style={{ position: 'absolute', top: '5%', right: '18%', width: 120, height: 120, borderRadius: '50%', background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.3) 0%, rgba(196,181,253,0.5) 50%, transparent 70%)' }} />
-          {/* Losango decorativo */}
-          <div style={{ position: 'absolute', bottom: '20%', left: '42%', width: 60, height: 60, background: 'linear-gradient(135deg, rgba(255,255,255,0.4), rgba(167,139,250,0.6))', transform: 'rotate(45deg)', borderRadius: 8 }} />
-          <div style={{ position: 'absolute', top: '30%', left: '38%', width: 40, height: 40, background: 'linear-gradient(135deg, rgba(255,255,255,0.3), rgba(196,181,253,0.5))', transform: 'rotate(45deg)', borderRadius: 6 }} />
-        </div>
+        {/* Overlay escuro sutil só no lado esquerdo para legibilidade */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(30,10,80,0.55) 0%, rgba(30,10,80,0.25) 50%, transparent 75%)', pointerEvents: 'none' }} />
 
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1200, margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 40, alignItems: 'center' }} className="heroGrid">
-
-          {/* Coluna esquerda — texto */}
-          <div className="heroLeft">
-            <h1 style={{ fontSize: 'clamp(32px, 4.5vw, 58px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: -1.5, color: 'white', marginBottom: 20 }} className="landingHeroTitle">
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1200, margin: '0 auto', padding: '0 48px', width: '100%' }}>
+          {/* Coluna esquerda — só texto */}
+          <div style={{ maxWidth: 520 }} className="heroLeft">
+            <h1 style={{ fontSize: 'clamp(32px, 4.5vw, 60px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: -1.5, color: 'white', marginBottom: 20, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }} className="landingHeroTitle">
               O gateway que faz<br />
               <span style={{ color: '#ddd6fe' }}>seu negócio crescer</span>
             </h1>
 
-            <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: 'clamp(14px, 1.6vw, 17px)', lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }} className="landingHeroSubtitle">
+            <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.75, marginBottom: 36, maxWidth: 460, textShadow: '0 1px 8px rgba(0,0,0,0.2)' }} className="landingHeroSubtitle">
               Checkout de alta conversão, Pix instantâneo, área de membros e loja integrada. Tudo em um só lugar, com a taxa mais justa do mercado.
             </p>
 
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 48 }} className="landingHeroActions">
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 52 }} className="landingHeroActions">
               <Link href="/register" style={{
                 padding: '14px 28px', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999,
-                background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(12px)',
-                border: '1.5px solid rgba(255,255,255,0.4)', color: 'white', fontWeight: 700, textDecoration: 'none',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(12px)',
+                border: '1.5px solid rgba(255,255,255,0.45)', color: 'white', fontWeight: 700, textDecoration: 'none',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
               }}>
                 Criar conta grátis <FiArrowRight size={16} />
               </Link>
               <Link href="#features" style={{
                 padding: '14px 28px', fontSize: 15, borderRadius: 999,
-                background: 'transparent', border: '1.5px solid rgba(255,255,255,0.3)',
-                color: 'rgba(255,255,255,0.9)', textDecoration: 'none', fontWeight: 600,
+                background: 'transparent', border: '1.5px solid rgba(255,255,255,0.35)',
+                color: 'rgba(255,255,255,0.92)', textDecoration: 'none', fontWeight: 600,
                 display: 'inline-flex', alignItems: 'center',
               }}>
                 Ver recursos
@@ -270,137 +261,25 @@ export default function LandingPage() {
                 { value: '100%', label: 'Automático' },
               ].map((s, i) => (
                 <div key={i}>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.5 }}>{s.value}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.5, textShadow: '0 2px 12px rgba(0,0,0,0.25)' }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
                 </div>
               ))}
             </div>
           </div>
-
-          {/* Coluna direita — globo + cards flutuantes + celular */}
-          <div style={{ position: 'relative', height: 480, display: 'flex', alignItems: 'center', justifyContent: 'center' }} className="heroRight">
-
-            {/* Globo central */}
-            <div style={{
-              width: 220, height: 220, borderRadius: '50%', flexShrink: 0,
-              background: 'radial-gradient(circle at 35% 30%, rgba(255,255,255,0.5) 0%, rgba(139,92,246,0.6) 35%, rgba(109,40,217,0.8) 70%, rgba(76,29,149,0.9) 100%)',
-              boxShadow: '0 0 60px rgba(139,92,246,0.6), inset -20px -20px 40px rgba(76,29,149,0.5), 0 20px 60px rgba(0,0,0,0.3)',
-              position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
-              zIndex: 2,
-            }}>
-              {/* Anel ao redor do globo */}
-              <div style={{
-                position: 'absolute', top: '50%', left: '50%',
-                transform: 'translate(-50%, -50%) rotateX(70deg)',
-                width: 280, height: 280, borderRadius: '50%',
-                border: '2px solid rgba(255,255,255,0.25)',
-                boxShadow: '0 0 20px rgba(255,255,255,0.1)',
-              }} />
-              <div style={{
-                position: 'absolute', top: '50%', left: '50%',
-                transform: 'translate(-50%, -50%) rotateX(70deg) rotateZ(45deg)',
-                width: 320, height: 320, borderRadius: '50%',
-                border: '1px solid rgba(255,255,255,0.15)',
-              }} />
-            </div>
-
-            {/* Card flutuante — topo esquerdo */}
-            <div style={{
-              position: 'absolute', top: '8%', left: '2%', zIndex: 5,
-              background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
-              borderRadius: 14, padding: '10px 14px', minWidth: 110,
-              boxShadow: '0 8px 32px rgba(109,40,217,0.2)',
-            }}>
-              <div style={{ fontSize: 10, color: '#8b5cf6', fontWeight: 700, marginBottom: 2 }}>Taxa por venda</div>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e' }}>R$1,50</div>
-              <div style={{ fontSize: 10, color: '#10b981', fontWeight: 600, marginTop: 2 }}>↑ Mais justo</div>
-            </div>
-
-            {/* Card flutuante — topo direito */}
-            <div style={{
-              position: 'absolute', top: '5%', right: '5%', zIndex: 5,
-              background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
-              borderRadius: 14, padding: '10px 14px', minWidth: 110,
-              boxShadow: '0 8px 32px rgba(109,40,217,0.2)',
-            }}>
-              <div style={{ fontSize: 10, color: '#8b5cf6', fontWeight: 700, marginBottom: 2 }}>Taxa do gateway</div>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e' }}>1,09%</div>
-              <div style={{ fontSize: 10, color: '#10b981', fontWeight: 600, marginTop: 2 }}>↑ +12%</div>
-            </div>
-
-            {/* Card flutuante — meio esquerdo */}
-            <div style={{
-              position: 'absolute', top: '42%', left: '0%', zIndex: 5,
-              background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
-              borderRadius: 14, padding: '10px 14px', minWidth: 110,
-              boxShadow: '0 8px 32px rgba(109,40,217,0.2)',
-            }}>
-              <div style={{ fontSize: 10, color: '#8b5cf6', fontWeight: 700, marginBottom: 2 }}>Taxa do gateway</div>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e' }}>1,09%</div>
-              <div style={{ height: 24, marginTop: 6, background: 'linear-gradient(90deg, rgba(139,92,246,0.15), rgba(139,92,246,0.4))', borderRadius: 4 }} />
-            </div>
-
-            {/* Card flutuante — baixo esquerdo */}
-            <div style={{
-              position: 'absolute', bottom: '8%', left: '5%', zIndex: 5,
-              background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
-              borderRadius: 14, padding: '10px 14px', minWidth: 110,
-              boxShadow: '0 8px 32px rgba(109,40,217,0.2)',
-            }}>
-              <div style={{ fontSize: 10, color: '#8b5cf6', fontWeight: 700, marginBottom: 2 }}>Taxa fixa por venda</div>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e' }}>R$1,50</div>
-            </div>
-
-            {/* Card flutuante — baixo direito */}
-            <div style={{
-              position: 'absolute', bottom: '10%', right: '28%', zIndex: 5,
-              background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(12px)',
-              borderRadius: 14, padding: '10px 14px', minWidth: 100,
-              boxShadow: '0 8px 32px rgba(109,40,217,0.2)',
-            }}>
-              <div style={{ fontSize: 10, color: '#8b5cf6', fontWeight: 700, marginBottom: 2 }}>Taxa do gateway</div>
-              <div style={{ fontSize: 18, fontWeight: 900, color: '#1a1a2e' }}>1,09%</div>
-            </div>
-
-            {/* Celular à direita */}
-            <div style={{
-              position: 'absolute', right: '-2%', top: '8%', bottom: '5%',
-              width: 140, zIndex: 6,
-              filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.35))',
-            }} className="heroPhone">
-              <img
-                src="https://i.imgur.com/tY6dEzA.png"
-                alt="GouPay Mobile"
-                referrerPolicy="no-referrer"
-                style={{ width: '100%', height: '100%', objectFit: 'contain', borderRadius: 24 }}
-              />
-            </div>
-
-          </div>
         </div>
 
         <style>{`
-          @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-          }
-          @keyframes floatCard {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-          }
-          @media (max-width: 900px) {
-            .heroGrid { grid-template-columns: 1fr !important; gap: 20px !important; }
-            .heroRight { height: 320px !important; }
-            .heroPhone { width: 100px !important; right: 0 !important; }
-          }
           @media (max-width: 640px) {
             .landingHeroTitle { font-size: 30px !important; }
             .landingHeroSubtitle { font-size: 14px !important; }
             .landingHeroStats { gap: 20px !important; }
             .landingHeroActions a { padding: 12px 20px !important; font-size: 14px !important; }
-            .landingHero { padding-top: calc(env(safe-area-inset-top) + 160px) !important; }
-            .heroRight { height: 260px !important; }
-            .heroPhone { display: none !important; }
+            .landingHero { padding-top: calc(env(safe-area-inset-top) + 160px) !important; padding-left: 0 !important; }
+            .heroLeft { max-width: 100% !important; }
+          }
+          @media (max-width: 900px) {
+            .heroLeft { max-width: 100% !important; }
           }
         `}</style>
       </section>
