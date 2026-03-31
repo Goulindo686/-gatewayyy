@@ -696,30 +696,11 @@ Body:
         </div>
 
         <style jsx global>{`
-          /* ── Scroll Reveal ── */
-          .sr {
-            opacity: 0;
-            transition: opacity 0.65s cubic-bezier(.22,1,.36,1), transform 0.65s cubic-bezier(.22,1,.36,1);
-          }
-          .sr-up    { transform: translateY(40px); }
-          .sr-left  { transform: translateX(-48px); }
-          .sr-right { transform: translateX(48px); }
-          .sr-visible {
-            opacity: 1 !important;
-            transform: none !important;
-          }
-          /* Fallback: se JS não rodar, mostra tudo */
-          @media (scripting: none) {
-            .sr { opacity: 1 !important; transform: none !important; }
-          }
-          @media (prefers-reduced-motion: reduce) {
-            .sr { opacity: 1 !important; transform: none !important; transition: none !important; }
-          }
           /* ── Hover nos cards de feature ── */
           .glass-card.sr-up {
             transition: opacity 0.65s cubic-bezier(.22,1,.36,1), transform 0.65s cubic-bezier(.22,1,.36,1), box-shadow 0.25s ease;
           }
-          .glass-card.sr-up:hover {
+          .glass-card.sr-up.sr-visible:hover {
             box-shadow: 0 20px 60px rgba(108,92,231,0.18);
             transform: translateY(-4px) !important;
           }

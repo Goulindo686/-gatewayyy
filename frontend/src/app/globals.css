@@ -603,3 +603,25 @@ body {
 .settings-tabs::-webkit-scrollbar {
   display: none;
 }
+
+/* ── Scroll Reveal ── */
+.sr {
+  opacity: 0;
+  transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1);
+}
+.sr-up    { transform: translateY(44px); }
+.sr-left  { transform: translateX(-52px); }
+.sr-right { transform: translateX(52px); }
+
+.sr-visible {
+  opacity: 1 !important;
+  transform: translate(0, 0) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sr {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
