@@ -330,6 +330,7 @@ export default function LandingPage() {
             .landingHeroStats { gap: 24px !important; }
             .landingHeroPhone { display: none !important; }
             .landingHeroMockupWrap { padding: 0 !important; }
+            .landingHero { padding-top: calc(env(safe-area-inset-top) + 160px) !important; }
           }
         `}</style>
       </section>
