@@ -205,25 +205,21 @@ export default function LandingPage() {
 
       {/* Hero */}
       <section ref={heroRef} style={{ position: 'relative', height: 'clamp(520px, 78vh, 820px)', overflow: 'hidden', background: '#0a0a0f' }} className="landingHero">
-        <picture style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-          <source media="(max-width: 768px)" srcSet="https://i.imgur.com/lmM1Hdm.png" />
-          <img
-            src="https://i.imgur.com/lmM1Hdm.png"
-            alt=""
-            aria-hidden="true"
-            loading="eager"
-            fetchPriority="high"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              const img = e.currentTarget as HTMLImageElement;
-              if (img.dataset.fallback === '1') return;
-              img.dataset.fallback = '1';
-              img.src = 'https://i.imgur.com/lmM1Hdm.jpg';
-            }}
-            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }}
-            className="landingHeroImg"
-          />
-        </picture>
+        {/* Vídeo de fundo */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            position: 'absolute', inset: 0, zIndex: 1,
+            width: '100%', height: '100%',
+            objectFit: 'cover', objectPosition: 'center',
+            display: 'block',
+          }}
+        >
+          <source src="https://i.imgur.com/B7vEUT1.mp4" type="video/mp4" />
+        </video>
         <div style={{ position: 'absolute', inset: 0, zIndex: 4, pointerEvents: 'none' }}>
           <div style={{ maxWidth: 1200, margin: '0 auto', height: '100%', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }} className="landingHeroInner">
             <div style={{ width: 'min(520px, 100%)', pointerEvents: 'auto', transform: 'translateX(180px)' }} className="landingHeroCopy">
