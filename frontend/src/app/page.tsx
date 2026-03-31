@@ -264,8 +264,7 @@ export default function LandingPage() {
       </section>
 
       {/* Faixa de taxa — ticker animado */}
-      <div style={{ background: 'linear-gradient(90deg, rgba(0,206,201,0.08) 0%, rgba(108,92,231,0.08) 100%)', borderTop: '1px solid rgba(0,206,201,0.15)', borderBottom: '1px solid rgba(108,92,231,0.12)', padding: '14px 0', overflow: 'hidden', position: 'relative' }}>
-        {/* fade nas bordas */}
+      <div style={{ background: 'linear-gradient(90deg, rgba(108,92,231,0.08) 0%, rgba(162,155,254,0.06) 50%, rgba(108,92,231,0.08) 100%)', borderTop: '1px solid rgba(108,92,231,0.18)', borderBottom: '1px solid rgba(108,92,231,0.12)', padding: '16px 0', overflow: 'hidden', position: 'relative' }}>
         <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, background: 'linear-gradient(90deg, var(--bg-primary) 0%, transparent 100%)', zIndex: 2, pointerEvents: 'none' }} />
         <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 80, background: 'linear-gradient(270deg, var(--bg-primary) 0%, transparent 100%)', zIndex: 2, pointerEvents: 'none' }} />
 
@@ -277,7 +276,7 @@ export default function LandingPage() {
           .ticker-track {
             display: flex;
             width: max-content;
-            animation: ticker 28s linear infinite;
+            animation: ticker 32s linear infinite;
           }
           .ticker-track:hover { animation-play-state: paused; }
         `}</style>
@@ -286,16 +285,19 @@ export default function LandingPage() {
           {[0, 1].map(copy => (
             <div key={copy} style={{ display: 'flex', alignItems: 'center', gap: 0, whiteSpace: 'nowrap' }}>
               {[
-                { icon: <FiZap size={15} color="#00cec9" />, text: <><strong style={{ color: '#00cec9' }}>R$1,50 + 1,09%</strong> por venda</> },
-                { icon: <FiLock size={14} color="var(--text-secondary)" />, text: 'Sem mensalidade' },
-                { icon: <FiLock size={14} color="var(--text-secondary)" />, text: 'Sem taxa de adesão' },
-                { icon: <FiTrendingUp size={14} color="var(--text-secondary)" />, text: 'Pix recebido na hora' },
-                { icon: <FiZap size={14} color="var(--text-secondary)" />, text: 'Entrega automática' },
-                { icon: <HiOutlineShieldCheck size={15} color="var(--text-secondary)" />, text: 'Checkout seguro' },
-                { icon: <HiOutlineChartBar size={14} color="var(--text-secondary)" />, text: 'Dashboard em tempo real' },
-                { icon: <FiZap size={15} color="#00cec9" />, text: <><strong style={{ color: '#00cec9' }}>R$1,50 + 1,09%</strong> por venda</> },
+                { icon: <FiZap size={16} color="#6c5ce7" />, text: <><strong style={{ color: '#6c5ce7' }}>R$1,50 + 1,09%</strong> por venda</> },
+                { icon: <FiLock size={15} color="#a29bfe" />, text: <span style={{ color: '#a29bfe' }}>Sem mensalidade</span> },
+                { icon: <FiLock size={15} color="#a29bfe" />, text: <span style={{ color: '#a29bfe' }}>Sem taxa de adesão</span> },
+                { icon: <FiTrendingUp size={15} color="#6c5ce7" />, text: <span style={{ color: '#6c5ce7' }}>Pix recebido na hora</span> },
+                { icon: <FiZap size={15} color="#a29bfe" />, text: <span style={{ color: '#a29bfe' }}>Entrega automática</span> },
+                { icon: <HiOutlineShieldCheck size={16} color="#6c5ce7" />, text: <span style={{ color: '#6c5ce7' }}>Checkout seguro</span> },
+                { icon: <HiOutlineChartBar size={15} color="#a29bfe" />, text: <span style={{ color: '#a29bfe' }}>Dashboard em tempo real</span> },
+                { icon: <HiOutlineCurrencyDollar size={16} color="#6c5ce7" />, text: <span style={{ color: '#6c5ce7' }}>Saques via Pix</span> },
+                { icon: <HiOutlineLightningBolt size={15} color="#a29bfe" />, text: <span style={{ color: '#a29bfe' }}>Área de membros integrada</span> },
+                { icon: <HiOutlineGlobeAlt size={15} color="#6c5ce7" />, text: <span style={{ color: '#6c5ce7' }}>Loja virtual completa</span> },
+                { icon: <FiZap size={16} color="#6c5ce7" />, text: <><strong style={{ color: '#6c5ce7' }}>R$1,50 + 1,09%</strong> por venda</> },
               ].map((item, i) => (
-                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', padding: '0 28px', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 600, padding: '0 32px', borderRight: '1px solid rgba(108,92,231,0.15)' }}>
                   {item.icon} {item.text}
                 </span>
               ))}
