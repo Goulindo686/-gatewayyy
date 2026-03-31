@@ -154,7 +154,9 @@ class CheckoutController {
     }
 
     async _createTransactionRecords(order, product, feePercentage) {
-        const feeAmount = Math.round(order.amount * feePercentage / 100);
+        // Taxa fixa da plataforma: R$1,50 (150 centavos)
+        const PLATFORM_FLAT_FEE = 150;
+        const feeAmount = Math.min(PLATFORM_FLAT_FEE, order.amount);
         const sellerAmount = order.amount - feeAmount;
 
         // Seller transaction
@@ -174,12 +176,12 @@ class CheckoutController {
                 type: 'fee',
                 amount: feeAmount,
                 status: 'confirmed',
-                description: `Taxa plataforma: ${feePercentage}%`
+                description: `Taxa plataforma: R$1,50 fixo`
             });
             await supabase.from('platform_fees').insert({
                 order_id: order.id,
                 amount: feeAmount,
-                percentage: feePercentage
+                percentage: 0
             });
         }
 

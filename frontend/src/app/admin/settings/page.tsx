@@ -3,39 +3,18 @@
 import { useEffect, useState } from 'react';
 import { adminAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { FiSave, FiPercent } from 'react-icons/fi';
+import { FiDollarSign, FiInfo } from 'react-icons/fi';
 
 export default function AdminSettingsPage() {
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
-    const [feePercentage, setFeePercentage] = useState('2');
     const [settings, setSettings] = useState<any>(null);
 
     useEffect(() => {
         adminAPI.getSettings()
-            .then(res => {
-                setSettings(res.data.settings);
-                setFeePercentage(res.data.settings?.fee_percentage?.toString() || '2');
-            })
+            .then(res => setSettings(res.data.settings))
             .catch(console.error)
             .finally(() => setLoading(false));
     }, []);
-
-    const handleSave = async () => {
-        const value = parseFloat(feePercentage);
-        if (isNaN(value) || value < 0 || value > 100) {
-            return toast.error('Porcentagem deve ser entre 0 e 100');
-        }
-        setSaving(true);
-        try {
-            await adminAPI.updateFees(value);
-            toast.success(`Taxa atualizada para ${value}%`);
-        } catch (err: any) {
-            toast.error(err.response?.data?.error || 'Erro ao salvar');
-        } finally {
-            setSaving(false);
-        }
-    };
 
     if (loading) {
         return (
@@ -56,47 +35,48 @@ export default function AdminSettingsPage() {
                         width: 44, height: 44, borderRadius: 12, background: 'rgba(255,107,107,0.12)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--danger)'
                     }}>
-                        <FiPercent size={20} />
+                        <FiDollarSign size={20} />
                     </div>
                     <div>
                         <h3 style={{ fontSize: 16, fontWeight: 600 }}>Taxa da Plataforma</h3>
-                        <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Porcentagem retida em cada venda</p>
+                        <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Valor fixo retido em cada venda</p>
                     </div>
-                </div>
-
-                <div style={{ marginBottom: 20 }}>
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 8 }}>
-                        Porcentagem (%)
-                    </label>
-                    <input type="number" step="0.5" min="0" max="100" className="input-field"
-                        value={feePercentage} onChange={e => setFeePercentage(e.target.value)} />
                 </div>
 
                 <div style={{
-                    padding: 16, borderRadius: 12, background: 'rgba(108,92,231,0.06)',
+                    padding: 20, borderRadius: 12, background: 'rgba(108,92,231,0.06)',
                     border: '1px solid rgba(108,92,231,0.12)', marginBottom: 24
                 }}>
-                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 8 }}>Exemplo de divisão para venda de R$ 100,00:</div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <div>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>Vendedor recebe</div>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--success)' }}>
-                                R$ {(100 - parseFloat(feePercentage || '0')).toFixed(2)}
-                            </div>
-                        </div>
-                        <div>
-                            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 4 }}>Plataforma recebe</div>
-                            <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--danger)' }}>
-                                R$ {parseFloat(feePercentage || '0').toFixed(2)}
-                            </div>
-                        </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                        <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Taxa fixa por venda</span>
+                        <span style={{ fontSize: 22, fontWeight: 700, color: 'var(--danger)' }}>R$ 1,50</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                        <span style={{ fontSize: 14, color: 'var(--text-secondary)' }}>Taxa Pagar.me (PIX)</span>
+                        <span style={{ fontSize: 14, fontWeight: 600 }}>1,09% por transação</span>
+                    </div>
+                    <div style={{ height: 1, background: 'var(--border-color)', margin: '12px 0' }} />
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                        <FiInfo size={14} style={{ color: 'var(--text-muted)', marginTop: 2, flexShrink: 0 }} />
+                        <p style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                            A taxa da plataforma é fixa em R$1,50 por venda, independente do valor. A taxa do Pagar.me é cobrada separadamente sobre o valor total da transação.
+                        </p>
                     </div>
                 </div>
 
-                <button className="btn-primary" onClick={handleSave} disabled={saving}
-                    style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '14px 32px' }}>
-                    <FiSave size={16} /> {saving ? 'Salvando...' : 'Salvar Taxa'}
-                </button>
+                <div style={{ padding: 16, borderRadius: 12, background: 'rgba(0,206,201,0.06)', border: '1px solid rgba(0,206,201,0.12)' }}>
+                    <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12 }}>Exemplos de divisão por venda (PIX)</div>
+                    {[10, 50, 100, 500].map(val => {
+                        const pagarme = (val * 0.0109).toFixed(2);
+                        const seller = (val - 1.50 - parseFloat(pagarme)).toFixed(2);
+                        return (
+                            <div key={val} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, marginBottom: 8 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Venda R${val},00</span>
+                                <span style={{ color: 'var(--success)', fontWeight: 600 }}>Vendedor recebe R${seller}</span>
+                            </div>
+                        );
+                    })}
+                </div>
             </div>
         </div>
     );

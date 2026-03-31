@@ -1,45 +1,16 @@
 'use client';
 
-import { FiCheckCircle, FiZap, FiCreditCard } from 'react-icons/fi';
+import { FiZap, FiCreditCard, FiInfo, FiCheckCircle } from 'react-icons/fi';
 
 export default function FeesPage() {
-    const fees = [
-        {
-            method: 'Pix',
-            platform: '2.00%',
-            gateway: '1.09%',
-            total: '3.09%',
-            payout: 'Na hora',
-            icon: <FiZap size={24} color="#00cec9" />,
-            description: 'O método mais rápido e barato para você e para o cliente.'
-        },
-        {
-            method: 'Cartão de crédito',
-            payout: 'D+30',
-            icon: <FiCreditCard size={24} color="#6366f1" />,
-            description: 'Liberação em D+30. Limite de parcelamento até 12x.'
-        }
-    ];
 
-    const cardMdr = [
-        { label: 'Crédito à vista', value: '5,19%' },
-        { label: 'Crédito parcelado 2–6x', value: '6,49%' },
-        { label: 'Crédito parcelado 7–12x', value: '6,99%' }
-    ];
-
-    const cet15Days = [
-        { label: 'Crédito à vista', value: '4,59%' },
-        { label: 'Parcelado em 2x', value: '7,41%' },
-        { label: 'Parcelado em 3x', value: '8,79%' },
-        { label: 'Parcelado em 4x', value: '10,17%' },
-        { label: 'Parcelado em 5x', value: '11,55%' },
-        { label: 'Parcelado em 6x', value: '12,93%' },
-        { label: 'Parcelado em 7x', value: '14,76%' },
-        { label: 'Parcelado em 8x', value: '16,13%' },
-        { label: 'Parcelado em 9x', value: '17,50%' },
-        { label: 'Parcelado em 10x', value: '18,88%' },
-        { label: 'Parcelado em 11x', value: '20,25%' },
-        { label: 'Parcelado em 12x', value: '21,62%' }
+    const pixExamples = [
+        { sale: 10 },
+        { sale: 30 },
+        { sale: 50 },
+        { sale: 100 },
+        { sale: 250 },
+        { sale: 500 },
     ];
 
     return (
@@ -49,60 +20,108 @@ export default function FeesPage() {
                 <p style={{ color: 'var(--text-secondary)', fontSize: 14 }}>Transparência total nos seus recebíveis</p>
             </div>
 
-
+            {/* Cards de métodos */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 400px))', gap: 20, marginBottom: 32, justifyContent: 'center' }}>
-                {fees.map((fee, i) => (
-                    <div key={i} className="glass-card" style={{ padding: 24 }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                            <div style={{ padding: 12, borderRadius: 12, background: 'rgba(255,255,255,0.03)' }}>
-                                {fee.icon}
-                            </div>
-                            <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 20 }}>
-                                Receba: {fee.payout}
+
+                {/* PIX */}
+                <div className="glass-card" style={{ padding: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                        <div style={{ padding: 12, borderRadius: 12, background: 'rgba(0,206,201,0.08)' }}>
+                            <FiZap size={24} color="#00cec9" />
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: '#00cec9', background: 'rgba(0,206,201,0.1)', padding: '4px 10px', borderRadius: 20 }}>
+                            Receba: Na hora
+                        </span>
+                    </div>
+
+                    <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Pix</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 24 }}>
+                        O método mais rápido. Recebimento instantâneo após confirmação do pagamento.
+                    </p>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Taxa Plataforma</span>
+                            <span style={{ fontWeight: 700, color: 'var(--danger)' }}>R$ 1,50 fixo</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
+                            <span style={{ color: 'var(--text-muted)' }}>Taxa Gateway (Pagar.me)</span>
+                            <span style={{ fontWeight: 600 }}>1,09% por transação</span>
+                        </div>
+                        <div style={{ height: 1, background: 'var(--border-color)', margin: '4px 0' }} />
+                        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+                            <FiInfo size={13} style={{ color: 'var(--text-muted)', marginTop: 2, flexShrink: 0 }} />
+                            <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                                Você paga apenas R$1,50 fixo por venda + 1,09% do Pagar.me. Sem surpresas.
                             </span>
                         </div>
-
-                        <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>{fee.method}</h3>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 24, height: 40 }}>{fee.description}</p>
-
-                        {fee.method !== 'Cartão de crédito' ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Taxa Plataforma</span>
-                                    <span style={{ fontWeight: 600 }}>2.00%</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Taxa Gateway</span>
-                                    <span style={{ fontWeight: 600 }}>1.09%</span>
-                                </div>
-                                <div style={{ height: 1, background: 'var(--border-color)', margin: '4px 0' }} />
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 16, fontWeight: 700 }}>
-                                    <span>Total Estimado</span>
-                                    <span className="gradient-text">3.09%</span>
-                                </div>
-                            </div>
-                        ) : (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Crédito à vista (inclui 2% plataforma)</span>
-                                    <span style={{ fontWeight: 700 }}>5,19%</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Crédito parcelado 2–6x (inclui 2% plataforma)</span>
-                                    <span style={{ fontWeight: 700 }}>6,49%</span>
-                                </div>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14 }}>
-                                    <span style={{ color: 'var(--text-muted)' }}>Crédito parcelado 7–12x (inclui 2% plataforma)</span>
-                                    <span style={{ fontWeight: 700 }}>6,99%</span>
-                                </div>
-                            </div>
-                        )}
                     </div>
-                ))}
+                </div>
+
+                {/* Cartão — OFF */}
+                <div className="glass-card" style={{ padding: 24, opacity: 0.6 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                        <div style={{ padding: 12, borderRadius: 12, background: 'rgba(99,102,241,0.08)' }}>
+                            <FiCreditCard size={24} color="#6366f1" />
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-muted)', background: 'rgba(255,255,255,0.05)', padding: '4px 10px', borderRadius: 20 }}>
+                            Em breve
+                        </span>
+                    </div>
+
+                    <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 4 }}>Cartão de Crédito</h3>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 24 }}>
+                        Pagamento via cartão de crédito. Disponível em breve.
+                    </p>
+
+                    <div style={{
+                        padding: 16, borderRadius: 10, background: 'rgba(255,255,255,0.03)',
+                        border: '1px dashed var(--border-color)', textAlign: 'center'
+                    }}>
+                        <span style={{ fontSize: 13, color: 'var(--text-muted)' }}>
+                            🚧 Método temporariamente desativado
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            {/* Removed final sections as requested */}
+            {/* Tabela de exemplos PIX */}
+            <div className="glass-card" style={{ padding: 28 }}>
+                <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Simulador de recebimento — PIX</h3>
+                <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
+                        <thead>
+                            <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                                <th style={{ textAlign: 'left', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500 }}>Valor da venda</th>
+                                <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500 }}>Taxa plataforma</th>
+                                <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500 }}>Taxa Pagar.me (1,09%)</th>
+                                <th style={{ textAlign: 'right', padding: '10px 12px', color: 'var(--text-muted)', fontWeight: 500 }}>Você recebe</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {pixExamples.map(({ sale }) => {
+                                const pagarme = sale * 0.0109;
+                                const seller = sale - 1.50 - pagarme;
+                                return (
+                                    <tr key={sale} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                                        <td style={{ padding: '12px 12px', fontWeight: 600 }}>R$ {sale.toFixed(2)}</td>
+                                        <td style={{ padding: '12px 12px', textAlign: 'right', color: 'var(--danger)' }}>R$ 1,50</td>
+                                        <td style={{ padding: '12px 12px', textAlign: 'right', color: 'var(--text-muted)' }}>R$ {pagarme.toFixed(2)}</td>
+                                        <td style={{ padding: '12px 12px', textAlign: 'right', fontWeight: 700, color: 'var(--success)' }}>R$ {seller.toFixed(2)}</td>
+                                    </tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
 
+                <div style={{ marginTop: 20, display: 'flex', alignItems: 'flex-start', gap: 10, padding: 16, borderRadius: 10, background: 'rgba(0,206,201,0.05)', border: '1px solid rgba(0,206,201,0.1)' }}>
+                    <FiCheckCircle size={16} color="#00cec9" style={{ marginTop: 2, flexShrink: 0 }} />
+                    <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                        A taxa da plataforma é sempre <strong>R$1,50 fixo</strong> por venda, independente do valor. A taxa do Pagar.me de <strong>1,09%</strong> é cobrada diretamente pelo processador de pagamentos e não fica com a plataforma.
+                    </p>
+                </div>
+            </div>
         </div>
     );
 }

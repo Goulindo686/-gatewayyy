@@ -48,7 +48,12 @@ class PagarmeService {
      */
     async createMultiItemOrder({ items, buyer, paymentMethod, cardData, sellerId, platformRecipientId, sellerRecipientId, feePercentage }) {
         try {
-            const sellerPercentage = Math.max(0, Math.min(100, 100 - (feePercentage || 0)));
+            // Taxa fixa da plataforma: R$1,50 (150 centavos)
+            const PLATFORM_FLAT_FEE = 150;
+
+            const totalAmountCents = items.reduce((sum, item) => sum + Math.round(item.price * 100) * item.quantity, 0);
+            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE, totalAmountCents); // nunca cobra mais que o total
+            const sellerAmount = totalAmountCents - platformFeeAmount;
 
             const orderData = {
                 items: items.map(item => ({
@@ -74,27 +79,26 @@ class PagarmeService {
             };
 
             const hasSellerRecipient = !!sellerRecipientId;
-            const includePlatformFee = !!(platformRecipientId && (feePercentage || 0) > 0 && platformRecipientId !== sellerRecipientId);
+            const includePlatformFee = !!(platformRecipientId && platformRecipientId !== sellerRecipientId && platformFeeAmount > 0);
             const splitRules = hasSellerRecipient ? [
                 {
-                    amount: sellerPercentage,
+                    amount: sellerAmount,
                     recipient_id: sellerRecipientId,
-                    type: 'percentage',
+                    type: 'flat',
                     options: { charge_processing_fee: true, liable: true, charge_remainder_fee: true }
                 },
                 ...(includePlatformFee ? [{
-                    amount: feePercentage,
+                    amount: platformFeeAmount,
                     recipient_id: platformRecipientId,
-                    type: 'percentage',
-                    options: { charge_processing_fee: false, liable: false }
+                    type: 'flat',
+                    options: { charge_processing_fee: false, liable: false, charge_remainder_fee: false }
                 }] : [])
             ] : undefined;
 
-            console.log('[BACKEND PAGARME] MultiItem Split:', {
-                sellerPercentage,
-                platformRecipientId,
-                sellerRecipientId,
-                feePercentage,
+            console.log('[BACKEND PAGARME] MultiItem Split (flat fee):', {
+                totalAmountCents,
+                platformFeeAmount,
+                sellerAmount,
                 includePlatformFee
             });
 
@@ -143,7 +147,11 @@ class PagarmeService {
      */
     async createOrder({ product, buyer, paymentMethod, cardData, sellerId, platformRecipientId, sellerRecipientId, feePercentage }) {
         try {
-            const sellerPercentage = Math.max(0, Math.min(100, 100 - (feePercentage || 0)));
+            // Taxa fixa da plataforma: R$1,50 (150 centavos)
+            const PLATFORM_FLAT_FEE = 150;
+            const totalAmountCents = product.price; // já em centavos
+            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE, totalAmountCents);
+            const sellerAmount = totalAmountCents - platformFeeAmount;
 
             const orderData = {
                 items: [{
@@ -169,27 +177,26 @@ class PagarmeService {
             };
 
             const hasSellerRecipient = !!sellerRecipientId;
-            const includePlatformFee = !!(platformRecipientId && (feePercentage || 0) > 0 && platformRecipientId !== sellerRecipientId);
+            const includePlatformFee = !!(platformRecipientId && platformRecipientId !== sellerRecipientId && platformFeeAmount > 0);
             const splitRules = hasSellerRecipient ? [
                 {
-                    amount: sellerPercentage,
+                    amount: sellerAmount,
                     recipient_id: sellerRecipientId,
-                    type: 'percentage',
+                    type: 'flat',
                     options: { charge_processing_fee: true, liable: true, charge_remainder_fee: true }
                 },
                 ...(includePlatformFee ? [{
-                    amount: feePercentage,
+                    amount: platformFeeAmount,
                     recipient_id: platformRecipientId,
-                    type: 'percentage',
-                    options: { charge_processing_fee: false, liable: false }
+                    type: 'flat',
+                    options: { charge_processing_fee: false, liable: false, charge_remainder_fee: false }
                 }] : [])
             ] : undefined;
 
-            console.log('[BACKEND PAGARME] SingleOrder Split:', {
-                sellerPercentage,
-                platformRecipientId,
-                sellerRecipientId,
-                feePercentage,
+            console.log('[BACKEND PAGARME] SingleOrder Split (flat fee):', {
+                totalAmountCents,
+                platformFeeAmount,
+                sellerAmount,
                 includePlatformFee
             });
 

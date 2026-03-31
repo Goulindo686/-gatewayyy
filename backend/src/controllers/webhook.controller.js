@@ -118,7 +118,7 @@ class WebhookController {
             .single();
 
         const feePercentage = settings?.fee_percentage || 15;
-        const feeAmount = Math.round(order.amount * feePercentage / 100);
+        const feeAmount = Math.min(150, order.amount); // Taxa fixa R$1,50
         const sellerAmount = order.amount - feeAmount;
 
         // Create transaction records
@@ -137,13 +137,13 @@ class WebhookController {
             type: 'fee',
             amount: feeAmount,
             status: 'confirmed',
-            description: `Taxa plataforma: ${feePercentage}%`
+            description: `Taxa plataforma: R$1,50 fixo`
         });
 
         await supabase.from('platform_fees').insert({
             order_id: order.id,
             amount: feeAmount,
-            percentage: feePercentage
+            percentage: 0
         });
 
         // Update product sales count
