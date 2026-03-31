@@ -246,14 +246,14 @@ export default function LandingPage() {
             </div>
 
             {/* Coluna direita — mockups PC + celular */}
-            <div style={{ flex: '0 0 auto', width: 'min(560px, 50%)', position: 'relative', height: '100%', pointerEvents: 'auto' }} className="landingHeroMockups">
+            <div style={{ flex: '0 0 auto', width: 'min(600px, 52%)', position: 'relative', height: '100%', pointerEvents: 'auto' }} className="landingHeroMockups">
 
               {/* Laptop mockup */}
               <div style={{
                 position: 'absolute',
-                top: '50%', left: '50%',
-                transform: 'translate(-50%, -52%)',
-                width: '88%',
+                top: '50%', left: '0%',
+                transform: 'translate(0, -55%)',
+                width: '82%',
                 filter: 'drop-shadow(0 32px 64px rgba(108,92,231,0.22))',
               }}>
                 {/* Tela do laptop */}
@@ -278,35 +278,8 @@ export default function LandingPage() {
                     <img
                       src="https://i.imgur.com/PxTZBza.png"
                       alt="Dashboard GouPay"
+                      referrerPolicy="no-referrer"
                       style={{ width: '100%', display: 'block' }}
-                      onError={(e) => {
-                        // Fallback: mini dashboard desenhado em CSS
-                        const img = e.currentTarget as HTMLImageElement;
-                        img.style.display = 'none';
-                        const parent = img.parentElement!;
-                        parent.style.background = '#ffffff';
-                        parent.style.padding = '12px';
-                        parent.style.minHeight = '180px';
-                        parent.innerHTML = `
-                          <div style="display:flex;gap:8px;margin-bottom:10px">
-                            ${['Saldo Disponível','Total Vendido','Receita','Produtos'].map((l,i) => `
-                              <div style="flex:1;background:#f8f8fc;border-radius:8px;padding:8px;border:1px solid #e8e8f0">
-                                <div style="font-size:8px;color:#888;margin-bottom:4px">${l}</div>
-                                <div style="font-size:11px;font-weight:700;color:#1a1a2e">R$ ${(Math.random()*9000+1000).toFixed(2)}</div>
-                                <div style="height:20px;margin-top:4px;background:linear-gradient(90deg,rgba(108,92,231,0.1),rgba(108,92,231,0.3));border-radius:3px"></div>
-                              </div>`).join('')}
-                          </div>
-                          <div style="background:#f8f8fc;border-radius:8px;padding:10px;border:1px solid #e8e8f0">
-                            <div style="font-size:9px;color:#888;margin-bottom:6px">Análise de Vendas</div>
-                            <div style="font-size:14px;font-weight:800;color:#6c5ce7;margin-bottom:8px">R$ 3.425,16</div>
-                            <div style="height:50px;background:linear-gradient(180deg,rgba(108,92,231,0.15) 0%,rgba(108,92,231,0.05) 100%);border-radius:4px;position:relative;overflow:hidden">
-                              <svg viewBox="0 0 200 50" style="width:100%;height:100%" preserveAspectRatio="none">
-                                <polyline points="0,40 30,35 60,28 90,32 120,20 150,15 180,18 200,12" fill="none" stroke="#6c5ce7" stroke-width="2"/>
-                              </svg>
-                            </div>
-                          </div>
-                        `;
-                      }}
                     />
                   </div>
                 </div>
@@ -315,65 +288,21 @@ export default function LandingPage() {
                 <div style={{ background: '#1a1a2e', height: 6, borderRadius: '0 0 8px 8px', margin: '0 -8px', border: '1px solid #2d2d4e' }} />
               </div>
 
-              {/* Celular mockup — sobreposto à frente e à direita */}
+              {/* Celular — só a imagem, sem frame extra */}
               <div style={{
                 position: 'absolute',
-                bottom: '8%',
-                right: '-2%',
-                width: '32%',
+                bottom: '5%',
+                right: '0%',
+                width: '42%',
                 filter: 'drop-shadow(0 24px 48px rgba(108,92,231,0.3))',
                 zIndex: 5,
               }}>
-                {/* Frame do iPhone */}
-                <div style={{
-                  background: '#1a1a2e',
-                  borderRadius: 28,
-                  padding: '10px 6px',
-                  border: '2px solid #3d3d5e',
-                  boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.08)',
-                }}>
-                  {/* Notch */}
-                  <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 6 }}>
-                    <div style={{ width: 60, height: 14, background: '#0d0d1a', borderRadius: 999 }} />
-                  </div>
-                  {/* Tela */}
-                  <div style={{ borderRadius: 18, overflow: 'hidden', background: '#ffffff', lineHeight: 0 }}>
-                    <img
-                      src="https://i.imgur.com/tY6dEzA.png"
-                      alt="GouPay Mobile"
-                      style={{ width: '100%', display: 'block' }}
-                      onError={(e) => {
-                        const img = e.currentTarget as HTMLImageElement;
-                        img.style.display = 'none';
-                        const parent = img.parentElement!;
-                        parent.style.background = '#ffffff';
-                        parent.style.padding = '10px';
-                        parent.style.minHeight = '200px';
-                        parent.innerHTML = `
-                          <div style="font-size:10px;font-weight:800;color:#1a1a2e;margin-bottom:8px">Dashboard</div>
-                          <div style="font-size:8px;color:#888;margin-bottom:10px">Acompanhe suas vendas</div>
-                          <div style="background:#f8f8fc;border-radius:10px;padding:10px;border:1px solid #e8e8f0;margin-bottom:8px">
-                            <div style="font-size:7px;color:#888">Saldo Disponível</div>
-                            <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin:3px 0">R$ 2.627,12</div>
-                            <div style="height:28px;background:linear-gradient(180deg,rgba(0,206,201,0.15),rgba(0,206,201,0.05));border-radius:4px;position:relative">
-                              <svg viewBox="0 0 100 28" style="width:100%;height:100%" preserveAspectRatio="none">
-                                <polyline points="0,22 20,18 40,20 60,12 80,8 100,5" fill="none" stroke="#00cec9" stroke-width="1.5"/>
-                              </svg>
-                            </div>
-                          </div>
-                          <div style="background:#f8f8fc;border-radius:10px;padding:10px;border:1px solid #e8e8f0">
-                            <div style="font-size:7px;color:#888">Total Vendido</div>
-                            <div style="font-size:13px;font-weight:800;color:#1a1a2e;margin:3px 0">R$ 8.543,29</div>
-                          </div>
-                        `;
-                      }}
-                    />
-                  </div>
-                  {/* Home indicator */}
-                  <div style={{ display: 'flex', justifyContent: 'center', marginTop: 6 }}>
-                    <div style={{ width: 40, height: 4, background: 'rgba(255,255,255,0.3)', borderRadius: 999 }} />
-                  </div>
-                </div>
+                <img
+                  src="https://i.imgur.com/tY6dEzA.png"
+                  alt="GouPay Mobile"
+                  referrerPolicy="no-referrer"
+                  style={{ width: '100%', display: 'block', borderRadius: 16 }}
+                />
               </div>
 
             </div>
