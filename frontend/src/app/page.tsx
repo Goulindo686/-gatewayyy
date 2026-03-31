@@ -208,8 +208,7 @@ export default function LandingPage() {
         ref={heroRef}
         style={{
           position: 'relative',
-          background: 'url(https://i.imgur.com/IzUo6HI.png) center center / cover no-repeat',
-          imageRendering: 'crisp-edges' as any,
+          background: 'url(https://i.imgur.com/CRMOAPY.jpeg) center center / cover no-repeat',
           overflow: 'hidden',
           paddingTop: 'calc(env(safe-area-inset-top) + 110px)',
           paddingBottom: 60,
@@ -220,32 +219,42 @@ export default function LandingPage() {
         className="landingHero"
       >
         {/* Overlay escuro sutil só no lado esquerdo para legibilidade */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(30,10,80,0.55) 0%, rgba(30,10,80,0.25) 50%, transparent 75%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,5,40,0.72) 0%, rgba(10,5,40,0.45) 45%, rgba(10,5,40,0.1) 75%, transparent 100%)', pointerEvents: 'none' }} />
 
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1200, margin: '0 auto', padding: '0 48px', width: '100%' }}>
-          {/* Coluna esquerda — só texto */}
-          <div style={{ maxWidth: 520 }} className="heroLeft">
-            <h1 style={{ fontSize: 'clamp(32px, 4.5vw, 60px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: -1.5, color: 'white', marginBottom: 20, textShadow: '0 2px 20px rgba(0,0,0,0.3)' }} className="landingHeroTitle">
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1200, margin: '0 auto', padding: '0 48px', width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }} className="heroGrid">
+
+          {/* Coluna esquerda — texto */}
+          <div className="heroLeft">
+            {/* Badge */}
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', backdropFilter: 'blur(8px)', color: 'rgba(255,255,255,0.9)', fontSize: 12, fontWeight: 700, letterSpacing: 0.5, marginBottom: 24 }}>
+              <FiZap size={13} color="#a78bfa" />
+              Taxa mais justa — R$1,50 + 1,09% por venda
+            </div>
+
+            <h1 style={{ fontSize: 'clamp(32px, 4.2vw, 58px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: -1.5, color: 'white', marginBottom: 20, textShadow: '0 2px 24px rgba(0,0,0,0.4)' }} className="landingHeroTitle">
               O gateway que faz<br />
-              <span style={{ color: '#ddd6fe' }}>seu negócio crescer</span>
+              <span style={{ background: 'linear-gradient(135deg, #c4b5fd, #a78bfa, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                seu negócio crescer
+              </span>
             </h1>
 
-            <p style={{ color: 'rgba(255,255,255,0.88)', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.75, marginBottom: 36, maxWidth: 460, textShadow: '0 1px 8px rgba(0,0,0,0.2)' }} className="landingHeroSubtitle">
-              Checkout de alta conversão, Pix instantâneo, área de membros e loja integrada. Tudo em um só lugar, com a taxa mais justa do mercado.
+            <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.75, marginBottom: 36, maxWidth: 460, textShadow: '0 1px 8px rgba(0,0,0,0.3)' }} className="landingHeroSubtitle">
+              Checkout de alta conversão, Pix instantâneo, área de membros e loja integrada. Tudo em um só lugar.
             </p>
 
             <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 52 }} className="landingHeroActions">
               <Link href="/register" style={{
                 padding: '14px 28px', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999,
-                background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(12px)',
-                border: '1.5px solid rgba(255,255,255,0.45)', color: 'white', fontWeight: 700, textDecoration: 'none',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                color: 'white', fontWeight: 700, textDecoration: 'none',
+                boxShadow: '0 8px 32px rgba(109,40,217,0.5)',
               }}>
                 Criar conta grátis <FiArrowRight size={16} />
               </Link>
               <Link href="#features" style={{
                 padding: '14px 28px', fontSize: 15, borderRadius: 999,
-                background: 'transparent', border: '1.5px solid rgba(255,255,255,0.35)',
+                background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)',
+                border: '1.5px solid rgba(255,255,255,0.25)',
                 color: 'rgba(255,255,255,0.92)', textDecoration: 'none', fontWeight: 600,
                 display: 'inline-flex', alignItems: 'center',
               }}>
@@ -254,33 +263,101 @@ export default function LandingPage() {
             </div>
 
             {/* Stats */}
-            <div style={{ display: 'flex', gap: 36, flexWrap: 'wrap' }} className="landingHeroStats">
+            <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }} className="landingHeroStats">
               {[
                 { value: 'R$1,50', label: 'Taxa fixa por venda' },
                 { value: '1,09%', label: 'Taxa do gateway' },
                 { value: 'Na hora', label: 'Recebimento Pix' },
                 { value: '100%', label: 'Automático' },
               ].map((s, i) => (
-                <div key={i}>
-                  <div style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.5, textShadow: '0 2px 12px rgba(0,0,0,0.25)' }}>{s.value}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
+                <div key={i} style={{ borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none', paddingLeft: i > 0 ? 32 : 0 }}>
+                  <div style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: -0.5, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Coluna direita — mockup dashboard profissional */}
+          <div style={{ position: 'relative' }} className="heroRight">
+            {/* Glow atrás do mockup */}
+            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '90%', height: '60%', background: 'radial-gradient(ellipse, rgba(124,58,237,0.35) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+
+            {/* Frame do browser */}
+            <div style={{
+              position: 'relative', zIndex: 2,
+              borderRadius: 16,
+              overflow: 'hidden',
+              border: '1px solid rgba(255,255,255,0.15)',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
+              background: '#0f0e1a',
+              transform: 'perspective(1000px) rotateY(-4deg) rotateX(2deg)',
+            }}>
+              {/* Barra do browser */}
+              <div style={{ background: '#1a1830', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ display: 'flex', gap: 5 }}>
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f56' }} />
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27c93f' }} />
+                </div>
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.06)', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+                  goupay.com.br/dashboard
+                </div>
+              </div>
+              {/* Screenshot */}
+              <img
+                src="https://i.imgur.com/PxTZBza.png"
+                alt="Dashboard GouPay"
+                referrerPolicy="no-referrer"
+                loading="eager"
+                style={{ width: '100%', display: 'block' }}
+              />
+            </div>
+
+            {/* Card flutuante — saldo */}
+            <div style={{
+              position: 'absolute', bottom: '12%', left: '-8%', zIndex: 5,
+              background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(16px)',
+              borderRadius: 14, padding: '12px 16px',
+              boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
+              minWidth: 140,
+            }}>
+              <div style={{ fontSize: 10, color: '#7c3aed', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Saldo disponível</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: '#0f0e1a', letterSpacing: -0.5 }}>R$ 8.543</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 4 }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981' }} />
+                <span style={{ fontSize: 11, color: '#10b981', fontWeight: 600 }}>+12% este mês</span>
+              </div>
+            </div>
+
+            {/* Card flutuante — taxa */}
+            <div style={{
+              position: 'absolute', top: '8%', right: '-6%', zIndex: 5,
+              background: 'rgba(124,58,237,0.9)', backdropFilter: 'blur(16px)',
+              borderRadius: 14, padding: '12px 16px',
+              boxShadow: '0 16px 48px rgba(124,58,237,0.4)',
+              minWidth: 120,
+            }}>
+              <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Taxa por venda</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: 'white', letterSpacing: -0.5 }}>R$1,50</div>
+              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.7)', marginTop: 4 }}>+ 1,09% gateway</div>
             </div>
           </div>
         </div>
 
         <style>{`
+          @media (max-width: 900px) {
+            .heroGrid { grid-template-columns: 1fr !important; gap: 32px !important; }
+            .heroRight { display: none !important; }
+            .heroLeft { max-width: 100% !important; }
+          }
           @media (max-width: 640px) {
             .landingHeroTitle { font-size: 30px !important; }
             .landingHeroSubtitle { font-size: 14px !important; }
-            .landingHeroStats { gap: 20px !important; }
+            .landingHeroStats { gap: 16px !important; }
+            .landingHeroStats > div { border-left: none !important; padding-left: 0 !important; }
             .landingHeroActions a { padding: 12px 20px !important; font-size: 14px !important; }
             .landingHero { padding-top: calc(env(safe-area-inset-top) + 160px) !important; padding-left: 0 !important; }
-            .heroLeft { max-width: 100% !important; }
-          }
-          @media (max-width: 900px) {
-            .heroLeft { max-width: 100% !important; }
           }
         `}</style>
       </section>
