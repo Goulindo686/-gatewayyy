@@ -227,27 +227,44 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Faixa de taxa */}
-      <div style={{ background: 'linear-gradient(90deg, rgba(0,206,201,0.08) 0%, rgba(108,92,231,0.08) 100%)', borderTop: '1px solid rgba(0,206,201,0.15)', borderBottom: '1px solid rgba(108,92,231,0.12)', padding: '18px 24px' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 32, flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <FiZap size={18} color="#00cec9" />
-            <span style={{ fontSize: 14, fontWeight: 700 }}>Taxa por venda:</span>
-            <span style={{ fontSize: 16, fontWeight: 900, color: '#00cec9' }}>R$1,50 + 1,09%</span>
-          </div>
-          <div style={{ width: 1, height: 20, background: 'var(--border-color)' }} className="landingDivider" />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <FiLock size={16} color="var(--text-secondary)" />
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Sem mensalidade. Sem taxa de adesão.</span>
-          </div>
-          <div style={{ width: 1, height: 20, background: 'var(--border-color)' }} className="landingDivider" />
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <FiTrendingUp size={16} color="var(--text-secondary)" />
-            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Pix recebido na hora</span>
-          </div>
-          <Link href="/dashboard/fees" style={{ fontSize: 13, color: 'var(--accent-secondary)', fontWeight: 600, textDecoration: 'none' }}>
-            Ver simulador de taxas →
-          </Link>
+      {/* Faixa de taxa — ticker animado */}
+      <div style={{ background: 'linear-gradient(90deg, rgba(0,206,201,0.08) 0%, rgba(108,92,231,0.08) 100%)', borderTop: '1px solid rgba(0,206,201,0.15)', borderBottom: '1px solid rgba(108,92,231,0.12)', padding: '14px 0', overflow: 'hidden', position: 'relative' }}>
+        {/* fade nas bordas */}
+        <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 80, background: 'linear-gradient(90deg, var(--bg-primary) 0%, transparent 100%)', zIndex: 2, pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 80, background: 'linear-gradient(270deg, var(--bg-primary) 0%, transparent 100%)', zIndex: 2, pointerEvents: 'none' }} />
+
+        <style>{`
+          @keyframes ticker {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+          .ticker-track {
+            display: flex;
+            width: max-content;
+            animation: ticker 28s linear infinite;
+          }
+          .ticker-track:hover { animation-play-state: paused; }
+        `}</style>
+
+        <div className="ticker-track">
+          {[0, 1].map(copy => (
+            <div key={copy} style={{ display: 'flex', alignItems: 'center', gap: 0, whiteSpace: 'nowrap' }}>
+              {[
+                { icon: <FiZap size={15} color="#00cec9" />, text: <><strong style={{ color: '#00cec9' }}>R$1,50 + 1,09%</strong> por venda</> },
+                { icon: <FiLock size={14} color="var(--text-secondary)" />, text: 'Sem mensalidade' },
+                { icon: <FiLock size={14} color="var(--text-secondary)" />, text: 'Sem taxa de adesão' },
+                { icon: <FiTrendingUp size={14} color="var(--text-secondary)" />, text: 'Pix recebido na hora' },
+                { icon: <FiZap size={14} color="var(--text-secondary)" />, text: 'Entrega automática' },
+                { icon: <HiOutlineShieldCheck size={15} color="var(--text-secondary)" />, text: 'Checkout seguro' },
+                { icon: <HiOutlineChartBar size={14} color="var(--text-secondary)" />, text: 'Dashboard em tempo real' },
+                { icon: <FiZap size={15} color="#00cec9" />, text: <><strong style={{ color: '#00cec9' }}>R$1,50 + 1,09%</strong> por venda</> },
+              ].map((item, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', padding: '0 28px', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+                  {item.icon} {item.text}
+                </span>
+              ))}
+            </div>
+          ))}
         </div>
       </div>
 
