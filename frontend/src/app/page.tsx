@@ -276,7 +276,7 @@ export default function LandingPage() {
                   {/* Screenshot do dashboard */}
                   <div style={{ borderRadius: '6px 6px 0 0', overflow: 'hidden', lineHeight: 0 }}>
                     <img
-                      src="/dashboard-screenshot.png"
+                      src="https://i.imgur.com/PxTZBza.png"
                       alt="Dashboard GouPay"
                       style={{ width: '100%', display: 'block' }}
                       onError={(e) => {
@@ -339,7 +339,7 @@ export default function LandingPage() {
                   {/* Tela */}
                   <div style={{ borderRadius: 18, overflow: 'hidden', background: '#ffffff', lineHeight: 0 }}>
                     <img
-                      src="/mobile-screenshot.png"
+                      src="https://i.imgur.com/tY6dEzA.png"
                       alt="GouPay Mobile"
                       style={{ width: '100%', display: 'block' }}
                       onError={(e) => {
