@@ -28,6 +28,13 @@ export default function ScrollCardSection() {
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
       // Em mobile mostra tudo imediatamente sem GSAP
+      // Também esconde a bola branca e mostra fundo claro direto
+      if (orbRef.current) {
+        orbRef.current.style.transform = 'scale(1)';
+      }
+      if (cardRef.current) {
+        cardRef.current.style.background = 'linear-gradient(135deg, #f0eeff 0%, #e8e4ff 40%, #ddd8ff 100%)';
+      }
       [leftRef, rightRef, headingRef, ctaRef].forEach(r => {
         if (r.current) {
           r.current.style.opacity = '1';
@@ -98,10 +105,10 @@ export default function ScrollCardSection() {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
-        // Força compositing layer própria para a seção inteira
         willChange: 'transform',
         contain: 'layout style paint',
       }}
+      className="landingHero scroll-card-section"
     >
       {/* Orbs de fundo — sem filter:blur (usa box-shadow no lugar, mais leve) */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
@@ -270,12 +277,48 @@ export default function ScrollCardSection() {
           50% { opacity: 0.9; }
         }
         @media (max-width: 768px) {
-          .scroll-card-layout { flex-direction: column !important; gap: 20px !important; padding: 0 16px !important; }
+          .scroll-card-layout {
+            flex-direction: column !important;
+            gap: 24px !important;
+            padding: 0 20px !important;
+            align-items: center !important;
+          }
           .scroll-card-left { display: none !important; }
-          .scroll-card-center { width: 240px !important; height: 340px !important; }
+          .scroll-card-center {
+            width: 260px !important;
+            height: 360px !important;
+          }
+          /* Coluna direita centralizada em mobile */
+          .scroll-card-layout > div:last-child {
+            width: 100% !important;
+            align-items: center !important;
+            text-align: center !important;
+          }
+          .scroll-card-layout > div:last-child h2 {
+            text-align: center !important;
+          }
+          .scroll-card-layout > div:last-child p {
+            text-align: center !important;
+          }
+          .scroll-card-layout > div:last-child > div:first-child {
+            align-items: center !important;
+          }
         }
         @media (prefers-reduced-motion: reduce) {
           .scroll-card-layout * { transition: none !important; animation: none !important; }
+        }
+        /* Mobile: fundo claro, sem animação da bola */
+        @media (max-width: 768px) {
+          .scroll-card-section {
+            background: #f5f3ff !important;
+            height: auto !important;
+            min-height: 100vh !important;
+            padding: 80px 0 40px !important;
+          }
+          .scroll-card-section > div[style*="300vmax"],
+          .scroll-card-section > div[style*="200vmax"] {
+            display: none !important;
+          }
         }
       `}</style>
     </section>
