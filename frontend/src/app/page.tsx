@@ -881,13 +881,19 @@ Body:
             #api .apiPreview {
               margin-top: 18px;
             }
+            /* Garante que sr-left e sr-right aparecem em mobile */
+            #api .sr-left,
+            #api .sr-right {
+              opacity: 1 !important;
+              transform: none !important;
+            }
           }
           @media (max-width: 640px) {
             #api .glass-card {
-              padding: 24px !important;
+              padding: 20px !important;
             }
             #api .apiCopy h2 {
-              font-size: 28px !important;
+              font-size: 24px !important;
             }
             #api .apiCopy p {
               font-size: 14px !important;
@@ -908,18 +914,30 @@ Body:
               gap: 24px !important;
             }
             .landingStorefrontTitle {
-              font-size: 30px !important;
+              font-size: 28px !important;
             }
+            /* Mostra o preview em mobile também */
             .landingStorefrontPreview {
-              display: none !important;
+              display: block !important;
+            }
+            .landingStorefrontPreview.sr-right {
+              opacity: 1 !important;
+              transform: none !important;
+            }
+            /* Garante que sr classes aparecem */
+            .landingStorefrontGrid .sr-up,
+            .landingStorefrontGrid .sr-right,
+            .landingStorefrontGrid .sr-left {
+              opacity: 1 !important;
+              transform: none !important;
             }
           }
           @media (max-width: 640px) {
             .landingStorefrontCard {
-              padding: 24px !important;
+              padding: 20px !important;
             }
             .landingStorefrontTitle {
-              font-size: 24px !important;
+              font-size: 22px !important;
             }
             .landingStorefrontDesc {
               font-size: 14px !important;

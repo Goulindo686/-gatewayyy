@@ -625,3 +625,12 @@ body {
     transition: none !important;
   }
 }
+
+/* Mobile: força visibilidade de todos os elementos sr em telas pequenas */
+@media (max-width: 980px) {
+  .sr {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+}
