@@ -343,28 +343,28 @@ export default function ScrollCardSection() {
           .scroll-card-plaques-mobile {
             position: relative !important;
             width: 260px !important;
-            height: 320px !important;
-            margin: 0 auto !important;
+            height: 240px !important;
+            margin: 0 auto 24px !important;
           }
 
           /* Placa esquerda (100K) — inclinada para esquerda */
           .scroll-card-plaques-mobile > div:nth-child(1) {
             opacity: 1 !important;
-            transform: translateX(-70px) rotate(-12deg) scale(0.82) !important;
+            transform: translateX(-80px) translateY(20px) rotate(-14deg) scale(0.68) !important;
             z-index: 1 !important;
           }
 
           /* Placa direita (500K) — inclinada para direita */
           .scroll-card-plaques-mobile > div:nth-child(2) {
             opacity: 1 !important;
-            transform: translateX(70px) rotate(12deg) scale(0.82) !important;
+            transform: translateX(80px) translateY(20px) rotate(14deg) scale(0.68) !important;
             z-index: 1 !important;
           }
 
-          /* Placa central (1M) — em destaque */
+          /* Placa central (1M) — em destaque, menor */
           .scroll-card-plaques-mobile > div:nth-child(3) {
             opacity: 1 !important;
-            transform: none !important;
+            transform: scale(0.78) !important;
             z-index: 3 !important;
           }
 
@@ -373,6 +373,7 @@ export default function ScrollCardSection() {
             width: 100% !important;
             align-items: center !important;
             text-align: center !important;
+            margin-top: 40px !important;
           }
           .scroll-card-layout > div:last-child h2,
           .scroll-card-layout > div:last-child p,
