@@ -14,32 +14,63 @@ const RIGHT_ITEMS = [
   { icon: <FiBarChart2 size={20} />, title: 'Dashboard completo', desc: 'Métricas em tempo real.' },
 ];
 
+// 3 placas de premiação
+const PLAQUES = [
+  {
+    id: 'p100k',
+    milestone: '100K',
+    label: 'Vendas realizadas',
+    sub: 'Primeira conquista',
+    bg: 'linear-gradient(135deg, #b8860b 0%, #daa520 40%, #ffd700 70%, #b8860b 100%)',
+    border: 'rgba(255,215,0,0.6)',
+    glow: 'rgba(218,165,32,0.5)',
+    textColor: '#3d2800',
+    starColor: '#b8860b',
+    shine: 'rgba(255,255,255,0.35)',
+  },
+  {
+    id: 'p500k',
+    milestone: '500K',
+    label: 'Vendas realizadas',
+    sub: 'Elite GouPay',
+    bg: 'linear-gradient(135deg, #9e9e9e 0%, #c0c0c0 40%, #e8e8e8 70%, #9e9e9e 100%)',
+    border: 'rgba(220,220,220,0.7)',
+    glow: 'rgba(192,192,192,0.5)',
+    textColor: '#1a1a1a',
+    starColor: '#888',
+    shine: 'rgba(255,255,255,0.45)',
+  },
+  {
+    id: 'p1m',
+    milestone: '1M',
+    label: 'Vendas realizadas',
+    sub: 'Lenda GouPay',
+    bg: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 40%, #2a2a2a 70%, #0a0a0a 100%)',
+    border: 'rgba(255,255,255,0.15)',
+    glow: 'rgba(108,92,231,0.6)',
+    textColor: 'rgba(255,255,255,0.92)',
+    starColor: 'rgba(255,255,255,0.7)',
+    shine: 'rgba(255,255,255,0.08)',
+  },
+];
+
 export default function ScrollCardSection() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const orbRef = useRef<HTMLDivElement>(null);
-  const cardRef = useRef<HTMLDivElement>(null);
+  const plaque0Ref = useRef<HTMLDivElement>(null);
+  const plaque1Ref = useRef<HTMLDivElement>(null);
+  const plaque2Ref = useRef<HTMLDivElement>(null);
   const leftRef = useRef<HTMLDivElement>(null);
   const rightRef = useRef<HTMLDivElement>(null);
   const headingRef = useRef<HTMLDivElement>(null);
   const ctaRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Não roda animação pesada em mobile — usa CSS simples
     const isMobile = window.innerWidth <= 768;
     if (isMobile) {
-      // Em mobile mostra tudo imediatamente sem GSAP
-      // Também esconde a bola branca e mostra fundo claro direto
-      if (orbRef.current) {
-        orbRef.current.style.transform = 'scale(1)';
-      }
-      if (cardRef.current) {
-        cardRef.current.style.background = 'linear-gradient(135deg, #f0eeff 0%, #e8e4ff 40%, #ddd8ff 100%)';
-      }
-      [leftRef, rightRef, headingRef, ctaRef].forEach(r => {
-        if (r.current) {
-          r.current.style.opacity = '1';
-          r.current.style.transform = 'none';
-        }
+      if (orbRef.current) orbRef.current.style.transform = 'scale(1)';
+      [plaque0Ref, plaque1Ref, plaque2Ref, leftRef, rightRef, headingRef, ctaRef].forEach(r => {
+        if (r.current) { r.current.style.opacity = '1'; r.current.style.transform = 'none'; }
       });
       return;
     }
@@ -59,33 +90,51 @@ export default function ScrollCardSection() {
           scrollTrigger: {
             trigger: section,
             start: 'top top',
-            end: '+=2000',   // menor = mais rápido de percorrer
-            scrub: 1.8,      // mais alto = mais suave, menos CPU
+            end: '+=3000',
+            scrub: 1.5,
             pin: true,
             anticipatePin: 1,
-            fastScrollEnd: true,  // libera pin mais rápido no scroll rápido
+            fastScrollEnd: true,
           }
         });
 
-        // Bola branca — usa transform apenas (GPU)
-        tl.to(orbRef.current, {
-          scale: 1,
-          duration: 2,
-          ease: 'power2.inOut',
-        }, 0);
+        // Fase 0: bola branca cresce
+        tl.to(orbRef.current, { scale: 1, duration: 3, ease: 'power2.inOut' }, 0);
 
-        // Card — só opacity e background, sem box-shadow animado
-        tl.to(cardRef.current, {
-          background: 'linear-gradient(135deg, #f0eeff 0%, #e8e4ff 40%, #ddd8ff 100%)',
-          duration: 1.5,
-          ease: 'power2.inOut',
-        }, 0.3);
+        // Fase 1: placa 100K aparece (dourada)
+        tl.fromTo(plaque0Ref.current,
+          { opacity: 0, scale: 0.7, rotateY: -30 },
+          { opacity: 1, scale: 1, rotateY: 0, duration: 0.8, ease: 'back.out(1.4)' },
+          0.5
+        );
 
-        // Colunas — só opacity + transform (GPU)
-        tl.to(leftRef.current, { opacity: 1, x: 0, duration: 0.7, ease: 'power2.out' }, 1.2);
-        tl.to(rightRef.current, { opacity: 1, x: 0, duration: 0.7, ease: 'power2.out' }, 1.35);
-        tl.to(headingRef.current, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 1.5);
-        tl.to(ctaRef.current, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 1.65);
+        // Fase 2: placa 100K sai, placa 500K entra (prata)
+        tl.to(plaque0Ref.current,
+          { opacity: 0, scale: 0.8, x: -80, rotateY: 20, duration: 0.5, ease: 'power2.in' },
+          1.4
+        );
+        tl.fromTo(plaque1Ref.current,
+          { opacity: 0, scale: 0.7, rotateY: 30 },
+          { opacity: 1, scale: 1, rotateY: 0, duration: 0.8, ease: 'back.out(1.4)' },
+          1.6
+        );
+
+        // Fase 3: placa 500K sai, placa 1M entra (preta)
+        tl.to(plaque1Ref.current,
+          { opacity: 0, scale: 0.8, x: -80, rotateY: 20, duration: 0.5, ease: 'power2.in' },
+          2.4
+        );
+        tl.fromTo(plaque2Ref.current,
+          { opacity: 0, scale: 0.7, rotateY: 30 },
+          { opacity: 1, scale: 1.05, rotateY: 0, duration: 0.9, ease: 'back.out(1.2)' },
+          2.6
+        );
+
+        // Fase 4: infos laterais aparecem junto com a placa 1M
+        tl.to(leftRef.current, { opacity: 1, x: 0, duration: 0.7, ease: 'power2.out' }, 2.7);
+        tl.to(rightRef.current, { opacity: 1, x: 0, duration: 0.7, ease: 'power2.out' }, 2.85);
+        tl.to(headingRef.current, { opacity: 1, y: 0, duration: 0.6, ease: 'power2.out' }, 2.9);
+        tl.to(ctaRef.current, { opacity: 1, y: 0, duration: 0.5, ease: 'power2.out' }, 3.0);
 
       }, section);
     };
@@ -93,6 +142,79 @@ export default function ScrollCardSection() {
     init();
     return () => ctx?.revert();
   }, []);
+
+  const renderPlaque = (p: typeof PLAQUES[0], ref: React.RefObject<HTMLDivElement | null>, initialVisible = false) => (
+    <div
+      ref={ref}
+      style={{
+        position: 'absolute',
+        width: '280px',
+        height: '380px',
+        borderRadius: '24px',
+        background: p.bg,
+        border: `1.5px solid ${p.border}`,
+        boxShadow: `0 40px 80px rgba(0,0,0,0.5), 0 0 60px ${p.glow}, inset 0 1px 0 ${p.shine}`,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 16,
+        opacity: initialVisible ? 1 : 0,
+        transformStyle: 'preserve-3d',
+        perspective: '1000px',
+        willChange: 'transform, opacity',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Reflexo de vidro */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '40%', background: `linear-gradient(160deg, ${p.shine} 0%, transparent 100%)`, borderRadius: '24px 24px 0 0', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '25%', background: `linear-gradient(90deg, ${p.shine} 0%, transparent 100%)`, pointerEvents: 'none' }} />
+
+      {/* Moldura interna */}
+      <div style={{ position: 'absolute', inset: 10, borderRadius: 16, border: `1px solid ${p.border}`, opacity: 0.4, pointerEvents: 'none' }} />
+
+      {/* Logo */}
+      <div style={{
+        width: 80, height: 80, borderRadius: 20,
+        background: `rgba(0,0,0,0.15)`,
+        border: `1px solid ${p.border}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: `0 8px 24px rgba(0,0,0,0.3), inset 0 1px 0 ${p.shine}`,
+        position: 'relative', zIndex: 2,
+      }}>
+        <img
+          src="https://i.imgur.com/qFq7IHR.png"
+          alt="GouPay"
+          style={{ width: 48, height: 48, objectFit: 'contain', filter: p.id === 'p1m' ? 'brightness(0) invert(1)' : 'brightness(0)' }}
+        />
+      </div>
+
+      {/* Milestone */}
+      <div style={{ textAlign: 'center', position: 'relative', zIndex: 2 }}>
+        <div style={{ fontSize: 52, fontWeight: 900, color: p.textColor, letterSpacing: -2, lineHeight: 1, textShadow: p.id === 'p1m' ? '0 0 30px rgba(108,92,231,0.5)' : 'none' }}>
+          {p.milestone}
+        </div>
+        <div style={{ fontSize: 11, color: p.textColor, opacity: 0.7, letterSpacing: 3, textTransform: 'uppercase', fontWeight: 700, marginTop: 4 }}>
+          {p.label}
+        </div>
+      </div>
+
+      {/* Divisor */}
+      <div style={{ width: 60, height: 1, background: `linear-gradient(90deg, transparent, ${p.border}, transparent)`, position: 'relative', zIndex: 2 }} />
+
+      {/* Sub */}
+      <div style={{ fontSize: 13, color: p.textColor, opacity: 0.8, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', position: 'relative', zIndex: 2 }}>
+        {p.sub}
+      </div>
+
+      {/* Estrelas */}
+      <div style={{ display: 'flex', gap: 6, position: 'relative', zIndex: 2 }}>
+        {[0,1,2,3,4].map(i => (
+          <span key={i} style={{ fontSize: 14, color: p.starColor, opacity: i < 5 ? 1 : 0.2 }}>★</span>
+        ))}
+      </div>
+    </div>
+  );
 
   return (
     <section
@@ -105,58 +227,34 @@ export default function ScrollCardSection() {
         alignItems: 'center',
         justifyContent: 'center',
         overflow: 'hidden',
-        willChange: 'transform',
         contain: 'layout style paint',
       }}
-      className="landingHero scroll-card-section"
+      className="scroll-card-section"
     >
-      {/* Orbs de fundo — sem filter:blur (usa box-shadow no lugar, mais leve) */}
+      {/* Orbs de fundo */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none' }}>
-        <div style={{
-          position: 'absolute', top: '10%', left: '10%',
-          width: 400, height: 400, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(108,92,231,0.18) 0%, transparent 70%)',
-          // Sem filter:blur — usa gradiente radial que é nativo do GPU
-        }} />
-        <div style={{
-          position: 'absolute', bottom: '10%', right: '8%',
-          width: 320, height: 320, borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(0,206,201,0.1) 0%, transparent 70%)',
-        }} />
-        <div style={{
-          position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)',
-          backgroundSize: '40px 40px',
-        }} />
+        <div style={{ position: 'absolute', top: '10%', left: '10%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(108,92,231,0.18) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', bottom: '10%', right: '8%', width: 320, height: 320, borderRadius: '50%', background: 'radial-gradient(circle, rgba(0,206,201,0.1) 0%, transparent 70%)' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(rgba(255,255,255,0.025) 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
       </div>
 
-      {/* Bola branca — tamanho reduzido, willChange para GPU */}
+      {/* Bola branca */}
       <div
         ref={orbRef}
         style={{
-          position: 'absolute',
-          zIndex: 1,
-          width: '200vmax',   // menor que 300vmax — mesmo efeito, menos memória
-          height: '200vmax',
-          borderRadius: '50%',
-          background: 'white',
-          transform: 'scale(0)',
-          transformOrigin: 'center center',
-          willChange: 'transform',
-          pointerEvents: 'none',
+          position: 'absolute', zIndex: 1,
+          width: '200vmax', height: '200vmax',
+          borderRadius: '50%', background: 'white',
+          transform: 'scale(0)', transformOrigin: 'center center',
+          willChange: 'transform', pointerEvents: 'none',
         }}
       />
 
-      {/* Layout principal */}
+      {/* Layout */}
       <div style={{
-        position: 'relative',
-        zIndex: 10,
-        display: 'flex',
-        alignItems: 'center',
-        gap: 40,
-        maxWidth: 1000,
-        width: '100%',
-        padding: '0 24px',
+        position: 'relative', zIndex: 10,
+        display: 'flex', alignItems: 'center', gap: 40,
+        maxWidth: 1000, width: '100%', padding: '0 24px',
       }} className="scroll-card-layout">
 
         {/* Coluna esquerda */}
@@ -166,15 +264,8 @@ export default function ScrollCardSection() {
           className="scroll-card-left"
         >
           {LEFT_ITEMS.map((item, i) => (
-            <div key={i} style={{
-              display: 'flex', alignItems: 'flex-start', gap: 14,
-              padding: '16px 18px', borderRadius: 16,
-              background: 'rgba(108,92,231,0.08)',
-              border: '1px solid rgba(108,92,231,0.15)',
-            }}>
-              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(108,92,231,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c5ce7', flexShrink: 0 }}>
-                {item.icon}
-              </div>
+            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '16px 18px', borderRadius: 16, background: 'rgba(108,92,231,0.08)', border: '1px solid rgba(108,92,231,0.15)' }}>
+              <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(108,92,231,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c5ce7', flexShrink: 0 }}>{item.icon}</div>
               <div>
                 <div style={{ fontSize: 14, fontWeight: 700, color: '#1a1a2e', marginBottom: 4 }}>{item.title}</div>
                 <div style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>{item.desc}</div>
@@ -183,94 +274,11 @@ export default function ScrollCardSection() {
           ))}
         </div>
 
-        {/* Card central */}
-        <div
-          ref={cardRef}
-          style={{
-            flexShrink: 0,
-            width: '300px',
-            height: '420px',
-            borderRadius: '28px',
-            // Placa de vidro preta
-            background: 'linear-gradient(160deg, rgba(30,30,35,0.95) 0%, rgba(10,10,12,0.98) 60%, rgba(20,18,28,0.95) 100%)',
-            boxShadow: '0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04)',
-            overflow: 'hidden',
-            position: 'relative',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backdropFilter: 'blur(20px)',
-            willChange: 'background',
-          }}
-          className="scroll-card-center"
-        >
-          {/* Reflexo de vidro — brilho diagonal no topo */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, right: 0, height: '45%',
-            background: 'linear-gradient(160deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 50%, transparent 100%)',
-            borderRadius: '28px 28px 0 0',
-            pointerEvents: 'none', zIndex: 1,
-          }} />
-
-          {/* Reflexo lateral esquerdo */}
-          <div style={{
-            position: 'absolute', top: 0, left: 0, bottom: 0, width: '30%',
-            background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 0%, transparent 100%)',
-            pointerEvents: 'none', zIndex: 1,
-          }} />
-
-          {/* Moldura interna — borda dourada sutil */}
-          <div style={{
-            position: 'absolute', inset: 12,
-            borderRadius: 18,
-            border: '1px solid rgba(255,255,255,0.06)',
-            pointerEvents: 'none', zIndex: 1,
-          }} />
-
-          {/* Glow roxo sutil no fundo */}
-          <div style={{
-            position: 'absolute', bottom: '-20%', left: '50%', transform: 'translateX(-50%)',
-            width: 200, height: 200, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(108,92,231,0.2) 0%, transparent 70%)',
-            pointerEvents: 'none', zIndex: 0,
-          }} />
-
-          {/* Conteúdo central — logo como troféu */}
-          <div style={{ position: 'relative', zIndex: 5, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
-            {/* Ícone troféu / logo */}
-            <div style={{
-              width: 100, height: 100, borderRadius: 24,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1)',
-            }}>
-              <img
-                src="https://i.imgur.com/qFq7IHR.png"
-                alt="GouPay"
-                style={{ width: 60, height: 60, objectFit: 'contain', filter: 'brightness(0) invert(1)', opacity: 0.9 }}
-              />
-            </div>
-
-            {/* Nome */}
-            <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 20, fontWeight: 800, color: 'rgba(255,255,255,0.92)', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>
-                GouPay
-              </div>
-              <div style={{ width: 40, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent)', margin: '0 auto 10px' }} />
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', letterSpacing: 3, textTransform: 'uppercase', fontWeight: 600 }}>
-                Gateway
-              </div>
-            </div>
-
-            {/* Estrelas decorativas */}
-            <div style={{ display: 'flex', gap: 6 }}>
-              {[0,1,2,3,4].map(i => (
-                <div key={i} style={{ fontSize: 12, color: i < 4 ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.15)' }}>★</div>
-              ))}
-            </div>
-          </div>
+        {/* Centro — placas empilhadas */}
+        <div style={{ flexShrink: 0, width: '280px', height: '380px', position: 'relative', perspective: '1000px' }}>
+          {renderPlaque(PLAQUES[0], plaque0Ref)}
+          {renderPlaque(PLAQUES[1], plaque1Ref)}
+          {renderPlaque(PLAQUES[2], plaque2Ref)}
         </div>
 
         {/* Coluna direita */}
@@ -288,9 +296,7 @@ export default function ScrollCardSection() {
           <div ref={rightRef} style={{ opacity: 0, transform: 'translateX(40px)', display: 'flex', flexDirection: 'column', gap: 12, willChange: 'transform, opacity' }}>
             {RIGHT_ITEMS.map((item, i) => (
               <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: 14, padding: '14px 16px', borderRadius: 14, background: 'rgba(108,92,231,0.06)', border: '1px solid rgba(108,92,231,0.12)' }}>
-                <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(108,92,231,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c5ce7', flexShrink: 0 }}>
-                  {item.icon}
-                </div>
+                <div style={{ width: 34, height: 34, borderRadius: 9, background: 'rgba(108,92,231,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6c5ce7', flexShrink: 0 }}>{item.icon}</div>
                 <div>
                   <div style={{ fontSize: 13, fontWeight: 700, color: '#1a1a2e', marginBottom: 3 }}>{item.title}</div>
                   <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>{item.desc}</div>
@@ -305,8 +311,7 @@ export default function ScrollCardSection() {
               padding: '12px 22px', borderRadius: 999,
               background: 'linear-gradient(135deg, #6c5ce7, #4834d4)',
               color: 'white', fontWeight: 700, fontSize: 13,
-              textDecoration: 'none',
-              boxShadow: '0 8px 24px rgba(108,92,231,0.35)',
+              textDecoration: 'none', boxShadow: '0 8px 24px rgba(108,92,231,0.35)',
             }}>
               Criar conta grátis <FiArrowRight size={14} />
             </Link>
@@ -321,53 +326,14 @@ export default function ScrollCardSection() {
       </div>
 
       <style>{`
-        @keyframes scrollPulse {
-          0%, 100% { opacity: 0.3; }
-          50% { opacity: 0.9; }
-        }
+        @keyframes scrollPulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.9; } }
         @media (max-width: 768px) {
-          .scroll-card-layout {
-            flex-direction: column !important;
-            gap: 24px !important;
-            padding: 0 20px !important;
-            align-items: center !important;
-          }
+          .scroll-card-layout { flex-direction: column !important; gap: 20px !important; padding: 0 16px !important; align-items: center !important; }
           .scroll-card-left { display: none !important; }
-          .scroll-card-center {
-            width: 260px !important;
-            height: 360px !important;
-          }
-          /* Coluna direita centralizada em mobile */
-          .scroll-card-layout > div:last-child {
-            width: 100% !important;
-            align-items: center !important;
-            text-align: center !important;
-          }
-          .scroll-card-layout > div:last-child h2 {
-            text-align: center !important;
-          }
-          .scroll-card-layout > div:last-child p {
-            text-align: center !important;
-          }
-          .scroll-card-layout > div:last-child > div:first-child {
-            align-items: center !important;
-          }
+          .scroll-card-section { background: #f5f3ff !important; height: auto !important; min-height: 100vh !important; padding: 80px 0 40px !important; }
         }
         @media (prefers-reduced-motion: reduce) {
           .scroll-card-layout * { transition: none !important; animation: none !important; }
-        }
-        /* Mobile: fundo claro, sem animação da bola */
-        @media (max-width: 768px) {
-          .scroll-card-section {
-            background: #f5f3ff !important;
-            height: auto !important;
-            min-height: 100vh !important;
-            padding: 80px 0 40px !important;
-          }
-          .scroll-card-section > div[style*="300vmax"],
-          .scroll-card-section > div[style*="200vmax"] {
-            display: none !important;
-          }
         }
       `}</style>
     </section>
