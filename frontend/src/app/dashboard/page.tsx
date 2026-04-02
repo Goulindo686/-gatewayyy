@@ -27,7 +27,7 @@ function BannerCarousel() {
     }, []);
 
     return (
-        <div style={{ position: 'relative', width: '100%', borderRadius: 14, overflow: 'hidden', marginBottom: 28, height: 240, background: '#111' }}>
+        <div style={{ position: 'relative', width: '100%', borderRadius: 14, overflow: 'hidden', marginBottom: 28, height: 320, background: '#111' }}>
             {BANNERS.map((src, i) => (
                 <img
                     key={i}
