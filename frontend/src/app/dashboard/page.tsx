@@ -12,6 +12,41 @@ import {
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Filler, Legend);
 
+const BANNERS = [
+    'https://i.imgur.com/0fOrp09.png',
+    'https://i.imgur.com/BzqCRFY.png',
+    'https://i.imgur.com/uhxthPG.png',
+];
+
+function BannerCarousel() {
+    const [current, setCurrent] = useState(0);
+    useEffect(() => {
+        const t = setInterval(() => setCurrent(p => (p + 1) % BANNERS.length), 4000);
+        return () => clearInterval(t);
+    }, []);
+    return (
+        <div style={{ position: 'relative', width: '100%', height: 280, borderRadius: 14, overflow: 'hidden', marginBottom: 28 }}>
+            {BANNERS.map((src, i) => (
+                <img key={i} src={src} alt={`Banner ${i + 1}`} style={{
+                    position: 'absolute', inset: 0, width: '100%', height: '100%',
+                    objectFit: 'fill',
+                    opacity: current === i ? 1 : 0,
+                    transition: 'opacity 0.7s ease-in-out',
+                }} />
+            ))}
+            <div style={{ position: 'absolute', bottom: 10, left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: 6, zIndex: 2 }}>
+                {BANNERS.map((_, i) => (
+                    <button key={i} onClick={() => setCurrent(i)} style={{
+                        width: current === i ? 20 : 8, height: 8, borderRadius: 4,
+                        background: current === i ? '#fff' : 'rgba(255,255,255,0.4)',
+                        border: 'none', cursor: 'pointer', padding: 0, transition: 'all 0.3s',
+                    }} />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 interface MonthlySale {
     month: string;
     amount: number;
@@ -210,7 +245,14 @@ export default function DashboardPage() {
             <style>{`
             `}</style>
 
+            {/* Banners — desktop only */}
+            <div className="banner-wrap">
+                <BannerCarousel />
+            </div>
+
             <style>{`
+                .banner-wrap { display: block; }
+                @media (max-width: 768px) { .banner-wrap { display: none; } }
                 .db-card {
                     background: var(--bg-card);
                     border: 1px solid var(--border-color);
