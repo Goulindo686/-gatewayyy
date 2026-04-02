@@ -13,9 +13,9 @@ import {
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, Tooltip, Filler, Legend);
 
 const BANNERS = [
-    'https://i.imgur.com/ZavzTqt.png',
-    'https://i.imgur.com/ckroQ7b.png',
-    'https://i.imgur.com/cOgByLu.png',
+    'https://i.imgur.com/ncRl8GC.png',
+    'https://i.imgur.com/54L6tzM.png',
+    'https://i.imgur.com/S1P9IdR.png',
 ];
 
 function BannerCarousel() {
