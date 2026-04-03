@@ -344,9 +344,6 @@ export default function ProductsPage() {
                                                         Remover
                                                     </button>
                                                 </div>
-                                                {pl.description && (
-                                                    <span style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{pl.description}</span>
-                                                )}
                                             </div>
                                         ))}
                                         <button
