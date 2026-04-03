@@ -349,8 +349,8 @@ export default function StorePage() {
                         className="quickModalContent"
                         onClick={(e) => e.stopPropagation()}
                         style={{
-                            width: '100%',
-                            maxWidth: 1140,
+                            width: '95vw',
+                            maxWidth: 1400,
                             maxHeight: 'calc(100vh - 48px)',
                             margin: '0 auto',
                             overflowY: 'auto',
@@ -391,8 +391,8 @@ export default function StorePage() {
                             </button>
                         </div>
 
-                        <div className="quickModalGrid" style={{ display: 'grid', gridTemplateColumns: '1.2fr 0.8fr', gap: 28, padding: 28 }}>
-                            <div className="quickModalSubGrid" style={{ display: 'grid', gridTemplateColumns: '360px 1fr', gap: 22, alignItems: 'start' }}>
+                        <div className="quickModalGrid" style={{ display: 'grid', gridTemplateColumns: '1.3fr 0.7fr', gap: 32, padding: 32 }}>
+                            <div className="quickModalSubGrid" style={{ display: 'grid', gridTemplateColumns: '420px 1fr', gap: 24, alignItems: 'start' }}>
                                 <div style={{ width: '100%', aspectRatio: '1 / 1', borderRadius: 18, overflow: 'hidden', background: '#0a0a0c', border: '1px solid rgba(255,255,255,0.05)' }}>
                                     {quickProduct?.image_url ? (
                                         <img src={quickProduct.image_url} alt={quickProduct?.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
