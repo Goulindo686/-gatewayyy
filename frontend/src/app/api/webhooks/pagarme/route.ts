@@ -144,6 +144,52 @@ export async function POST(req: NextRequest) {
                         .limit(1);
                 }
                 return jsonSuccess({ received: true });
+
+            // ─── Subscription Events ────────────────────────────────────────
+            case 'subscription.created':
+                await supabase.from('subscriptions')
+                    .update({ status: 'active' })
+                    .eq('pagarme_subscription_id', data.id);
+                return jsonSuccess({ received: true });
+
+            case 'subscription.payment_succeeded':
+            case 'subscription.cycle_ended': {
+                await supabase.from('subscriptions')
+                    .update({ status: 'active', current_period_start: new Date().toISOString() })
+                    .eq('pagarme_subscription_id', data.id);
+
+                // Registra transação de receita recorrente
+                const { data: sub } = await supabase
+                    .from('subscriptions')
+                    .select('*, subscription_plans(name)')
+                    .eq('pagarme_subscription_id', data.id)
+                    .single();
+
+                if (sub) {
+                    await supabase.from('transactions').insert({
+                        id: uuidv4(),
+                        user_id: sub.seller_id,
+                        type: 'subscription_payment',
+                        amount: sub.amount,
+                        status: 'confirmed',
+                        description: `Cobrança recorrente — ${sub.subscription_plans?.name || 'Assinatura'} — ${sub.customer_email}`
+                    });
+                }
+                return jsonSuccess({ received: true });
+            }
+
+            case 'subscription.payment_failed':
+                await supabase.from('subscriptions')
+                    .update({ status: 'past_due' })
+                    .eq('pagarme_subscription_id', data.id);
+                return jsonSuccess({ received: true });
+
+            case 'subscription.canceled':
+                await supabase.from('subscriptions')
+                    .update({ status: 'canceled', canceled_at: new Date().toISOString() })
+                    .eq('pagarme_subscription_id', data.id);
+                return jsonSuccess({ received: true });
+
             default:
                 return jsonSuccess({ received: true });
         }

@@ -352,6 +352,87 @@ export class PagarmeService {
         const response = await pagarmeApi.post(`/recipients/${recipientId}/kyc_link`);
         return response.data;
     }
+
+    // ─── Subscription Methods ───────────────────────────────────────────────
+
+    static async createPlan(data: {
+        name: string;
+        amount: number;
+        interval: 'monthly' | 'weekly' | 'yearly';
+        interval_count: number;
+        seller_recipient_id: string;
+        platform_fee_percentage: number;
+    }) {
+        const PLATFORM_FLAT_FEE = 150;
+        const applyFee = data.platform_fee_percentage > 0;
+        const platformFeeAmount = applyFee ? Math.min(PLATFORM_FLAT_FEE, data.amount) : 0;
+        const sellerAmount = data.amount - platformFeeAmount;
+        const platId = (process.env.PLATFORM_RECIPIENT_ID || '').trim();
+        const sellId = data.seller_recipient_id.trim();
+
+        const splitRules = applyFee && platId && platId !== sellId ? [
+            { amount: sellerAmount, recipient_id: sellId, type: 'flat', options: { charge_processing_fee: true, liable: true, charge_remainder_fee: true } },
+            { amount: platformFeeAmount, recipient_id: platId, type: 'flat', options: { charge_processing_fee: false, liable: false, charge_remainder_fee: false } }
+        ] : undefined;
+
+        const response = await pagarmeApi.post('/plans', {
+            name: data.name,
+            interval: data.interval,
+            interval_count: data.interval_count,
+            billing_type: 'prepaid',
+            payment_methods: ['credit_card'],
+            items: [{ name: data.name, quantity: 1, pricing_scheme: { price: data.amount } }],
+            split: splitRules
+        });
+        return response.data;
+    }
+
+    static async createSubscription(data: {
+        plan_id: string;
+        customer: { name: string; email: string; cpf: string; phone?: string };
+        card: { number: string; holder_name: string; exp_month: number; exp_year: number; cvv: string };
+        seller_recipient_id: string;
+        platform_fee_percentage: number;
+    }) {
+        const cpf = data.customer.cpf.replace(/\D/g, '');
+        const phone = (data.customer.phone || '').replace(/\D/g, '');
+
+        const response = await pagarmeApi.post('/subscriptions', {
+            plan_id: data.plan_id,
+            payment_method: 'credit_card',
+            customer: {
+                name: data.customer.name,
+                email: data.customer.email,
+                document: cpf,
+                type: 'individual',
+                phones: {
+                    mobile_phone: {
+                        country_code: '55',
+                        area_code: phone.substring(0, 2) || '11',
+                        number: phone.substring(2) || '999999999'
+                    }
+                }
+            },
+            card: {
+                number: data.card.number.replace(/\D/g, ''),
+                holder_name: data.card.holder_name,
+                exp_month: data.card.exp_month,
+                exp_year: data.card.exp_year,
+                cvv: data.card.cvv
+            }
+        });
+        return response.data;
+    }
+
+    static async cancelSubscription(subscriptionId: string) {
+        const response = await pagarmeApi.delete(`/subscriptions/${subscriptionId}`);
+        return response.data;
+    }
+
+    static async getSubscription(subscriptionId: string) {
+        const response = await pagarmeApi.get(`/subscriptions/${subscriptionId}`);
+        return response.data;
+    }
 }
 
 export default pagarmeApi;
