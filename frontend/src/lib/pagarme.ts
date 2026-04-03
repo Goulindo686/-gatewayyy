@@ -391,16 +391,12 @@ export class PagarmeService {
         const cpf = data.customer.cpf.replace(/\D/g, '');
         const phone = (data.customer.phone || '').replace(/\D/g, '');
 
-        const PLATFORM_FLAT_FEE = 150;
         const applyFee = data.platform_fee_percentage > 0;
-        const platformFeeAmount = applyFee ? Math.min(PLATFORM_FLAT_FEE, data.amount) : 0;
         const platId = (process.env.PLATFORM_RECIPIENT_ID || '').trim();
         const sellId = data.seller_recipient_id.trim();
 
-        // Assinaturas só aceitam split por percentual
-        const platformPct = applyFee && data.amount > 0
-            ? Math.round((platformFeeAmount / data.amount) * 100)
-            : 0;
+        // Assinaturas só aceitam split por percentual — usa a taxa configurada no painel
+        const platformPct = applyFee ? Math.round(data.platform_fee_percentage) : 0;
         const sellerPct = 100 - platformPct;
 
         const splitRules = applyFee && platId && platId !== sellId && platformPct > 0 ? {
