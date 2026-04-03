@@ -2,15 +2,9 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { jsonError, jsonSuccess } from '@/lib/auth';
 import { PagarmeService } from '@/lib/pagarme';
-import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
-    // Rate limit: 10 tentativas por hora por IP
-    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
-    const rl = await checkRateLimit({ key: `subscribe:${ip}`, limit: 10, windowSecs: 3600 });
-    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
-
     try {
         const { plan_id, customer, card } = await req.json();
 
