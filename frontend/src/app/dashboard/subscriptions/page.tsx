@@ -91,9 +91,6 @@ export default function SubscriptionsPage() {
                             {plan.description && <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 10 }}>{plan.description}</p>}
                             <div style={{ fontSize: 22, fontWeight: 800, color: 'var(--accent-primary)' }}>{fmtBRL(plan.amount)}</div>
                             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 4 }}>{fmtInterval(plan.interval, plan.interval_count)}</div>
-                            <div style={{ marginTop: 12, fontSize: 11, color: 'var(--text-muted)', wordBreak: 'break-all' }}>
-                                Link: <span style={{ color: 'var(--accent-primary)' }}>/subscribe/{plan.id}</span>
-                            </div>
                         </div>
                     ))}
                 </div>

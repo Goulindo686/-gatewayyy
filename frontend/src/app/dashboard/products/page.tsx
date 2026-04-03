@@ -176,8 +176,10 @@ export default function ProductsPage() {
         }
     };
 
-    const copyCheckoutLink = (id: string) => {
-        const url = `${window.location.origin}/checkout/${id}`;
+    const copyCheckoutLink = (product: any) => {
+        const url = product.subscription_plan
+            ? `${window.location.origin}/subscribe/${product.subscription_plan.id}`
+            : `${window.location.origin}/checkout/${product.id}`;
         navigator.clipboard.writeText(url);
         toast.success('Link copiado!');
     };
@@ -264,8 +266,8 @@ export default function ProductsPage() {
                                     <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{product.sales_count || 0} vendas</span>
                                 </div>
                                 <div style={{ display: 'flex', gap: 8, marginTop: 16, flexWrap: 'wrap' }}>
-                                    <button onClick={() => copyCheckoutLink(product.id)} className="btn-secondary" style={{ flex: '1 1 auto', minWidth: '120px', padding: '8px 12px', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                                        <FiCopy size={13} /> Link Checkout
+                                    <button onClick={() => copyCheckoutLink(product)} className="btn-secondary" style={{ flex: '1 1 auto', minWidth: '120px', padding: '8px 12px', fontSize: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                                        <FiCopy size={13} /> {product.subscription_plan ? 'Link Assinatura' : 'Link Checkout'}
                                     </button>
                                     <Link href={`/dashboard/products/${product.id}/content`} className="btn-secondary" style={{ padding: '8px 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }} title="Gerenciar Conteúdo">
                                         <FiBook size={14} />

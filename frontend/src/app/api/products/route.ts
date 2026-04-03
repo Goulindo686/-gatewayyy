@@ -15,11 +15,25 @@ export async function GET(req: NextRequest) {
         .eq('user_id', auth.user.id)
         .order('created_at', { ascending: false });
 
-    const formattedProducts = products?.map(p => ({
+    if (!products?.length) return jsonSuccess({ products: [] });
+
+    // Busca planos de assinatura vinculados a esses produtos
+    const productIds = products.map(p => p.id);
+    const { data: subPlans } = await supabase
+        .from('subscription_plans')
+        .select('id, product_id, interval')
+        .in('product_id', productIds)
+        .eq('status', 'active');
+
+    const subPlansByProduct: Record<string, any> = {};
+    (subPlans || []).forEach(sp => { subPlansByProduct[sp.product_id] = sp; });
+
+    const formattedProducts = products.map(p => ({
         ...p,
         price: p.price / 100,
-        price_display: (p.price / 100).toFixed(2)
-    })) || [];
+        price_display: (p.price / 100).toFixed(2),
+        subscription_plan: subPlansByProduct[p.id] || null
+    }));
 
     return jsonSuccess({ products: formattedProducts });
 }
