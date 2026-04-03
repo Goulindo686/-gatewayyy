@@ -7,9 +7,9 @@ import toast from 'react-hot-toast';
 import { FiPlus, FiX, FiUsers, FiRepeat, FiTrash2 } from 'react-icons/fi';
 
 const INTERVALS = [
-    { value: 'weekly', label: 'Semanal' },
-    { value: 'monthly', label: 'Mensal' },
-    { value: 'yearly', label: 'Anual' },
+    { value: 'week', label: 'Semanal' },
+    { value: 'month', label: 'Mensal' },
+    { value: 'year', label: 'Anual' },
 ];
 
 const statusLabel: Record<string, { label: string; color: string }> = {
@@ -79,7 +79,7 @@ export default function SubscriptionsPage() {
 
     const fmtBRL = (cents: number) => `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
     const fmtInterval = (interval: string, count: number) => {
-        const map: Record<string, string> = { weekly: 'semana', monthly: 'mês', yearly: 'ano' };
+        const map: Record<string, string> = { week: 'semana', month: 'mês', year: 'ano' };
         return count > 1 ? `a cada ${count} ${map[interval] || interval}s` : `por ${map[interval] || interval}`;
     };
 

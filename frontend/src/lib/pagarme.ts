@@ -358,7 +358,7 @@ export class PagarmeService {
     static async createPlan(data: {
         name: string;
         amount: number;
-        interval: 'monthly' | 'weekly' | 'yearly';
+        interval: 'month' | 'week' | 'year';
         interval_count: number;
     }) {
         const response = await pagarmeApi.post('/plans', {

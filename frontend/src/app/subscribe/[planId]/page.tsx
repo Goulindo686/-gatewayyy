@@ -46,7 +46,7 @@ export default function SubscribePage() {
     };
 
     const fmtBRL = (cents: number) => `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
-    const fmtInterval = (interval: string) => ({ weekly: 'semana', monthly: 'mês', yearly: 'ano' }[interval] || interval);
+    const fmtInterval = (interval: string) => ({ week: 'semana', month: 'mês', year: 'ano' }[interval] || interval);
 
     if (loading) return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0c' }}>

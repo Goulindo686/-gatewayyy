@@ -59,9 +59,9 @@ export async function POST(req: NextRequest) {
         // Calcula próximo período
         const now = new Date();
         const periodEnd = new Date(now);
-        if (plan.interval === 'monthly') periodEnd.setMonth(periodEnd.getMonth() + (plan.interval_count || 1));
-        else if (plan.interval === 'weekly') periodEnd.setDate(periodEnd.getDate() + 7 * (plan.interval_count || 1));
-        else if (plan.interval === 'yearly') periodEnd.setFullYear(periodEnd.getFullYear() + (plan.interval_count || 1));
+        if (plan.interval === 'month') periodEnd.setMonth(periodEnd.getMonth() + (plan.interval_count || 1));
+        else if (plan.interval === 'week') periodEnd.setDate(periodEnd.getDate() + 7 * (plan.interval_count || 1));
+        else if (plan.interval === 'year') periodEnd.setFullYear(periodEnd.getFullYear() + (plan.interval_count || 1));
 
         // Salva assinatura no banco
         const { data: subscription, error } = await supabase.from('subscriptions').insert({

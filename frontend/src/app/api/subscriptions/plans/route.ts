@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
             pagarmePlan = await PagarmeService.createPlan({
                 name,
                 amount: amountCents,
-                interval: interval as 'monthly' | 'weekly' | 'yearly',
+                interval: interval as 'month' | 'week' | 'year',
                 interval_count: interval_count || 1
             });
         } catch (pagarmeErr: any) {
