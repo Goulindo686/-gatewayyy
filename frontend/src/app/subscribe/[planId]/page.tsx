@@ -10,6 +10,7 @@ export default function SubscribePage() {
     const { planId } = useParams() as { planId: string };
     const router = useRouter();
     const [plan, setPlan] = useState<any>(null);
+    const [settings, setSettings] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -22,7 +23,10 @@ export default function SubscribePage() {
 
     useEffect(() => {
         api.get(`/subscriptions/plans/${planId}`)
-            .then(r => setPlan(r.data.plan))
+            .then(r => {
+                setPlan(r.data.plan);
+                if (r.data.plan?.checkout_settings) setSettings(r.data.plan.checkout_settings);
+            })
             .catch(() => toast.error('Plano não encontrado'))
             .finally(() => setLoading(false));
     }, [planId]);
@@ -68,6 +72,15 @@ export default function SubscribePage() {
     const fmtBRL = (cents: number) => `R$ ${(cents / 100).toFixed(2).replace('.', ',')}`;
     const fmtInterval = (interval: string) => ({ week: 'semana', month: 'mês', year: 'ano' }[interval] || interval);
 
+    // Configurações visuais do checkout
+    const theme = settings?.theme || 'dark';
+    const accentColor = settings?.accent_color || '#00cec9';
+    const bgColor = theme === 'light' ? '#f5f5f5' : '#0a0a0c';
+    const cardBg = theme === 'light' ? '#ffffff' : '#141417';
+    const cardBorder = theme === 'light' ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.06)';
+    const textColor = theme === 'light' ? '#1a1a2e' : 'white';
+    const mutedColor = theme === 'light' ? '#666' : '#94a3b8';
+
     if (loading) return (
         <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0c' }}>
             <div style={{ width: 36, height: 36, border: '3px solid #222', borderTopColor: '#00cec9', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
@@ -97,38 +110,55 @@ export default function SubscribePage() {
     );
 
     return (
-        <div style={{ minHeight: '100vh', background: '#0a0a0c', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
-            <div style={{ width: '100%', maxWidth: 460, background: '#141417', borderRadius: 24, border: '1px solid rgba(255,255,255,0.06)', padding: 36 }}>
+        <div style={{ minHeight: '100vh', background: bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
+            {/* Banner do produto se configurado */}
+            {settings?.banner_url && (
+                <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 180, zIndex: 0, overflow: 'hidden' }}>
+                    <img src={settings.banner_url} alt="Banner" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.4 }} />
+                    <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to bottom, transparent, ${bgColor})` }} />
+                </div>
+            )}
+            <div style={{ width: '100%', maxWidth: 460, background: cardBg, borderRadius: 24, border: `1px solid ${cardBorder}`, padding: 36, position: 'relative', zIndex: 1 }}>
+                {/* Imagem do produto se disponível */}
+                {plan.product_image && !settings?.hide_product_image && (
+                    <div style={{ width: 72, height: 72, borderRadius: 16, overflow: 'hidden', margin: '0 auto 16px', border: `1px solid ${cardBorder}` }}>
+                        <img src={plan.product_image} alt={plan.product_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    </div>
+                )}
                 {/* Header */}
                 <div style={{ textAlign: 'center', marginBottom: 28 }}>
-                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: 16, background: 'rgba(0,206,201,0.12)', marginBottom: 14 }}>
-                        <FiRepeat size={24} color="#00cec9" />
+                    <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 52, height: 52, borderRadius: 16, background: `${accentColor}22`, marginBottom: 14 }}>
+                        <FiRepeat size={24} color={accentColor} />
                     </div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: 'white', marginBottom: 6 }}>{plan.name}</h1>
-                    {plan.description && <p style={{ fontSize: 14, color: '#94a3b8' }}>{plan.description}</p>}
-                    <div style={{ marginTop: 12, fontSize: 28, fontWeight: 900, color: '#00cec9' }}>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: textColor, marginBottom: 6 }}>{plan.name}</h1>
+                    {(plan.description || plan.product_description) && (
+                        <p style={{ fontSize: 14, color: mutedColor }}>{plan.description || plan.product_description}</p>
+                    )}
+                    <div style={{ marginTop: 12, fontSize: 28, fontWeight: 900, color: accentColor }}>
                         {fmtBRL(plan.amount)}
-                        <span style={{ fontSize: 14, color: '#64748b', fontWeight: 500 }}> / {fmtInterval(plan.interval)}</span>
+                        <span style={{ fontSize: 14, color: mutedColor, fontWeight: 500 }}> / {fmtInterval(plan.interval)}</span>
                     </div>
                 </div>
 
                 <form onSubmit={handleSubmit}>
-                    <p style={{ fontSize: 12, fontWeight: 700, color: '#64748b', letterSpacing: 0.5, marginBottom: 12 }}>SEUS DADOS</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: mutedColor, letterSpacing: 0.5, marginBottom: 12 }}>SEUS DADOS</p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                         <input className="input-field" placeholder="Nome completo" required
                             value={customer.name} onChange={e => setCustomer({ ...customer, name: e.target.value })} />
                         <input className="input-field" type="email" placeholder="E-mail" required
                             value={customer.email} onChange={e => setCustomer({ ...customer, email: e.target.value })} />
-                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: settings?.hide_phone ? '1fr' : '1fr 1fr', gap: 10 }}>
                             <input className="input-field" placeholder="CPF" required
                                 value={customer.cpf} onChange={e => setCustomer({ ...customer, cpf: e.target.value })} />
-                            <input className="input-field" placeholder="Telefone" 
-                                value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })} />
+                            {!settings?.hide_phone && (
+                                <input className="input-field" placeholder="Telefone"
+                                    value={customer.phone} onChange={e => setCustomer({ ...customer, phone: e.target.value })} />
+                            )}
                         </div>
                     </div>
 
-                    <p style={{ fontSize: 12, fontWeight: 700, color: '#64748b', letterSpacing: 0.5, marginBottom: 12 }}>ENDEREÇO DE COBRANÇA</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: mutedColor, letterSpacing: 0.5, marginBottom: 12 }}>ENDEREÇO DE COBRANÇA</p>
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
@@ -147,7 +177,7 @@ export default function SubscribePage() {
                         </div>
                     </div>
 
-                    <p style={{ fontSize: 12, fontWeight: 700, color: '#64748b', letterSpacing: 0.5, marginBottom: 12 }}>CARTÃO DE CRÉDITO</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: mutedColor, letterSpacing: 0.5, marginBottom: 12 }}>CARTÃO DE CRÉDITO</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
                         <input className="input-field" placeholder="Número do cartão" maxLength={19} required
                             value={card.number} onChange={e => setCard({ ...card, number: e.target.value })} />
@@ -165,13 +195,14 @@ export default function SubscribePage() {
 
                     <button type="submit" disabled={submitting} style={{
                         width: '100%', padding: 16, borderRadius: 14, border: 'none',
-                        background: submitting ? '#1e1e24' : 'white', color: '#0a0a0c',
+                        background: submitting ? '#1e1e24' : accentColor,
+                        color: theme === 'light' ? 'white' : '#0a0a0c',
                         fontWeight: 800, fontSize: 15, cursor: submitting ? 'not-allowed' : 'pointer'
                     }}>
                         {submitting ? 'Processando...' : `Assinar por ${fmtBRL(plan.amount)}/${fmtInterval(plan.interval)}`}
                     </button>
 
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14, color: '#64748b', fontSize: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, marginTop: 14, color: mutedColor, fontSize: 12 }}>
                         <FiLock size={12} /> Pagamento seguro via Pagar.me
                     </div>
                 </form>
