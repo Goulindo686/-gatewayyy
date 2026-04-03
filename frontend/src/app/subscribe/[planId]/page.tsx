@@ -13,6 +13,7 @@ export default function SubscribePage() {
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(false);
+    const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 
     const [customer, setCustomer] = useState({ name: '', email: '', cpf: '', phone: '' });
     const [card, setCard] = useState({ number: '', holder_name: '', exp_month: '', exp_year: '', cvv: '' });
@@ -29,7 +30,7 @@ export default function SubscribePage() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await api.post('/subscriptions/subscribe', {
+            const res = await api.post('/subscriptions/subscribe', {
                 plan_id: planId,
                 customer,
                 card: {
@@ -39,6 +40,7 @@ export default function SubscribePage() {
                 },
                 address
             });
+            setSubscriptionId(res.data.subscription?.id || null);
             setSuccess(true);
         } catch (err: any) {
             toast.error(err.response?.data?.error || 'Erro ao processar assinatura');
@@ -64,10 +66,18 @@ export default function SubscribePage() {
     );
 
     if (success) return (
-        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0c', color: 'white', flexDirection: 'column', gap: 16 }}>
+        <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0c', color: 'white', flexDirection: 'column', gap: 16, padding: 24 }}>
             <div style={{ fontSize: 48 }}>✅</div>
             <h2 style={{ fontSize: 24, fontWeight: 800 }}>Assinatura ativada!</h2>
-            <p style={{ color: '#94a3b8' }}>Você assinou o plano <strong>{plan.name}</strong>.</p>
+            <p style={{ color: '#94a3b8', textAlign: 'center' }}>Você assinou o plano <strong>{plan.name}</strong>. A cobrança foi realizada no seu cartão.</p>
+            {subscriptionId && (
+                <div style={{ marginTop: 8, padding: '12px 20px', background: '#141417', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
+                    <p style={{ fontSize: 12, color: '#64748b', marginBottom: 8 }}>Guarde este link para gerenciar sua assinatura:</p>
+                    <a href={`/my-subscription/${subscriptionId}`} style={{ color: '#00cec9', fontSize: 13, fontWeight: 600, wordBreak: 'break-all' }}>
+                        {typeof window !== 'undefined' ? window.location.origin : ''}/my-subscription/{subscriptionId}
+                    </a>
+                </div>
+            )}
         </div>
     );
 
