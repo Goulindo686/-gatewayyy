@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
     try {
-        const { plan_id, customer, card } = await req.json();
+        const { plan_id, customer, card, address } = await req.json();
 
         if (!plan_id || !customer?.name || !customer?.email || !customer?.cpf)
             return jsonError('Dados incompletos');
@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
             plan_id: plan.pagarme_plan_id,
             customer,
             card,
+            address,
             seller_recipient_id: recipient.pagarme_recipient_id,
             platform_fee_percentage: feePercentage,
             amount: plan.amount

@@ -16,6 +16,7 @@ export default function SubscribePage() {
 
     const [customer, setCustomer] = useState({ name: '', email: '', cpf: '', phone: '' });
     const [card, setCard] = useState({ number: '', holder_name: '', exp_month: '', exp_year: '', cvv: '' });
+    const [address, setAddress] = useState({ zip_code: '', street: '', number: '', city: '', state: '' });
 
     useEffect(() => {
         api.get(`/subscriptions/plans/${planId}`)
@@ -35,7 +36,8 @@ export default function SubscribePage() {
                     ...card,
                     exp_month: parseInt(card.exp_month),
                     exp_year: parseInt(card.exp_year)
-                }
+                },
+                address
             });
             setSuccess(true);
         } catch (err: any) {
@@ -101,8 +103,26 @@ export default function SubscribePage() {
                         </div>
                     </div>
 
-                    <p style={{ fontSize: 12, fontWeight: 700, color: '#64748b', letterSpacing: 0.5, marginBottom: 12 }}>CARTÃO DE CRÉDITO</p>
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#64748b', letterSpacing: 0.5, marginBottom: 12 }}>ENDEREÇO DE COBRANÇA</p>
 
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 20 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            <input className="input-field" placeholder="CEP" maxLength={9} required
+                                value={address.zip_code} onChange={e => setAddress({ ...address, zip_code: e.target.value.replace(/\D/g, '') })} />
+                            <input className="input-field" placeholder="Número" required
+                                value={address.number} onChange={e => setAddress({ ...address, number: e.target.value })} />
+                        </div>
+                        <input className="input-field" placeholder="Rua / Logradouro" required
+                            value={address.street} onChange={e => setAddress({ ...address, street: e.target.value })} />
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                            <input className="input-field" placeholder="Cidade" required
+                                value={address.city} onChange={e => setAddress({ ...address, city: e.target.value })} />
+                            <input className="input-field" placeholder="Estado (UF)" maxLength={2} required
+                                value={address.state} onChange={e => setAddress({ ...address, state: e.target.value.toUpperCase() })} />
+                        </div>
+                    </div>
+
+                    <p style={{ fontSize: 12, fontWeight: 700, color: '#64748b', letterSpacing: 0.5, marginBottom: 12 }}>CARTÃO DE CRÉDITO</p>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
                         <input className="input-field" placeholder="Número do cartão" maxLength={19} required
                             value={card.number} onChange={e => setCard({ ...card, number: e.target.value })} />

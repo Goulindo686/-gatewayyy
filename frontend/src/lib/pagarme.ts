@@ -384,6 +384,7 @@ export class PagarmeService {
         plan_id: string;
         customer: { name: string; email: string; cpf: string; phone?: string };
         card: { number: string; holder_name: string; exp_month: number; exp_year: number; cvv: string };
+        address?: { zip_code: string; street: string; number: string; city: string; state: string };
         seller_recipient_id: string;
         platform_fee_percentage: number;
         amount: number;
@@ -407,6 +408,20 @@ export class PagarmeService {
                 { amount: platformPct, recipient_id: platId, type: 'percentage', options: { charge_processing_fee: false, liable: false, charge_remainder_fee: false } }
             ]
         } : undefined;
+
+        const billingAddress = data.address ? {
+            line_1: `${data.address.street}, ${data.address.number}`,
+            zip_code: data.address.zip_code.replace(/\D/g, ''),
+            city: data.address.city,
+            state: data.address.state,
+            country: 'BR'
+        } : {
+            line_1: 'Rua Sem Endereco, 1, Centro',
+            zip_code: '01001000',
+            city: 'Sao Paulo',
+            state: 'SP',
+            country: 'BR'
+        };
         const response = await pagarmeApi.post('/subscriptions', {
             plan_id: data.plan_id,
             payment_method: 'credit_card',
@@ -429,7 +444,8 @@ export class PagarmeService {
                 holder_name: data.card.holder_name,
                 exp_month: data.card.exp_month,
                 exp_year: data.card.exp_year,
-                cvv: data.card.cvv
+                cvv: data.card.cvv,
+                billing_address: billingAddress
             }
         });
         return response.data;
