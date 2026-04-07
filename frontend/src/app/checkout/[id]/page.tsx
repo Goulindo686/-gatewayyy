@@ -698,10 +698,6 @@ export default function CheckoutPage() {
                                 <span className="text-sm font-medium">Subtotal</span>
                                 <span className="font-bold" style={{ color: textPrimary }}>R$ {selectedPlan ? selectedPlan.price_display : product.price_display}</span>
                             </div>
-                            <div className="flex justify-between items-center opacity-60" style={{ color: textSecondary }}>
-                                <span className="text-sm font-medium">Frete</span>
-                                <span className="font-black text-xs uppercase tracking-widest" style={{ color: accent }}>Grátis</span>
-                            </div>
                             <div className="pt-4 border-t-2 flex justify-between items-center" style={{ borderColor: borderColor }}>
                                 <span className="text-lg font-black" style={{ color: textPrimary }}>Total a pagar</span>
                                 <span className="text-2xl font-black tracking-tight" style={{ color: textPrimary }}>R$ {selectedPlan ? selectedPlan.price_display : product.price_display}</span>

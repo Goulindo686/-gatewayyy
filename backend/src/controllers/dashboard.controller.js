@@ -103,7 +103,7 @@ class DashboardController {
     async getSales(req, res, next) {
         try {
             const userId = req.user.id;
-            const { status, method, start, end, search } = req.query;
+            const { status, method, start, end } = req.query;
 
             let query = supabase
                 .from('orders')

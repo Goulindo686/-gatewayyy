@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { dashboardAPI } from '@/lib/api';
-import { FiShoppingCart, FiRefreshCw, FiSearch } from 'react-icons/fi';
+import { FiShoppingCart, FiRefreshCw } from 'react-icons/fi';
 
 export default function SalesPage() {
     const [sales, setSales] = useState<any[]>([]);

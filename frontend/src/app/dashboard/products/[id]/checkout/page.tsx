@@ -496,10 +496,6 @@ export default function CheckoutCustomizationPage() {
                                         <span>Subtotal</span>
                                         <span className="font-bold">R$ {product?.price_display || '97,00'}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-[10px]" style={{ color: previewMuted }}>
-                                        <span>Frete</span>
-                                        <span className="font-black uppercase tracking-widest" style={{ color: previewAccent }}>Grátis</span>
-                                    </div>
                                     <div className="pt-3 mt-3 border-t flex justify-between items-center" style={{ borderColor: previewBorder }}>
                                         <span className="text-xs font-black" style={{ color: previewText }}>Total</span>
                                         <span className="text-lg font-black" style={{ color: previewText }}>R$ {product?.price_display || '97,00'}</span>
