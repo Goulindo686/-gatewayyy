@@ -8,7 +8,7 @@ import axios from 'axios';
 import {
     FiArrowLeft, FiSave, FiSun, FiMoon, FiImage, FiClock,
     FiAlertTriangle, FiDroplet, FiEye, FiCheck, FiUpload, FiTrash2,
-    FiPlay, FiVideo
+    FiPlay, FiVideo, FiPackage, FiLock, FiChevronDown, FiCreditCard, FiSmartphone
 } from 'react-icons/fi';
 
 const DEFAULT_SETTINGS = {
@@ -56,10 +56,10 @@ export default function CheckoutCustomizationPage() {
         loadProduct();
     }, []);
     useEffect(() => {
-        const update = () => setIsMobile(window.innerWidth < 768);
-        update();
-        window.addEventListener('resize', update);
-        return () => window.removeEventListener('resize', update);
+        const updateSize = () => setIsMobile(window.innerWidth < 768);
+        updateSize();
+        window.addEventListener('resize', updateSize);
+        return () => window.removeEventListener('resize', updateSize);
     }, []);
 
     const loadProduct = async () => {
@@ -465,12 +465,6 @@ export default function CheckoutCustomizationPage() {
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
                 .animate-fadeIn { animation: fadeIn 0.3s ease-out forwards; }
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-            `}</style>
-        </div>
-    );
-}
-
-            <style>{`
                 .input-field:focus { border-color: ${settings.accent_color} !important; }
                 @media (max-width: 640px) {
                     .checkoutBannerPreview {
