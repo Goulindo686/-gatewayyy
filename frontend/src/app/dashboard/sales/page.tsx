@@ -22,7 +22,9 @@ export default function SalesPage() {
 
     // Debounced search
     useEffect(() => {
-        if (loading && !refreshing) return; // Skip initial load
+        // Only trigger search after the initial load is done
+        if (loading) return; 
+        
         const timer = setTimeout(() => {
             handleRefresh();
         }, 600);
@@ -114,15 +116,34 @@ export default function SalesPage() {
             <div className="glass-card" style={{ padding: 20, marginBottom: 20, display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
                 <div style={{ flex: '1 1 250px' }}>
                     <label style={{ display: 'block', fontSize: 12, color: 'var(--text-secondary)', marginBottom: 6 }}>Pesquisar por E-mail (Gmail)</label>
-                    <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                        <FiSearch style={{ position: 'absolute', left: 14, opacity: 0.4, zIndex: 1 }} size={16} />
                         <input 
                             className="input-field" 
-                            style={{ paddingLeft: 40 }}
+                            style={{ paddingLeft: 40, paddingRight: search ? 40 : 12, width: '100%' }}
                             placeholder="exemplo@gmail.com" 
                             value={search} 
                             onChange={(e) => setSearch(e.target.value)}
                         />
-                        <FiSearch style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', opacity: 0.4 }} size={16} />
+                        {search && (
+                            <button 
+                                onClick={() => setSearch('')}
+                                style={{ 
+                                    position: 'absolute', 
+                                    right: 12, 
+                                    background: 'none', 
+                                    border: 'none', 
+                                    cursor: 'pointer', 
+                                    color: 'var(--text-muted)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    padding: 4
+                                }}
+                            >
+                                <FiRefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+                            </button>
+                        )}
                     </div>
                 </div>
                 <div style={{ minWidth: 160 }}>

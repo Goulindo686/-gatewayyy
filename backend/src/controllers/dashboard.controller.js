@@ -116,9 +116,11 @@ class DashboardController {
             if (start) query = query.gte('created_at', start);
             if (end) query = query.lte('created_at', end);
 
-            // Se houver busca, aplicamos filtros de texto
+            // Se houver busca, aplicamos filtros de texto focados no e-mail
             if (search) {
-                query = query.or(`buyer_name.ilike.%${search}%,buyer_email.ilike.%${search}%,buyer_cpf.ilike.%${search}%,product_name.ilike.%${search}%`);
+                const searchClean = search.trim();
+                // Filtramos especificamente pelo e-mail do comprador
+                query = query.ilike('buyer_email', `%${searchClean}%`);
             }
 
             const { data: sales, error } = await query;
