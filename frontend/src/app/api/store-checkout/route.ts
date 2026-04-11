@@ -112,8 +112,27 @@ export async function POST(req: NextRequest) {
             fee_percentage: feePercentage
         });
 
-        // 4. Create Pagar.me Order (EXACT Mirror of Standalone System)
-        const totalAmountCents = items_cart.reduce((sum: number, item: any) => sum + Math.round(item.price * 100 * item.quantity), 0);
+        // 4. SECURITY: Validate prices from DB — never trust client-side prices
+        const productIds = items_cart.map((item: any) => item.id);
+        const { data: dbProducts, error: dbProductsErr } = await supabase
+            .from('products')
+            .select('id, name, price, status')
+            .in('id', productIds)
+            .eq('status', 'active');
+
+        if (dbProductsErr || !dbProducts || dbProducts.length !== productIds.length) {
+            return NextResponse.json({ error: 'Um ou mais produtos não foram encontrados ou estão inativos.' }, { status: 400 });
+        }
+
+        const productMap = Object.fromEntries(dbProducts.map((p: any) => [p.id, p]));
+
+        // Build validated cart with DB prices
+        const validatedCart = items_cart.map((item: any) => {
+            const dbProduct = productMap[item.id];
+            return { ...item, price: dbProduct.price / 100, priceCents: dbProduct.price, name: dbProduct.name };
+        });
+
+        const totalAmountCents = validatedCart.reduce((sum: number, item: any) => sum + item.priceCents * item.quantity, 0);
         const method = normalizedPaymentMethod;
 
         if (method !== 'pix' && method !== 'credit_card') {
@@ -137,6 +156,7 @@ export async function POST(req: NextRequest) {
                 seller_recipient_id: recipient.pagarme_recipient_id,
                 platform_fee_percentage: feePercentage,
                 card_data: method === 'credit_card' ? body.card_data : undefined,
+                items: validatedCart, // pass validated items
                 ip,
                 session_id: sessionId
             } as any);

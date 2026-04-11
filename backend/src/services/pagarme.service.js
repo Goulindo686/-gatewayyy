@@ -44,20 +44,48 @@ class PagarmeService {
 
     /**
      * Create an order with multiple items and split rules (Cart)
-     * Expects price in real float values from items array
+     * Prices are ALWAYS fetched from DB, never trusted from client
      */
     async createMultiItemOrder({ items, buyer, paymentMethod, cardData, sellerId, platformRecipientId, sellerRecipientId, feePercentage }) {
         try {
+            // SECURITY: Fetch real prices from DB — never trust client-side prices
+            const productIds = items.map(item => item.id);
+            const { data: dbProducts, error: dbError } = await supabase
+                .from('products')
+                .select('id, name, price, status')
+                .in('id', productIds)
+                .eq('status', 'active');
+
+            if (dbError || !dbProducts || dbProducts.length !== productIds.length) {
+                throw new Error('Um ou mais produtos não foram encontrados ou estão inativos.');
+            }
+
+            const productMap = Object.fromEntries(dbProducts.map(p => [p.id, p]));
+
             // Taxa fixa da plataforma: R$1,50 (150 centavos)
             const PLATFORM_FLAT_FEE = 150;
 
-            const totalAmountCents = items.reduce((sum, item) => sum + Math.round(item.price * 100) * item.quantity, 0);
+            // Use DB prices, not client prices
+            const validatedItems = items.map(item => {
+                const dbProduct = productMap[item.id];
+                if (!dbProduct) throw new Error(`Produto ${item.id} não encontrado.`);
+                return {
+                    ...item,
+                    price: dbProduct.price / 100, // convert cents to float for pagarme
+                    priceCents: dbProduct.price,
+                    name: dbProduct.name
+                };
+            });
+
+            const totalAmountCents = validatedItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
+            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE, totalAmountCents);
+            const sellerAmount = totalAmountCents - platformFeeAmount;
             const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE, totalAmountCents); // nunca cobra mais que o total
             const sellerAmount = totalAmountCents - platformFeeAmount;
 
             const orderData = {
-                items: items.map(item => ({
-                    amount: Math.round(item.price * 100), // Convert float to cents
+                items: validatedItems.map(item => ({
+                    amount: item.priceCents, // DB price in cents
                     description: item.name,
                     quantity: item.quantity,
                     code: item.id
