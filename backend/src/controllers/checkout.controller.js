@@ -18,6 +18,18 @@ class CheckoutController {
                 return res.status(404).json({ error: 'Produto não encontrado ou inativo.' });
             }
 
+            const { data: sellerUser, error: sellerUserError } = await supabase
+                .from('users')
+                .select('id, role, status')
+                .eq('id', product.user_id)
+                .single();
+            if (sellerUserError || !sellerUser) {
+                return res.status(404).json({ error: 'Vendedor não encontrado.' });
+            }
+            if (sellerUser.status === 'blocked') {
+                return res.status(403).json({ error: 'Conta do vendedor está bloqueada. Não é possível gerar o Pix para esta compra.' });
+            }
+
             // Get seller's recipient
             const { data: recipient } = await supabase
                 .from('recipients')
@@ -54,11 +66,6 @@ class CheckoutController {
                 .single();
 
             const platformRecipientId = settings?.platform_recipient_id || process.env.PLATFORM_RECIPIENT_ID;
-            const { data: sellerUser } = await supabase
-                .from('users')
-                .select('id, role')
-                .eq('id', product.user_id)
-                .single();
             let feePercentage = settings?.fee_percentage || 15;
             let sellerRecipientId = recipient.pagarme_recipient_id;
             if (sellerUser?.role === 'admin') {
@@ -216,6 +223,18 @@ class CheckoutController {
 
             const sellerId = firstProduct.user_id;
 
+            const { data: sellerUser, error: sellerUserError } = await supabase
+                .from('users')
+                .select('id, role, status')
+                .eq('id', sellerId)
+                .single();
+            if (sellerUserError || !sellerUser) {
+                return res.status(404).json({ error: 'Vendedor não encontrado.' });
+            }
+            if (sellerUser.status === 'blocked') {
+                return res.status(403).json({ error: 'Conta do vendedor está bloqueada. Não é possível gerar o Pix para esta compra.' });
+            }
+
             // Get seller's recipient
             const { data: recipient } = await supabase
                 .from('recipients')
@@ -248,11 +267,6 @@ class CheckoutController {
             // Get platform settings & fees
             const { data: settings } = await supabase.from('platform_settings').select('*').single();
             const platformRecipientId = settings?.platform_recipient_id || process.env.PLATFORM_RECIPIENT_ID;
-            const { data: sellerUser } = await supabase
-                .from('users')
-                .select('id, role')
-                .eq('id', sellerId)
-                .single();
             let feePercentage = settings?.fee_percentage || 15;
             if (sellerUser?.role === 'admin') {
                 feePercentage = 0;

@@ -55,6 +55,20 @@ export async function POST(req: NextRequest) {
 
         const userId = keyRecord.user_id;
 
+        const { data: userRow, error: userError } = await supabase
+            .from('users')
+            .select('role, status')
+            .eq('id', userId)
+            .single();
+
+        if (userError || !userRow) {
+            return jsonError('Usuário não encontrado', 404);
+        }
+
+        if (userRow.status === 'blocked') {
+            return jsonError('Conta bloqueada. Você não pode gerar cobranças Pix.', 403);
+        }
+
         // 3. Get User's Pagar.me Recipient ID
         const { data: recipient, error: recipientError } = await supabase
             .from('recipients')
@@ -87,16 +101,9 @@ export async function POST(req: NextRequest) {
                 feePercentage = settingsRow.fee_percentage;
             }
         } catch {}
-        try {
-            const { data: userRow } = await supabase
-                .from('users')
-                .select('role')
-                .eq('id', userId)
-                .single();
-            if (userRow?.role === 'admin') {
-                feePercentage = 0;
-            }
-        } catch {}
+        if (userRow.role === 'admin') {
+            feePercentage = 0;
+        }
 
         // 6. Create Transaction on Pagar.me
         const orderData = {

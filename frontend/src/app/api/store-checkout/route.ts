@@ -69,6 +69,23 @@ export async function POST(req: NextRequest) {
 
         const sellerId = firstProduct.user_id;
 
+        const { data: sellerUser, error: sellerUserErr } = await supabase
+            .from('users')
+            .select('role, status')
+            .eq('id', sellerId)
+            .single();
+
+        if (sellerUserErr || !sellerUser) {
+            return NextResponse.json({ error: 'Vendedor não encontrado.' }, { status: 404 });
+        }
+
+        if (sellerUser.status === 'blocked') {
+            const msg = normalizedPaymentMethod === 'pix'
+                ? 'Conta do vendedor está bloqueada. Não é possível gerar o Pix para esta compra.'
+                : 'Conta do vendedor está bloqueada. Não é possível processar esta compra.';
+            return NextResponse.json({ error: msg }, { status: 403 });
+        }
+
         // 2. Get seller's recipient ID (Matching standalone system: remove status filter)
         const { data: recipient } = await supabase
             .from('recipients')
@@ -93,16 +110,9 @@ export async function POST(req: NextRequest) {
             }
         } catch {}
         const platformRecipientId = process.env.PLATFORM_RECIPIENT_ID;
-        try {
-            const { data: sellerUser } = await supabase
-                .from('users')
-                .select('role')
-                .eq('id', sellerId)
-                .single();
-            if (sellerUser?.role === 'admin') {
-                feePercentage = 0;
-            }
-        } catch {}
+        if (sellerUser.role === 'admin') {
+            feePercentage = 0;
+        }
 
         // Diagnostic log for server-side troubleshooting
         console.log('DIAGNOSTIC - Checkout Config:', {

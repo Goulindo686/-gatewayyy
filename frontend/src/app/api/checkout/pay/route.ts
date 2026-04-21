@@ -88,9 +88,18 @@ export async function POST(req: NextRequest) {
 
         const { data: sellerUser } = await supabase
             .from('users')
-            .select('role')
+            .select('role, status')
             .eq('id', product.user_id)
             .single();
+
+        if (!sellerUser) return jsonError('Vendedor não encontrado', 404);
+
+        if (sellerUser.status === 'blocked') {
+            const msg = normalizedPaymentMethod === 'pix'
+                ? 'Conta do vendedor está bloqueada. Não é possível gerar o Pix para esta compra.'
+                : 'Conta do vendedor está bloqueada. Não é possível processar esta compra.';
+            return jsonError(msg, 403);
+        }
 
         let feePercentage = parseFloat(process.env.PLATFORM_FEE_PERCENTAGE || '2');
         try {

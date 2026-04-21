@@ -24,6 +24,15 @@ export async function POST(req: NextRequest) {
         if (!plan) return jsonError('Plano não encontrado', 404);
         if (!plan.pagarme_plan_id) return jsonError('Plano não configurado no gateway', 400);
 
+        const { data: sellerUser, error: sellerUserErr } = await supabase
+            .from('users')
+            .select('status, role')
+            .eq('id', plan.user_id)
+            .single();
+
+        if (sellerUserErr || !sellerUser) return jsonError('Vendedor não encontrado', 404);
+        if (sellerUser.status === 'blocked') return jsonError('Conta do vendedor está bloqueada. Não é possível criar assinatura.', 403);
+
         // Busca recipient do vendedor
         const { data: recipient } = await supabase
             .from('recipients').select('pagarme_recipient_id').eq('user_id', plan.user_id).single();
@@ -35,6 +44,7 @@ export async function POST(req: NextRequest) {
             const { data: settings } = await supabase.from('platform_settings').select('fee_percentage').single();
             if (settings?.fee_percentage !== undefined) feePercentage = settings.fee_percentage;
         } catch {}
+        if (sellerUser.role === 'admin') feePercentage = 0;
 
         // Cria assinatura no Pagar.me
         const pagarmeSub = await PagarmeService.createSubscription({
