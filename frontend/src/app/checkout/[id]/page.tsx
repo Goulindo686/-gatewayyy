@@ -477,13 +477,13 @@ export default function CheckoutPage() {
             <FacebookPixel pixelId={product?.facebook_pixel_id} product={product} />
 
             {hasCountdown && (
-                <div className="px-4 py-3 text-white" style={{ background: '#0b0b10' }}>
+                <div className="px-4 py-3 text-white" style={{ background: countdownColor }}>
                     <div className="mx-auto w-full max-w-[560px] flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2 text-sm font-semibold">
                             <FiClock className="opacity-80" />
                             <span className="opacity-90">{settings.countdown_text}</span>
                         </div>
-                        <div className="px-3 py-1 rounded-lg font-mono text-base font-black" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                        <div className="px-3 py-1 rounded-lg font-mono text-base font-black border" style={{ background: 'rgba(0,0,0,0.18)', borderColor: 'rgba(255,255,255,0.25)' }}>
                             {formatTimer(timerSeconds)}
                         </div>
                     </div>
