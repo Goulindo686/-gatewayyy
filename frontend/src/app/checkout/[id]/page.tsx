@@ -669,32 +669,32 @@ export default function CheckoutPage() {
                                         <button
                                             type="button"
                                             onClick={() => setPaymentMethod('credit_card')}
-                                            className="rounded-2xl border p-4 text-left transition-colors"
+                                            className="rounded-2xl border p-4 transition-colors flex flex-col items-center justify-center text-center min-h-[96px]"
                                             style={{
                                                 borderColor: paymentMethod === 'credit_card' ? accent : borderColor,
                                                 background: paymentMethod === 'credit_card' ? '#f3f4f6' : (isLight ? '#fff' : 'transparent')
                                             }}
                                         >
-                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: paymentMethod === 'credit_card' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'credit_card' ? 'white' : textMuted }}>
+                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: paymentMethod === 'credit_card' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'credit_card' ? 'white' : textMuted }}>
                                                 <FiCreditCard size={20} />
                                             </div>
-                                            <div className="text-sm font-black" style={{ color: textPrimary }}>Cartão de crédito</div>
+                                            <div className="mt-2 text-sm font-black" style={{ color: textPrimary }}>Cartão de crédito</div>
                                         </button>
                                     )}
 
                                     <button
                                         type="button"
                                         onClick={() => setPaymentMethod('pix')}
-                                        className="rounded-2xl border p-4 text-left transition-colors"
+                                        className="rounded-2xl border p-4 transition-colors flex flex-col items-center justify-center text-center min-h-[96px]"
                                         style={{
                                             borderColor: paymentMethod === 'pix' ? accent : borderColor,
                                             background: paymentMethod === 'pix' ? '#f3f4f6' : (isLight ? '#fff' : 'transparent')
                                         }}
                                     >
-                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: paymentMethod === 'pix' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'pix' ? 'white' : textMuted }}>
+                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: paymentMethod === 'pix' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'pix' ? 'white' : textMuted }}>
                                             <FiSmartphone size={20} />
                                         </div>
-                                        <div className="text-sm font-black" style={{ color: textPrimary }}>Pix</div>
+                                        <div className="mt-2 text-sm font-black" style={{ color: textPrimary }}>Pix</div>
                                     </button>
                                 </div>
                             </section>

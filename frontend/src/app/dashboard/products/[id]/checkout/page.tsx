@@ -488,17 +488,17 @@ export default function CheckoutCustomizationPage() {
                                             <div className="space-y-4">
                                                 <h4 className="text-sm font-black" style={{ color: previewText }}>Pagamento</h4>
                                                 <div className="grid grid-cols-2 gap-3">
-                                                    <div className="rounded-2xl border p-4" style={{ background: previewCard, borderColor: previewAccent }}>
-                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3 text-white" style={{ background: previewAccent }}>
+                                                    <div className="rounded-2xl border p-4 flex flex-col items-center justify-center text-center min-h-[96px]" style={{ background: previewCard, borderColor: previewAccent }}>
+                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: previewAccent }}>
                                                             <FiCreditCard size={18} />
                                                         </div>
-                                                        <div className="text-xs font-black" style={{ color: previewText }}>Cartão de crédito</div>
+                                                        <div className="mt-2 text-xs font-black" style={{ color: previewText }}>Cartão de crédito</div>
                                                     </div>
-                                                    <div className="rounded-2xl border p-4" style={{ background: previewInputBg, borderColor: previewBorder }}>
-                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-3" style={{ background: previewCard, color: previewMuted }}>
+                                                    <div className="rounded-2xl border p-4 flex flex-col items-center justify-center text-center min-h-[96px]" style={{ background: previewInputBg, borderColor: previewBorder }}>
+                                                        <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: previewCard, color: previewMuted }}>
                                                             <FiSmartphone size={18} />
                                                         </div>
-                                                        <div className="text-xs font-black" style={{ color: previewText }}>Pix</div>
+                                                        <div className="mt-2 text-xs font-black" style={{ color: previewText }}>Pix</div>
                                                     </div>
                                                 </div>
                                             </div>
