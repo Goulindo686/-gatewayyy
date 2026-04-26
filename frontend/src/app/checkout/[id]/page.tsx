@@ -672,7 +672,9 @@ export default function CheckoutPage() {
                                             className="rounded-2xl border p-4 transition-colors flex flex-col items-center justify-center text-center min-h-[96px]"
                                             style={{
                                                 borderColor: paymentMethod === 'credit_card' ? accent : borderColor,
-                                                background: paymentMethod === 'credit_card' ? '#f3f4f6' : (isLight ? '#fff' : 'transparent')
+                                                background: paymentMethod === 'credit_card'
+                                                    ? (isLight ? '#f3f4f6' : `${accent}1A`)
+                                                    : (isLight ? '#fff' : 'rgba(255,255,255,0.04)')
                                             }}
                                         >
                                             <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: paymentMethod === 'credit_card' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'credit_card' ? 'white' : textMuted }}>
@@ -688,7 +690,9 @@ export default function CheckoutPage() {
                                         className="rounded-2xl border p-4 transition-colors flex flex-col items-center justify-center text-center min-h-[96px]"
                                         style={{
                                             borderColor: paymentMethod === 'pix' ? accent : borderColor,
-                                            background: paymentMethod === 'pix' ? '#f3f4f6' : (isLight ? '#fff' : 'transparent')
+                                            background: paymentMethod === 'pix'
+                                                ? (isLight ? '#f3f4f6' : `${accent}1A`)
+                                                : (isLight ? '#fff' : 'rgba(255,255,255,0.04)')
                                         }}
                                     >
                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: paymentMethod === 'pix' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'pix' ? 'white' : textMuted }}>
