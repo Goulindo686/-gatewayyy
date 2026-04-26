@@ -99,6 +99,141 @@ function VideoPlayer({ settings, borderColor }: { settings: any, borderColor: st
     );
 }
 
+function OrderSummary({
+    product,
+    selectedPlan,
+    plans,
+    setSelectedPlan,
+    settings,
+    processing,
+    paymentMethod,
+    installments,
+    isLight,
+    bgCard,
+    borderColor,
+    textPrimary,
+    textSecondary,
+    textMuted,
+    accent,
+}: {
+    product: any;
+    selectedPlan: any;
+    plans: any[];
+    setSelectedPlan: (p: any) => void;
+    settings: any;
+    processing: boolean;
+    paymentMethod: string;
+    installments: number;
+    isLight: boolean;
+    bgCard: string;
+    borderColor: string;
+    textPrimary: string;
+    textSecondary: string;
+    textMuted: string;
+    accent: string;
+}) {
+    const totalDisplay = selectedPlan ? selectedPlan.price_display : product.price_display;
+    const totalCents = selectedPlan?.price || product?.price || 0;
+    const installmentsSafe = Math.max(1, Number(installments) || 1);
+    const perInstallment = (totalCents / 100) / installmentsSafe;
+
+    return (
+        <div className="rounded-3xl border shadow-sm overflow-hidden" style={{ background: bgCard, borderColor }}>
+            <div className="p-5">
+                <div className="flex gap-4">
+                    {!settings.hide_product_image && (
+                        <div className="w-20 h-20 rounded-2xl overflow-hidden flex-shrink-0 border" style={{ background: isLight ? '#f3f4f6' : 'rgba(255,255,255,0.05)', borderColor }}>
+                            {product.image_url ? (
+                                <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center opacity-20" style={{ color: textPrimary }}>
+                                    <FiShoppingCart size={28} />
+                                </div>
+                            )}
+                        </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-3">
+                            <h4 className="font-extrabold text-base leading-snug line-clamp-2" style={{ color: textPrimary }}>{product.name}</h4>
+                            <span className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-white" style={{ background: accent }}>1 un</span>
+                        </div>
+                        <p className="mt-2 text-sm leading-relaxed line-clamp-2 opacity-70" style={{ color: textSecondary }}>{product.description || 'Produto digital com entrega imediata via e-mail.'}</p>
+                    </div>
+                </div>
+            </div>
+
+            {plans.length > 1 && (
+                <div className="px-5 pb-5">
+                    <div className="pt-4 border-t" style={{ borderColor }}>
+                        <div className="text-[11px] font-black uppercase tracking-wider opacity-50 mb-3" style={{ color: textSecondary }}>Selecione</div>
+                        <div className="grid gap-2">
+                            {plans.map(p => {
+                                const active = selectedPlan?.id === p.id;
+                                return (
+                                    <button
+                                        key={p.id}
+                                        type="button"
+                                        onClick={() => setSelectedPlan(p)}
+                                        className="w-full rounded-2xl border px-4 py-3 text-left transition-opacity hover:opacity-90"
+                                        style={{
+                                            borderColor: active ? accent : borderColor,
+                                            background: active ? `${accent}10` : 'transparent'
+                                        }}
+                                    >
+                                        <div className="flex items-center justify-between gap-3">
+                                            <div className="min-w-0">
+                                                <div className="text-sm font-extrabold truncate" style={{ color: active ? accent : textPrimary }}>{p.name}</div>
+                                            </div>
+                                            <div className="text-sm font-black whitespace-nowrap" style={{ color: textPrimary }}>R$ {p.price_display}</div>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="px-5 pb-5">
+                <div className="pt-4 border-t" style={{ borderColor }}>
+                    <div className="space-y-3">
+                        <div className="flex items-center justify-between text-sm" style={{ color: textPrimary }}>
+                            <span className="opacity-70" style={{ color: textSecondary }}>Subtotal</span>
+                            <span className="font-bold">R$ {totalDisplay}</span>
+                        </div>
+                        {paymentMethod === 'credit_card' && (
+                            <div className="flex items-center justify-between text-sm" style={{ color: textPrimary }}>
+                                <span className="opacity-70" style={{ color: textSecondary }}>Parcelas</span>
+                                <span className="font-bold">{installmentsSafe}x de R$ {perInstallment.toFixed(2)}*</span>
+                            </div>
+                        )}
+                        <div className="pt-3 border-t flex items-center justify-between" style={{ borderColor }}>
+                            <span className="text-base font-black" style={{ color: textPrimary }}>Total</span>
+                            <span className="text-xl font-black tracking-tight" style={{ color: textPrimary }}>R$ {totalDisplay}</span>
+                        </div>
+                    </div>
+
+                    <div className="mt-5">
+                        <button
+                            form="checkout-form"
+                            type="submit"
+                            disabled={processing}
+                            className="w-full h-14 rounded-2xl text-white font-black text-base shadow-sm transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                            style={{ background: accent }}
+                        >
+                            {processing ? 'Processando...' : 'Comprar agora'}
+                        </button>
+                        <div className="mt-4 flex items-center justify-center gap-2 opacity-60" style={{ color: textSecondary }}>
+                            <FiLock size={14} />
+                            <span className="text-xs font-black uppercase tracking-wider">Ambiente seguro</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 export default function CheckoutPage() {
     const params = useParams();
     const router = useRouter();
@@ -392,160 +527,192 @@ export default function CheckoutPage() {
     }
 
     return (
-        <div className="min-h-screen flex flex-col" style={{ background: bgPrimary, color: textPrimary }}>
+        <div className="min-h-screen" style={{ background: bgPrimary, color: textPrimary }}>
             <FacebookPixel pixelId={product?.facebook_pixel_id} product={product} />
 
-            {/* Countdown bar */}
             {hasCountdown && (
-                <div className="py-2 px-4 text-center font-bold text-white flex items-center justify-center gap-3 sticky top-0 z-50 shadow-md" style={{ background: countdownColor }}>
-                    <FiClock className="animate-pulse" />
-                    <span>{settings.countdown_text}</span>
-                    <span className="bg-black/20 px-3 py-1 rounded-lg font-mono text-lg">{formatTimer(timerSeconds)}</span>
-                </div>
-            )}
-
-            {/* Banner */}
-            {hasBanner && (
-                <div className="relative w-full overflow-hidden" style={{ height: settings.banner_url ? bannerHeightDesktop : 'auto', minHeight: 100 }}>
-                    {settings.banner_url ? (
-                        <img src={settings.banner_url} alt="Banner" className="w-full h-full object-cover" />
-                    ) : (
-                        <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${accent}44, ${accent}11)` }} />
-                    )}
-                    {settings.banner_text && (
-                        <div className="absolute inset-0 flex items-center justify-center p-6 text-center">
-                            <h1 className="text-white font-black text-2xl md:text-4xl drop-shadow-xl max-w-4xl">{settings.banner_text}</h1>
+                <div className="px-4 py-3 text-white" style={{ background: '#0b0b10' }}>
+                    <div className="mx-auto max-w-5xl flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 text-sm font-semibold">
+                            <FiClock className="opacity-80" />
+                            <span className="opacity-90">{settings.countdown_text}</span>
                         </div>
-                    )}
+                        <div className="px-3 py-1 rounded-lg font-mono text-base font-black" style={{ background: 'rgba(255,255,255,0.12)' }}>
+                            {formatTimer(timerSeconds)}
+                        </div>
+                    </div>
                 </div>
             )}
 
-            {/* Header */}
-            <header className="w-full py-4 px-6 md:px-12 border-b flex items-center justify-between sticky top-0 z-40 shadow-sm" style={{ background: bgCard, borderColor: borderColor }}>
-                <div className="flex items-center gap-3">
-                    <img src="/favicon.png" alt="GouPay" className="w-10 h-10 object-contain" />
-                    <span className="text-2xl font-black tracking-tighter" style={{ color: textPrimary }}>
-                        Gou<span style={{ color: accent }}>Pay</span>
-                    </span>
+            {hasBanner && (
+                <div className="w-full" style={{ background: isLight ? '#fff' : bgCard }}>
+                    <div className="mx-auto max-w-5xl px-4 md:px-6">
+                        <div className="relative w-full overflow-hidden rounded-b-3xl md:rounded-3xl shadow-sm border" style={{ borderColor, marginTop: hasCountdown ? 14 : 18 }}>
+                            <div className="relative w-full overflow-hidden" style={{ height: settings.banner_url ? bannerHeightMobile : 'auto', minHeight: 120 }}>
+                                {settings.banner_url ? (
+                                    <img src={settings.banner_url} alt="Banner" className="w-full h-full object-cover" />
+                                ) : (
+                                    <div className="w-full h-full" style={{ background: `linear-gradient(135deg, ${accent}44, ${accent}11)` }} />
+                                )}
+                                {settings.banner_text && (
+                                    <div className="absolute inset-0 flex items-end md:items-center justify-center p-5 text-center">
+                                        <h1 className="text-white font-black text-xl md:text-3xl drop-shadow-xl max-w-4xl">{settings.banner_text}</h1>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-lg border text-sm font-medium cursor-pointer hover:opacity-80 transition-opacity" style={{ background: isLight ? '#f9fafb' : 'rgba(255,255,255,0.05)', borderColor: borderColor, color: textSecondary }}>
-                    <img src="https://flagcdn.com/w20/br.png" alt="PT-BR" className="w-5 h-3.5 object-cover rounded-sm" />
-                    Português <FiChevronDown />
+            )}
+
+            <header className="w-full">
+                <div className="mx-auto max-w-5xl px-4 md:px-6 pt-5 pb-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <img src="/favicon.png" alt="GouPay" className="w-9 h-9 object-contain" />
+                        <div className="leading-tight">
+                            <div className="text-lg font-black tracking-tight">
+                                Gou<span style={{ color: accent }}>Pay</span>
+                            </div>
+                            <div className="flex items-center gap-1 text-xs font-semibold opacity-60" style={{ color: textSecondary }}>
+                                <FiLock size={12} />
+                                Ambiente seguro
+                            </div>
+                        </div>
+                    </div>
+                    <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-semibold" style={{ background: isLight ? '#fff' : bgCard, borderColor, color: textSecondary }}>
+                        <img src="https://flagcdn.com/w20/br.png" alt="PT-BR" className="w-5 h-3.5 object-cover rounded-sm" />
+                        Brasil <FiChevronDown />
+                    </div>
                 </div>
             </header>
 
-            <main className="flex-1 flex flex-col md:flex-row">
-                {/* Left Side: Forms & Payment */}
-                <div className="w-full md:w-[60%] lg:w-[65%] p-6 md:p-12 lg:p-16" style={{ background: bgCard }}>
-                    <div className="max-w-2xl mx-auto">
-                        
-                        {/* Notice */}
-                        {settings.notice_text && (
-                            <div className="mb-10 p-4 rounded-xl text-center font-semibold text-sm border-2 animate-pulse" style={{ 
-                                background: noticeColors[settings.notice_type]?.bg,
-                                borderColor: noticeColors[settings.notice_type]?.border,
-                                color: noticeColors[settings.notice_type]?.text
-                            }}>
-                                {settings.notice_text}
-                            </div>
-                        )}
-
-                        {/* Payment Methods */}
-                        <div className="mb-10">
-                            <div className="grid grid-cols-1 gap-3">
-                                {enableCreditCard && (
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setPaymentMethod('credit_card')}
-                                        className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${paymentMethod === 'credit_card' ? '' : 'hover:opacity-80'}`}
-                                        style={{ 
-                                            borderColor: paymentMethod === 'credit_card' ? accent : borderColor,
-                                            background: paymentMethod === 'credit_card' ? `${accent}11` : 'transparent'
-                                        }}
-                                    >
-                                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${paymentMethod === 'credit_card' ? 'text-white' : ''}`} style={{ background: paymentMethod === 'credit_card' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.05)'), color: paymentMethod === 'credit_card' ? 'white' : textMuted }}>
-                                            <FiCreditCard size={24} />
-                                        </div>
-                                        <div className="flex-1">
-                                            <div className="font-bold" style={{ color: textPrimary }}>Cartão de Crédito</div>
-                                            <div className="text-xs" style={{ color: textSecondary }}>Pague em até 12x</div>
-                                        </div>
-                                        {paymentMethod === 'credit_card' && <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: accent }}><FiCheck size={14} /></div>}
-                                    </button>
+            <main className="mx-auto max-w-5xl px-4 md:px-6 pb-28 md:pb-10">
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-10">
+                    <div className="md:col-span-7 lg:col-span-8 order-2 md:order-1">
+                        <div className="rounded-3xl border shadow-sm" style={{ background: bgCard, borderColor }}>
+                            <div className="p-5 md:p-8">
+                                {settings.notice_text && (
+                                    <div className="mb-6 p-4 rounded-2xl text-center font-semibold text-sm border" style={{
+                                        background: noticeColors[settings.notice_type]?.bg,
+                                        borderColor: noticeColors[settings.notice_type]?.border,
+                                        color: noticeColors[settings.notice_type]?.text
+                                    }}>
+                                        {settings.notice_text}
+                                    </div>
                                 )}
-                                <button 
-                                    type="button" 
-                                    onClick={() => setPaymentMethod('pix')}
-                                    className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all text-left ${paymentMethod === 'pix' ? '' : 'hover:opacity-80'}`}
-                                    style={{ 
-                                        borderColor: paymentMethod === 'pix' ? accent : borderColor,
-                                        background: paymentMethod === 'pix' ? `${accent}11` : 'transparent'
-                                    }}
-                                >
-                                    <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${paymentMethod === 'pix' ? 'text-white' : ''}`} style={{ background: paymentMethod === 'pix' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.05)'), color: paymentMethod === 'pix' ? 'white' : textMuted }}>
-                                        <FiSmartphone size={24} />
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="font-bold" style={{ color: textPrimary }}>Pix</div>
-                                        <div className="text-xs font-bold" style={{ color: accent }}>com desconto</div>
-                                    </div>
-                                    {paymentMethod === 'pix' && <div className="w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: accent }}><FiCheck size={14} /></div>}
-                                </button>
-                            </div>
-                        </div>
 
-                        {/* Form */}
-                        <form onSubmit={handlePay} className="space-y-8">
+                                <div className="mb-7">
+                                    <div className="text-xs font-black uppercase tracking-wider opacity-50 mb-3" style={{ color: textSecondary }}>
+                                        Forma de pagamento
+                                    </div>
+                                    <div className="flex gap-3 overflow-x-auto pb-1">
+                                        {enableCreditCard && (
+                                            <button
+                                                type="button"
+                                                onClick={() => setPaymentMethod('credit_card')}
+                                                className="min-w-[210px] md:min-w-0 flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all"
+                                                style={{
+                                                    borderColor: paymentMethod === 'credit_card' ? accent : borderColor,
+                                                    background: paymentMethod === 'credit_card' ? `${accent}10` : (isLight ? '#fff' : 'transparent')
+                                                }}
+                                            >
+                                                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: paymentMethod === 'credit_card' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'credit_card' ? 'white' : textMuted }}>
+                                                    <FiCreditCard size={20} />
+                                                </div>
+                                                <div className="min-w-0 text-left">
+                                                    <div className="text-sm font-extrabold truncate" style={{ color: textPrimary }}>Cartão</div>
+                                                    <div className="text-xs opacity-70 truncate" style={{ color: textSecondary }}>Até 12x</div>
+                                                </div>
+                                                {paymentMethod === 'credit_card' && (
+                                                    <div className="ml-auto w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: accent }}>
+                                                        <FiCheck size={14} />
+                                                    </div>
+                                                )}
+                                            </button>
+                                        )}
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setPaymentMethod('pix')}
+                                            className="min-w-[210px] md:min-w-0 flex-1 flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all"
+                                            style={{
+                                                borderColor: paymentMethod === 'pix' ? accent : borderColor,
+                                                background: paymentMethod === 'pix' ? `${accent}10` : (isLight ? '#fff' : 'transparent')
+                                            }}
+                                        >
+                                            <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: paymentMethod === 'pix' ? accent : (isLight ? '#f3f4f6' : 'rgba(255,255,255,0.06)'), color: paymentMethod === 'pix' ? 'white' : textMuted }}>
+                                                <FiSmartphone size={20} />
+                                            </div>
+                                            <div className="min-w-0 text-left">
+                                                <div className="text-sm font-extrabold truncate" style={{ color: textPrimary }}>Pix</div>
+                                                <div className="text-xs font-black truncate" style={{ color: accent }}>Imediato</div>
+                                            </div>
+                                            {paymentMethod === 'pix' && (
+                                                <div className="ml-auto w-6 h-6 rounded-full flex items-center justify-center text-white" style={{ background: accent }}>
+                                                    <FiCheck size={14} />
+                                                </div>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <form id="checkout-form" onSubmit={handlePay} className="space-y-8">
                             <section>
-                                <h3 className="text-xl font-bold mb-6" style={{ color: textPrimary }}>Dados pessoais</h3>
+                                <h3 className="text-lg md:text-xl font-black mb-5" style={{ color: textPrimary }}>Seus dados</h3>
                                 <div className="space-y-4">
                                     <div className="group">
-                                        <label className="text-xs font-bold uppercase tracking-wider mb-2 block transition-colors group-focus-within:opacity-100 opacity-60" style={{ color: textSecondary }}>Nome completo *</label>
+                                        <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Nome completo *</label>
                                         <input 
                                             placeholder="Ex: Ana Cristina da Silva" 
                                             required 
                                             value={form.name} 
                                             onChange={e => update('name', e.target.value)}
-                                            className="w-full h-14 px-5 rounded-xl border-2 outline-none transition-all font-medium"
-                                            style={{ background: inputBg, borderColor: borderColor, color: textPrimary }}
+                                            className="w-full h-14 px-5 rounded-2xl border outline-none transition-colors font-medium"
+                                            style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }}
                                         />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div className="group">
-                                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block transition-colors group-focus-within:opacity-100 opacity-60" style={{ color: textSecondary }}>E-mail *</label>
+                                            <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>E-mail *</label>
                                             <input 
                                                 type="email" 
                                                 placeholder="seu@email.com" 
                                                 required 
                                                 value={form.email} 
                                                 onChange={e => update('email', e.target.value)}
-                                                className="w-full h-14 px-5 rounded-xl border-2 outline-none transition-all font-medium"
-                                                style={{ background: inputBg, borderColor: borderColor, color: textPrimary }}
+                                                className="w-full h-14 px-5 rounded-2xl border outline-none transition-colors font-medium"
+                                                style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }}
                                             />
                                         </div>
                                         <div className="group">
-                                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block transition-colors group-focus-within:opacity-100 opacity-60" style={{ color: textSecondary }}>CPF *</label>
+                                            <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>CPF *</label>
                                             <input 
                                                 placeholder="000.000.000-00" 
                                                 required 
                                                 value={form.cpf} 
                                                 onChange={e => update('cpf', e.target.value)}
-                                                className="w-full h-14 px-5 rounded-xl border-2 outline-none transition-all font-medium"
-                                                style={{ background: inputBg, borderColor: borderColor, color: textPrimary }}
+                                                className="w-full h-14 px-5 rounded-2xl border outline-none transition-colors font-medium"
+                                                style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }}
                                             />
                                         </div>
                                     </div>
                                     {!settings.hide_phone && (
                                         <div className="group">
-                                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block transition-colors group-focus-within:opacity-100 opacity-60" style={{ color: textSecondary }}>Celular com DDD *</label>
-                                            <input 
-                                                placeholder="(11) 99999-9999" 
-                                                required 
-                                                value={form.phone} 
-                                                onChange={e => update('phone', e.target.value)}
-                                                className="w-full h-14 px-5 rounded-xl border-2 outline-none transition-all font-medium"
-                                                style={{ background: inputBg, borderColor: borderColor, color: textPrimary }}
-                                            />
+                                            <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Seu celular *</label>
+                                            <div className="flex gap-3">
+                                                <div className="h-14 px-4 rounded-2xl border flex items-center gap-2 shrink-0" style={{ background: isLight ? '#fff' : inputBg, borderColor }}>
+                                                    <img src="https://flagcdn.com/w20/br.png" alt="BR" className="w-5 h-3.5 object-cover rounded-sm" />
+                                                    <span className="text-sm font-extrabold" style={{ color: textPrimary }}>+55</span>
+                                                </div>
+                                                <input 
+                                                    placeholder="(11) 99999-9999" 
+                                                    required 
+                                                    value={form.phone} 
+                                                    onChange={e => update('phone', e.target.value)}
+                                                    className="w-full h-14 px-5 rounded-2xl border outline-none transition-colors font-medium"
+                                                    style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }}
+                                                />
+                                            </div>
                                         </div>
                                     )}
                                 </div>
@@ -554,50 +721,50 @@ export default function CheckoutPage() {
                             {/* Credit Card Details */}
                             {paymentMethod === 'credit_card' && (
                                 <section className="pt-4 animate-fadeIn">
-                                    <h3 className="text-xl font-bold mb-6" style={{ color: textPrimary }}>Dados do cartão</h3>
+                                    <h3 className="text-lg md:text-xl font-black mb-5" style={{ color: textPrimary }}>Dados do cartão</h3>
                                     <div className="space-y-4">
                                         <div className="group">
-                                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block transition-colors group-focus-within:opacity-100 opacity-60" style={{ color: textSecondary }}>Número do cartão *</label>
+                                            <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Número do cartão *</label>
                                             <input 
                                                 placeholder="0000 0000 0000 0000" 
                                                 required 
                                                 value={form.card_number} 
                                                 onChange={e => update('card_number', e.target.value)}
-                                                className="w-full h-14 px-5 rounded-xl border-2 outline-none transition-all font-medium"
-                                                style={{ background: inputBg, borderColor: borderColor, color: textPrimary }}
+                                                className="w-full h-14 px-5 rounded-2xl border outline-none transition-colors font-medium"
+                                                style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }}
                                             />
                                         </div>
                                         <div className="group">
-                                            <label className="text-xs font-bold uppercase tracking-wider mb-2 block transition-colors group-focus-within:opacity-100 opacity-60" style={{ color: textSecondary }}>Nome impresso no cartão *</label>
+                                            <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Nome do titular *</label>
                                             <input 
                                                 placeholder="COMO ESTÁ NO CARTÃO" 
                                                 required 
                                                 value={form.card_holder} 
                                                 onChange={e => update('card_holder', e.target.value)}
-                                                className="w-full h-14 px-5 rounded-xl border-2 outline-none transition-all font-medium"
-                                                style={{ background: inputBg, borderColor: borderColor, color: textPrimary }}
+                                                className="w-full h-14 px-5 rounded-2xl border outline-none transition-colors font-medium"
+                                                style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }}
                                             />
                                         </div>
                                         <div className="grid grid-cols-3 gap-4">
                                             <div className="group">
-                                                <label className="text-xs font-bold uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Validade *</label>
+                                                <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Validade *</label>
                                                 <div className="flex items-center gap-2">
-                                                    <input placeholder="MM" maxLength={2} className="w-full h-14 px-3 text-center rounded-xl border-2 outline-none" value={form.card_exp_month} onChange={e => update('card_exp_month', e.target.value)} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} />
+                                                    <input placeholder="MM" maxLength={2} className="w-full h-14 px-3 text-center rounded-2xl border outline-none" value={form.card_exp_month} onChange={e => update('card_exp_month', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} />
                                                     <span className="opacity-30">/</span>
-                                                    <input placeholder="AA" maxLength={2} className="w-full h-14 px-3 text-center rounded-xl border-2 outline-none" value={form.card_exp_year} onChange={e => update('card_exp_year', e.target.value)} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} />
+                                                    <input placeholder="AA" maxLength={2} className="w-full h-14 px-3 text-center rounded-2xl border outline-none" value={form.card_exp_year} onChange={e => update('card_exp_year', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} />
                                                 </div>
                                             </div>
                                             <div className="group col-span-1">
-                                                <label className="text-xs font-bold uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>CVV *</label>
-                                                <input placeholder="000" maxLength={4} className="w-full h-14 px-5 rounded-xl border-2 outline-none" value={form.card_cvv} onChange={e => update('card_cvv', e.target.value)} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} />
+                                                <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>CVV *</label>
+                                                <input placeholder="000" maxLength={4} className="w-full h-14 px-5 rounded-2xl border outline-none" value={form.card_cvv} onChange={e => update('card_cvv', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} />
                                             </div>
                                             <div className="group col-span-1">
-                                                <label className="text-xs font-bold uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Parcelas *</label>
+                                                <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Parcelas *</label>
                                                 <select 
-                                                    className="w-full h-14 px-3 rounded-xl border-2 outline-none font-medium"
+                                                    className="w-full h-14 px-3 rounded-2xl border outline-none font-medium"
                                                     value={form.installments}
                                                     onChange={e => update('installments', e.target.value)}
-                                                    style={{ background: inputBg, borderColor: borderColor, color: textPrimary }}
+                                                    style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }}
                                                 >
                                                     {[...Array(12)].map((_, i) => (
                                                         <option key={i+1} value={i+1}>{i+1}x de R$ {((selectedPlan?.price || product?.price || 0) / 100 / (i+1)).toFixed(2)}</option>
@@ -608,15 +775,18 @@ export default function CheckoutPage() {
 
                                         {/* Address for Credit Card */}
                                         <div className="pt-4 space-y-4">
-                                            <h4 className="font-bold opacity-80" style={{ color: textPrimary }}>Endereço de cobrança</h4>
+                                            <h4 className="font-black opacity-80" style={{ color: textPrimary }}>Endereço de cobrança</h4>
                                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                <div className="col-span-1"><input placeholder="CEP" className="w-full h-12 px-4 rounded-xl border-2 outline-none" value={form.cep} onChange={e => update('cep', e.target.value)} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} /></div>
-                                                <div className="col-span-2 md:col-span-2"><input placeholder="Cidade" className="w-full h-12 px-4 rounded-xl border-2 outline-none" value={form.city} onChange={e => update('city', e.target.value)} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} /></div>
-                                                <div className="col-span-1"><input placeholder="UF" maxLength={2} className="w-full h-12 px-4 rounded-xl border-2 outline-none" value={form.state} onChange={e => update('state', e.target.value.toUpperCase())} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} /></div>
+                                                <div className="col-span-1"><input placeholder="CEP" className="w-full h-12 px-4 rounded-2xl border outline-none" value={form.cep} onChange={e => update('cep', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} /></div>
+                                                <div className="col-span-2 md:col-span-2"><input placeholder="Cidade" className="w-full h-12 px-4 rounded-2xl border outline-none" value={form.city} onChange={e => update('city', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} /></div>
+                                                <div className="col-span-1"><input placeholder="UF" maxLength={2} className="w-full h-12 px-4 rounded-2xl border outline-none" value={form.state} onChange={e => update('state', e.target.value.toUpperCase())} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} /></div>
                                             </div>
                                             <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
-                                                <div className="col-span-2 md:col-span-3"><input placeholder="Rua / Logradouro" className="w-full h-12 px-4 rounded-xl border-2 outline-none" value={form.street} onChange={e => update('street', e.target.value)} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} /></div>
-                                                <div className="col-span-1"><input placeholder="Nº" className="w-full h-12 px-4 rounded-xl border-2 outline-none" value={form.number} onChange={e => update('number', e.target.value)} style={{ background: inputBg, borderColor: borderColor, color: textPrimary }} /></div>
+                                                <div className="col-span-2 md:col-span-3"><input placeholder="Rua / Logradouro" className="w-full h-12 px-4 rounded-2xl border outline-none" value={form.street} onChange={e => update('street', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} /></div>
+                                                <div className="col-span-1"><input placeholder="Nº" className="w-full h-12 px-4 rounded-2xl border outline-none" value={form.number} onChange={e => update('number', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} /></div>
+                                            </div>
+                                            <div>
+                                                <input placeholder="Bairro" className="w-full h-12 px-4 rounded-2xl border outline-none" value={form.neighborhood} onChange={e => update('neighborhood', e.target.value)} style={{ background: isLight ? '#fff' : inputBg, borderColor: borderColor, color: textPrimary }} />
                                             </div>
                                         </div>
                                     </div>
@@ -624,100 +794,69 @@ export default function CheckoutPage() {
                             )}
 
                             {/* Submit Button */}
-                            <div className="pt-10 flex flex-col md:flex-row items-center justify-between gap-6 border-t" style={{ borderColor: borderColor }}>
-                                <div className="flex items-center gap-2 opacity-50" style={{ color: textSecondary }}>
-                                    <FiLock size={16} />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Pagamento protegido</span>
-                                </div>
-                                <button 
-                                    type="submit" 
-                                    disabled={processing}
-                                    className="w-full md:w-auto min-w-[240px] h-16 px-10 rounded-2xl text-white font-black text-lg shadow-xl hover:-translate-y-1 active:translate-y-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                    style={{ background: accent, boxShadow: `0 10px 25px -5px ${accent}66` }}
-                                >
-                                    {processing ? 'Processando...' : 'Continuar'}
-                                </button>
-                            </div>
+                            <div className="hidden md:block pt-8 border-t" style={{ borderColor: borderColor }} />
                         </form>
-                    </div>
-                </div>
-
-                {/* Right Side: Order Summary */}
-                <div className="w-full md:w-[40%] lg:w-[35%] p-6 md:p-12 lg:p-16 border-l" style={{ background: isLight ? '#f9fafb' : 'rgba(255,255,255,0.02)', borderColor: borderColor }}>
-                    <div className="max-w-md mx-auto sticky top-32">
-                        <div className="uppercase text-[10px] font-black tracking-[0.2em] opacity-40 mb-2" style={{ color: textSecondary }}>Checkout</div>
-                        <h2 className="text-3xl font-black mb-10" style={{ color: textPrimary }}>Resumo da compra</h2>
-
-                        {/* Product Card */}
-                        <div className="p-6 rounded-3xl shadow-sm border mb-8 space-y-6" style={{ background: bgCard, borderColor: borderColor }}>
-                            <div className="flex gap-4">
-                                {!settings.hide_product_image && (
-                                    <div className="w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border" style={{ background: isLight ? '#f3f4f6' : 'rgba(255,255,255,0.05)', borderColor: borderColor }}>
-                                        {product.image_url ? (
-                                            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
-                                        ) : (
-                                            <div className="w-full h-full flex items-center justify-center opacity-20" style={{ color: textPrimary }}><FiShoppingCart size={32} /></div>
-                                        )}
-                                    </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                    <h4 className="font-bold text-lg leading-tight mb-2 truncate" style={{ color: textPrimary }}>{product.name}</h4>
-                                    <p className="text-sm line-clamp-3 mb-4 leading-relaxed opacity-60" style={{ color: textSecondary }}>{product.description || 'Produto digital com entrega imediata via e-mail.'}</p>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-white text-[10px] font-black px-2 py-1 rounded-full uppercase tracking-wider" style={{ background: accent }}>1 unidade</span>
-                                        <span className="font-bold" style={{ color: textPrimary }}>R$ {selectedPlan ? selectedPlan.price_display : product.price_display}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Plans selection if any */}
-                            {plans.length > 1 && (
-                                <div className="pt-4 border-t space-y-2" style={{ borderColor: borderColor }}>
-                                    <label className="text-[10px] font-bold opacity-40 uppercase tracking-widest mb-2 block" style={{ color: textSecondary }}>Selecione seu plano</label>
-                                    {plans.map(p => (
-                                        <div 
-                                            key={p.id} 
-                                            onClick={() => setSelectedPlan(p)}
-                                            className={`p-3 rounded-xl border-2 cursor-pointer transition-all flex items-center justify-between ${selectedPlan?.id === p.id ? '' : 'hover:opacity-80'}`}
-                                            style={{ 
-                                                borderColor: selectedPlan?.id === p.id ? accent : borderColor,
-                                                background: selectedPlan?.id === p.id ? `${accent}11` : 'transparent'
-                                            }}
-                                        >
-                                            <span className={`text-sm font-bold ${selectedPlan?.id === p.id ? '' : 'opacity-60'}`} style={{ color: selectedPlan?.id === p.id ? accent : textPrimary }}>{p.name}</span>
-                                            <span className="text-sm font-black" style={{ color: textPrimary }}>R$ {p.price_display}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Totals */}
-                        <div className="space-y-4 px-2">
-                            <div className="flex justify-between items-center opacity-60" style={{ color: textSecondary }}>
-                                <span className="text-sm font-medium">Subtotal</span>
-                                <span className="font-bold" style={{ color: textPrimary }}>R$ {selectedPlan ? selectedPlan.price_display : product.price_display}</span>
-                            </div>
-                            <div className="pt-4 border-t-2 flex justify-between items-center" style={{ borderColor: borderColor }}>
-                                <span className="text-lg font-black" style={{ color: textPrimary }}>Total a pagar</span>
-                                <span className="text-2xl font-black tracking-tight" style={{ color: textPrimary }}>R$ {selectedPlan ? selectedPlan.price_display : product.price_display}</span>
                             </div>
                         </div>
 
-                        {/* Video */}
                         {settings.show_video && (
-                            <div className="mt-12">
+                            <div className="mt-8">
                                 <VideoPlayer settings={settings} borderColor={borderColor} />
                             </div>
                         )}
                     </div>
+
+                    <aside className="md:col-span-5 lg:col-span-4 order-1 md:order-2">
+                        <div className="md:sticky md:top-6 space-y-4">
+                            <div className="md:hidden">
+                                <OrderSummary
+                                    product={product}
+                                    selectedPlan={selectedPlan}
+                                    plans={plans}
+                                    setSelectedPlan={setSelectedPlan}
+                                    settings={settings}
+                                    processing={processing}
+                                    paymentMethod={enableCreditCard ? paymentMethod : 'pix'}
+                                    installments={Number(form.installments) || 1}
+                                    isLight={isLight}
+                                    bgCard={bgCard}
+                                    borderColor={borderColor}
+                                    textPrimary={textPrimary}
+                                    textSecondary={textSecondary}
+                                    textMuted={textMuted}
+                                    accent={accent}
+                                />
+                            </div>
+
+                            <div className="hidden md:block">
+                                <div className="text-xs font-black uppercase tracking-wider opacity-50 mb-3" style={{ color: textSecondary }}>Resumo</div>
+                                <OrderSummary
+                                    product={product}
+                                    selectedPlan={selectedPlan}
+                                    plans={plans}
+                                    setSelectedPlan={setSelectedPlan}
+                                    settings={settings}
+                                    processing={processing}
+                                    paymentMethod={enableCreditCard ? paymentMethod : 'pix'}
+                                    installments={Number(form.installments) || 1}
+                                    isLight={isLight}
+                                    bgCard={bgCard}
+                                    borderColor={borderColor}
+                                    textPrimary={textPrimary}
+                                    textSecondary={textSecondary}
+                                    textMuted={textMuted}
+                                    accent={accent}
+                                />
+                            </div>
+                        </div>
+                    </aside>
                 </div>
             </main>
 
             <style jsx global>{`
                 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
-                input::placeholder { color: #9ca3af; font-weight: 400; }
+                input::placeholder { color: #9ca3af; font-weight: 500; }
                 select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 1rem center; background-size: 1.25rem; }
             `}</style>
         </div>
