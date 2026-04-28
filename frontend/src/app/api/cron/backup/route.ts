@@ -16,19 +16,52 @@ const supabase = createClient(
     process.env.SUPABASE_SERVICE_KEY!
 );
 
-const TABLES_TO_BACKUP = [
-    'users',
-    'products',
-    'orders',
-    'transactions',
-    'withdrawals',
-    'recipients',
-    'platform_fees',
-    'platform_settings',
-    'enrollments',
-    'product_plans',
-    'subscriptions'
-];
+/**
+ * Buscar todas as tabelas do banco automaticamente
+ */
+async function getAllTables() {
+    try {
+        // Query para listar todas as tabelas do schema public
+        const { data, error } = await supabase.rpc('get_all_tables');
+        
+        if (error) {
+            console.log('⚠️ Função get_all_tables não existe, usando lista fixa');
+            // Fallback: lista fixa de tabelas
+            return [
+                'users',
+                'products',
+                'orders',
+                'transactions',
+                'withdrawals',
+                'recipients',
+                'platform_fees',
+                'platform_settings',
+                'enrollments',
+                'product_plans',
+                'subscriptions'
+            ];
+        }
+        
+        return data.map((row: any) => row.tablename);
+        
+    } catch (error) {
+        console.error('Erro ao buscar tabelas:', error);
+        // Fallback: lista fixa
+        return [
+            'users',
+            'products',
+            'orders',
+            'transactions',
+            'withdrawals',
+            'recipients',
+            'platform_fees',
+            'platform_settings',
+            'enrollments',
+            'product_plans',
+            'subscriptions'
+        ];
+    }
+}
 
 /**
  * Fazer backup de uma tabela
@@ -55,11 +88,11 @@ async function backupTable(tableName: string) {
 /**
  * Gerar SQL do backup
  */
-function generateSQL(backupData: any[]) {
+function generateSQL(backupData: any[], totalTables: number) {
     let sql = `-- ============================================\n`;
     sql += `-- BACKUP DO BANCO DE DADOS\n`;
     sql += `-- Data: ${new Date().toISOString()}\n`;
-    sql += `-- Tabelas: ${TABLES_TO_BACKUP.length}\n`;
+    sql += `-- Tabelas: ${totalTables}\n`;
     sql += `-- ============================================\n\n`;
     
     backupData.forEach(({ table, data }) => {
@@ -172,8 +205,13 @@ export async function GET(request: NextRequest) {
         console.log('🕐 Iniciando backup automático...');
         const startTime = Date.now();
         
-        // 1. Fazer backup de todas as tabelas
-        const backupPromises = TABLES_TO_BACKUP.map(table => backupTable(table));
+        // 1. Buscar todas as tabelas do banco
+        console.log('📋 Buscando lista de tabelas...');
+        const tables = await getAllTables();
+        console.log(`✅ Encontradas ${tables.length} tabelas`);
+        
+        // 2. Fazer backup de todas as tabelas
+        const backupPromises = tables.map(table => backupTable(table));
         const backupResults = await Promise.all(backupPromises);
         
         // Filtrar resultados válidos
@@ -187,7 +225,7 @@ export async function GET(request: NextRequest) {
         }
         
         // 2. Gerar SQL
-        const sql = generateSQL(validBackups);
+        const sql = generateSQL(validBackups, tables.length);
         
         // 3. Salvar no Supabase Storage
         const timestamp = new Date().toISOString().split('T')[0];
