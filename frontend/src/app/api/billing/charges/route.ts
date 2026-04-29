@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { getAuthUser, jsonError, jsonSuccess } from '@/lib/auth';
-import pagarmeApi from '@/lib/pagarme';
+import pagarmeApi, { PagarmeService } from '@/lib/pagarme';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(req: NextRequest) {
@@ -141,57 +141,25 @@ export async function POST(req: NextRequest) {
             sellerAmount = amountCents - platformFeeAmount;
         }
 
-        // Create order on Pagar.me with split
-        const orderData: any = {
-            items: [{
+        // Create order on Pagar.me using the service to ensure consistent logic (address, split, etc.)
+        let pagarmeOrder;
+        try {
+            pagarmeOrder = await PagarmeService.createOrder({
                 amount: amountCents,
-                description: description || 'Cobrança',
-                quantity: 1,
-                code: uuidv4()
-            }],
-            customer: {
-                name: user.name || 'Cliente',
-                email: user.email || 'cliente@example.com',
-                document: '00000000000',
-                type: 'individual'
-            },
-            payments: [{
                 payment_method: 'pix',
-                pix: { 
-                    expires_in: 86400,
-                    additional_information: [{ name: 'Pagamento', value: process.env.PLATFORM_NAME || 'GouPay' }]
-                }
-            }]
-        };
-
-        // Add split rules if not admin
-        const hasSellerRecipient = !!recipient.pagarme_recipient_id;
-        const includePlatformFee = !!(platformRecipientId && platformRecipientId !== recipient.pagarme_recipient_id && platformFeeAmount > 0);
-        
-        if (hasSellerRecipient) {
-            const splitRules: any[] = [
-                {
-                    amount: sellerAmount,
-                    recipient_id: recipient.pagarme_recipient_id,
-                    type: 'flat',
-                    options: { charge_processing_fee: true, liable: true, charge_remainder_fee: true }
-                }
-            ];
-
-            if (includePlatformFee) {
-                splitRules.push({
-                    amount: platformFeeAmount,
-                    recipient_id: platformRecipientId,
-                    type: 'flat',
-                    options: { charge_processing_fee: false, liable: false, charge_remainder_fee: false }
-                });
-            }
-
-            orderData.payments[0].split = splitRules;
+                customer: {
+                    name: user.name || 'Cliente',
+                    email: user.email || 'cliente@example.com',
+                    cpf: '00000000000'
+                },
+                seller_recipient_id: recipient.pagarme_recipient_id,
+                platform_fee_percentage: user.role === 'admin' ? 0 : 1, // Any > 0 triggers the flat fee in the service
+                ip: req.headers.get('x-forwarded-for')?.split(',')[0].trim() || undefined
+            });
+        } catch (pagarmeErr: any) {
+            console.error('[BILLING] Pagarme Service Error:', pagarmeErr.response?.data || pagarmeErr.message);
+            throw pagarmeErr;
         }
-
-        let response = await pagarmeApi.post('/orders', orderData);
-        let pagarmeOrder = response.data;
         
         let pixData = extractPix(pagarmeOrder);
         
