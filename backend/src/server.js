@@ -20,6 +20,7 @@ const contentRoutes = require('./routes/content.routes');
 const memberRoutes = require('./routes/member.routes');
 const storeCategoriesRoutes = require('./routes/store_categories.routes');
 const storeRoutes = require('./routes/store.routes');
+const billingRoutes = require('./routes/billing.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -80,6 +81,7 @@ app.use('/api/content', contentRoutes);
 app.use('/api/member', memberRoutes);
 app.use('/api/store-categories', storeCategoriesRoutes);
 app.use('/api/store', storeRoutes);
+app.use('/api/billing', billingRoutes);
 
 // 404 handler
 app.use((req, res) => {

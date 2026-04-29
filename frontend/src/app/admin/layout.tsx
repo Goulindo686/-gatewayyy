@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { FiHome, FiUsers, FiList, FiSettings, FiLogOut, FiShield, FiPackage, FiDollarSign, FiShoppingBag, FiMenu, FiX } from 'react-icons/fi';
+import { FiHome, FiUsers, FiList, FiSettings, FiLogOut, FiShield, FiPackage, FiDollarSign, FiShoppingBag, FiMenu, FiX, FiCreditCard } from 'react-icons/fi';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -35,6 +35,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         // Abas do vendedor acessíveis pelo admin
         { href: '/admin/products', icon: <FiPackage size={18} />, label: 'Produtos' },
         { href: '/admin/store', icon: <FiShoppingBag size={18} />, label: 'Minha Loja' },
+        { href: '/dashboard/billings', icon: <FiCreditCard size={18} />, label: 'Cobranças' },
         { href: '/admin/withdrawals', icon: <FiDollarSign size={18} />, label: 'Saques' },
     ];
 

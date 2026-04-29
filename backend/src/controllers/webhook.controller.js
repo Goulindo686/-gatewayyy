@@ -75,6 +75,18 @@ class WebhookController {
     }
 
     async _handleChargePaid(charge) {
+        // Check if it's a billing charge first
+        const { data: billing } = await supabase
+            .from('billings')
+            .select('*')
+            .eq('pagarme_charge_id', charge.id)
+            .single();
+
+        if (billing) {
+            return await this._handleBillingPaid(billing, charge);
+        }
+
+        // Otherwise, handle as regular order
         const { data: order } = await supabase
             .from('orders')
             .select('*, products(*)')
@@ -301,6 +313,58 @@ class WebhookController {
         });
 
         console.log(`Chargeback received for order ${order.id}`);
+    }
+
+    async _handleBillingPaid(billing, charge) {
+        if (billing.status === 'paid') {
+            console.log(`[WEBHOOK] Billing ${billing.id} is already marked as paid. Skipping.`);
+            return;
+        }
+
+        console.log(`[WEBHOOK] Marking billing ${billing.id} as paid...`);
+        
+        // Update billing status
+        await supabase
+            .from('billings')
+            .update({ 
+                status: 'paid', 
+                paid_at: new Date().toISOString(),
+                updated_at: new Date().toISOString() 
+            })
+            .eq('id', billing.id);
+
+        // Create transaction records for billing
+        await supabase.from('transactions').insert({
+            user_id: billing.user_id,
+            type: 'sale',
+            amount: billing.net_amount,
+            status: 'confirmed',
+            description: `Cobrança recebida: ${billing.description || 'Cobrança'}`
+        });
+
+        if (billing.fee_amount > 0) {
+            await supabase.from('transactions').insert({
+                user_id: billing.user_id,
+                type: 'fee',
+                amount: billing.fee_amount,
+                status: 'confirmed',
+                description: `Taxa plataforma: R$1,50 fixo`
+            });
+        }
+
+        // Send Telegram Notification
+        try {
+            await TelegramService.notifySale(billing.user_id, {
+                product_name: billing.description || 'Cobrança',
+                amount: billing.amount,
+                payment_method: 'pix',
+                customer_name: 'Cliente'
+            });
+        } catch (tgError) {
+            console.error('Telegram Notification Error:', tgError);
+        }
+
+        console.log(`Billing ${billing.id} paid. Net: R${(billing.net_amount / 100).toFixed(2)}, Fee: R${(billing.fee_amount / 100).toFixed(2)}`);
     }
 }
 
