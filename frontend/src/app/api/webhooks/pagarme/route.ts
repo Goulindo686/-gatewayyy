@@ -90,7 +90,67 @@ export async function POST(req: NextRequest) {
                         await supabase.from('billings')
                             .update({ status: 'paid', paid_at: new Date().toISOString(), updated_at: new Date().toISOString() })
                             .eq('id', billing.id);
+                        
                         console.log('[WEBHOOK] Billing charge marked as paid:', billing.id);
+
+                        // ─── NOTIFICAÇÕES PARA COBRANÇAS ─────────────────────
+                        try {
+                            const { data: seller } = await supabase
+                                .from('users')
+                                .select('id, name, email')
+                                .eq('id', billing.user_id)
+                                .single();
+
+                            if (seller) {
+                                const amountFormatted = new Intl.NumberFormat('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL',
+                                }).format(billing.amount / 100);
+
+                                // 1. Notificar Vendedor (Telegram)
+                                await notifySale(seller.id, {
+                                    product_name: billing.description || 'Cobrança Avulsa',
+                                    amount: billing.amount,
+                                    payment_method: 'PIX',
+                                    customer_name: 'Pagamento de Cobrança'
+                                });
+
+                                // 2. Notificar Vendedor (Web Push)
+                                await sendPushNotification(seller.id, {
+                                    title: '💰 Cobrança Recebida!',
+                                    body: `${billing.description || 'Cobrança'} • ${amountFormatted}`,
+                                    url: '/dashboard/billings',
+                                });
+
+                                // 3. Notificar Admin sobre a taxa (Web Push)
+                                if (billing.fee_amount > 0) {
+                                    const { data: admins } = await supabase
+                                        .from('users')
+                                        .select('id')
+                                        .eq('role', 'admin');
+
+                                    if (admins && admins.length > 0) {
+                                        const feeFormatted = new Intl.NumberFormat('pt-BR', {
+                                            style: 'currency',
+                                            currency: 'BRL',
+                                        }).format(billing.fee_amount / 100);
+
+                                        await Promise.allSettled(
+                                            admins.map((a: any) =>
+                                                sendPushNotification(a.id, {
+                                                    title: '📈 Taxa de Cobrança',
+                                                    body: `${feeFormatted} • De: ${seller.name || seller.email}`,
+                                                    url: '/admin/transactions',
+                                                })
+                                            )
+                                        );
+                                    }
+                                }
+                            }
+                        } catch (notifyError) {
+                            console.error('[WEBHOOK] Error sending billing notifications:', notifyError);
+                        }
+                        // ─── FIM NOTIFICAÇÕES ────────────────────────────────
                     }
                 } else if (type === 'order.payment_failed' || type === 'charge.payment_failed') {
                     await supabase.from('billings')
