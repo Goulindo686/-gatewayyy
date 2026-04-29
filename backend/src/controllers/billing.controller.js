@@ -1,5 +1,6 @@
 const { supabase } = require('../config/database');
 const pagarmeService = require('../services/pagarme.service');
+const { pagarmeApi } = require('../config/pagarme');
 const { v4: uuidv4 } = require('uuid');
 
 class BillingController {
@@ -112,7 +113,6 @@ class BillingController {
                 orderData.payments[0].split = splitRules;
             }
 
-            const { pagarmeApi } = require('../config/pagarme');
             const response = await pagarmeApi.post('/orders', orderData);
             const pagarmeOrder = response.data;
             const charge = pagarmeOrder.charges?.[0];
