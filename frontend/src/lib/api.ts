@@ -139,13 +139,13 @@ export const storeAPI = {
     createOrder: (data: any) => internalApi.post('/store-checkout', data),
 };
 
-// Billings
+// Billings (Internal Next.js API - uses app/api/billing routes)
 export const billingAPI = {
-    getStats: () => api.get('/billing/stats'),
-    listCharges: (params?: any) => api.get('/billing/charges', { params }),
-    getCharge: (id: string) => api.get(`/billing/charges/${id}`),
-    createCharge: (data: { amount: number; description?: string }) => api.post('/billing/charges', data),
-    cancelCharge: (id: string) => api.patch(`/billing/charges/${id}/cancel`),
+    getStats: () => internalApi.get('/billing/stats'),
+    listCharges: (params?: any) => internalApi.get('/billing/charges', { params }),
+    getCharge: (id: string) => internalApi.get(`/billing/charges/${id}`),
+    createCharge: (data: { amount: number; description?: string }) => internalApi.post('/billing/charges', data),
+    cancelCharge: (id: string) => internalApi.patch(`/billing/charges/${id}/cancel`),
 };
 
 export default api;
