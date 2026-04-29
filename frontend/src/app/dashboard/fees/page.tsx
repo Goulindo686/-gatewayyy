@@ -100,10 +100,10 @@ export default function FeesPage() {
                                 const seller = sale - 2.0 - pagarme;
                                 return (
                                     <tr key={sale} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                        <td style={{ padding: '12px 12px', fontWeight: 600 }}>R$ {sale.toFixed(2)}</td>
+                                        <td style={{ padding: '12px 12px', fontWeight: 600 }}>R$ {sale.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                         <td style={{ padding: '12px 12px', textAlign: 'right', color: 'var(--danger)' }}>R$ 2,00</td>
-                                        <td style={{ padding: '12px 12px', textAlign: 'right', color: 'var(--text-muted)' }}>R$ {pagarme.toFixed(2)}</td>
-                                        <td style={{ padding: '12px 12px', textAlign: 'right', fontWeight: 700, color: 'var(--success)' }}>R$ {seller.toFixed(2)}</td>
+                                        <td style={{ padding: '12px 12px', textAlign: 'right', color: 'var(--text-muted)' }}>R$ {pagarme.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                        <td style={{ padding: '12px 12px', textAlign: 'right', fontWeight: 700, color: 'var(--success)' }}>R$ {seller.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
                                     </tr>
                                 );
                             })}

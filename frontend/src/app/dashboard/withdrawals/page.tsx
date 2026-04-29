@@ -157,7 +157,9 @@ export default function WithdrawalsPage() {
                             background: `${card.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center',
                             color: card.color
                         }}>{card.icon}</div>
-                        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>R$ {card.value}</div>
+                        <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>
+                            R$ {Number(card.value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
                         <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{card.label}</div>
                     </div>
                 ))}

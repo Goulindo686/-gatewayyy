@@ -1,5 +1,11 @@
 const { supabase } = require('../config/database');
 
+// Helper para formatar valores em padrão brasileiro (R$ 1.234,56)
+const formatBRL = (cents) => {
+    const value = cents / 100;
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 class DashboardController {
     async getStats(req, res, next) {
         try {
@@ -80,19 +86,19 @@ class DashboardController {
 
             res.json({
                 stats: {
-                    total_sold: (totalSold / 100).toFixed(2),
-                    net_revenue: (netSales / 100).toFixed(2),
-                    available_balance: (Math.max(0, available) / 100).toFixed(2),
-                    pending_balance: (pendingAmount / 100).toFixed(2),
-                    total_withdrawn: (totalWithdrawn / 100).toFixed(2),
-                    total_fees: (totalFees / 100).toFixed(2),
+                    total_sold: formatBRL(totalSold),
+                    net_revenue: formatBRL(netSales),
+                    available_balance: formatBRL(Math.max(0, available)),
+                    pending_balance: formatBRL(pendingAmount),
+                    total_withdrawn: formatBRL(totalWithdrawn),
+                    total_fees: formatBRL(totalFees),
                     total_orders: totalOrders,
                     total_products: totalProducts || 0
                 },
                 monthly_sales: monthlySales,
                 recent_orders: recentOrders?.map(o => ({
                     ...o,
-                    amount_display: (o.amount / 100).toFixed(2)
+                    amount_display: formatBRL(o.amount)
                 }))
             });
         } catch (error) {
@@ -126,11 +132,11 @@ class DashboardController {
                 sales: sales?.map(o => ({
                     ...o,
                     product_name: o.products?.name || o.product_name,
-                    amount_display: (o.amount / 100).toFixed(2)
+                    amount_display: formatBRL(o.amount)
                 })),
                 summary: {
                     count: sales?.length || 0,
-                    total_amount_display: (totalAmount / 100).toFixed(2)
+                    total_amount_display: formatBRL(totalAmount)
                 }
             });
         } catch (error) {

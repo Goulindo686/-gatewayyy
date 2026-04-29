@@ -325,7 +325,9 @@ export default function DashboardPage() {
                             </span>
                         </div>
                         <div style={{ fontSize: 22, fontWeight: 700, marginBottom: 2, letterSpacing: '-0.5px' }}>
-                            {card.isCurrency !== false ? `R$ ${card.value}` : card.value}
+                            {card.isCurrency !== false 
+                                ? `R$ ${Number(card.value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+                                : card.value}
                         </div>
                         <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>{card.label}</div>
                         {/* Sparkline */}

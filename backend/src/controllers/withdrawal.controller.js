@@ -1,6 +1,12 @@
 const { supabase } = require('../config/database');
 const pagarmeService = require('../services/pagarme.service');
 
+// Helper para formatar valores em padrão brasileiro (R$ 1.234,56)
+const formatBRL = (cents) => {
+    const value = cents / 100;
+    return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 class WithdrawalController {
     async request(req, res, next) {
         try {
@@ -19,7 +25,7 @@ class WithdrawalController {
             if (amountCents > balance.available) {
                 return res.status(400).json({
                     error: 'Saldo insuficiente.',
-                    available: (balance.available / 100).toFixed(2)
+                    available: formatBRL(balance.available)
                 });
             }
 
@@ -73,14 +79,14 @@ class WithdrawalController {
                     type: 'withdrawal',
                     amount: amountCents,
                     status: 'confirmed',
-                    description: `Saque via Pix: R$${amount.toFixed(2)}`
+                    description: `Saque via Pix: R$ ${formatBRL(amountCents)}`
                 });
 
                 res.json({
                     message: 'Saque realizado com sucesso!',
                     withdrawal: {
                         id: withdrawal.id,
-                        amount: (amountCents / 100).toFixed(2),
+                        amount: formatBRL(amountCents),
                         status: 'completed'
                     }
                 });
@@ -121,7 +127,7 @@ class WithdrawalController {
             res.json({
                 withdrawals: data?.map(w => ({
                     ...w,
-                    amount_display: (w.amount / 100).toFixed(2)
+                    amount_display: formatBRL(w.amount)
                 })),
                 total: count,
                 page: parseInt(page)
@@ -136,11 +142,11 @@ class WithdrawalController {
             const balance = await this._calculateBalance(req.user.id);
 
             res.json({
-                available: (balance.available / 100).toFixed(2),
-                pending: (balance.pending / 100).toFixed(2),
-                total_sold: (balance.totalSold / 100).toFixed(2),
-                total_withdrawn: (balance.totalWithdrawn / 100).toFixed(2),
-                total_fees: (balance.totalFees / 100).toFixed(2)
+                available: formatBRL(balance.available),
+                pending: formatBRL(balance.pending),
+                total_sold: formatBRL(balance.totalSold),
+                total_withdrawn: formatBRL(balance.totalWithdrawn),
+                total_fees: formatBRL(balance.totalFees)
             });
         } catch (error) {
             next(error);
