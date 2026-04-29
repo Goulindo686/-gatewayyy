@@ -63,6 +63,50 @@ export async function POST(req: NextRequest) {
             data?.orderId ||
             (type.startsWith('order.') ? data.id : undefined);
 
+        // ─── BILLING CHARGES LOOKUP ─────────────────────────────────────────
+        // If order not found in 'orders' table, check 'billings' table
+        if (!order && !type.includes('transfer') && !type.includes('subscription')) {
+            let billing = null;
+
+            // Try by charge ID
+            if (data.id && type.startsWith('charge.')) {
+                const { data: b } = await supabase
+                    .from('billings').select('*').eq('pagarme_charge_id', data.id).single();
+                if (b) billing = b;
+            }
+
+            // Try by order ID
+            if (!billing && pagarmeOrderId) {
+                const { data: b } = await supabase
+                    .from('billings').select('*').eq('pagarme_order_id', pagarmeOrderId).single();
+                if (b) billing = b;
+            }
+
+            if (billing) {
+                console.log('[WEBHOOK] Found billing charge:', billing.id, 'Event:', type);
+
+                if (type === 'order.paid' || type === 'charge.paid') {
+                    if (billing.status !== 'paid') {
+                        await supabase.from('billings')
+                            .update({ status: 'paid', paid_at: new Date().toISOString(), updated_at: new Date().toISOString() })
+                            .eq('id', billing.id);
+                        console.log('[WEBHOOK] Billing charge marked as paid:', billing.id);
+                    }
+                } else if (type === 'order.payment_failed' || type === 'charge.payment_failed') {
+                    await supabase.from('billings')
+                        .update({ status: 'failed', updated_at: new Date().toISOString() })
+                        .eq('id', billing.id);
+                } else if (type === 'charge.refunded') {
+                    await supabase.from('billings')
+                        .update({ status: 'refunded', updated_at: new Date().toISOString() })
+                        .eq('id', billing.id);
+                }
+
+                return jsonSuccess({ received: true });
+            }
+        }
+        // ─── END BILLING CHARGES LOOKUP ─────────────────────────────────────
+
         if (!order && !type.includes('transfer') && pagarmeOrderId) {
             let txStatus: string | null = null;
 
