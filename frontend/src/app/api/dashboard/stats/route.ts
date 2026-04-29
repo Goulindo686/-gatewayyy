@@ -26,14 +26,18 @@ export async function GET(req: NextRequest) {
     let usedPagarme = false;
 
     // 1. Get stats from local Database (Baseline)
-    const [ordersData, fees, withdrawals, pendingSales] = await Promise.all([
+    const [ordersData, billingsData, fees, withdrawals, pendingSales] = await Promise.all([
         supabase.from('orders').select('amount').eq('seller_id', userId).eq('status', 'paid'),
+        supabase.from('billings').select('amount').eq('user_id', userId).eq('status', 'paid'),
         supabase.from('transactions').select('amount').eq('user_id', userId).eq('type', 'fee'),
         supabase.from('transactions').select('amount').eq('user_id', userId).eq('type', 'withdrawal'),
         supabase.from('transactions').select('amount').eq('user_id', userId).in('type', ['sale', 'api_sale']).eq('status', 'pending')
     ]);
 
-    totalSoldDec = (ordersData.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
+    const totalOrders = (ordersData.data || []).reduce((s, t) => s + (t.amount || 0), 0);
+    const totalBillings = (billingsData.data || []).reduce((s, t) => s + (t.amount || 0), 0);
+
+    totalSoldDec = (totalOrders + totalBillings) / 100;
     totalFeesDec = (fees.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
     totalWithdrawnDec = (withdrawals.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
     pendingDec = (pendingSales.data || []).reduce((s, t) => s + (t.amount || 0), 0) / 100;
@@ -76,17 +80,34 @@ export async function GET(req: NextRequest) {
         .eq('seller_id', userId).eq('status', 'paid')
         .order('created_at', { ascending: true });
 
-    if (start) monthlyQuery = monthlyQuery.gte('created_at', new Date(start).toISOString());
-    if (end) monthlyQuery = monthlyQuery.lte('created_at', new Date(end).toISOString());
+    let billingMonthlyQuery = supabase
+        .from('billings').select('amount, created_at')
+        .eq('user_id', userId).eq('status', 'paid')
+        .order('created_at', { ascending: true });
 
-    const { data: monthlySales } = await monthlyQuery;
+    if (start) {
+        monthlyQuery = monthlyQuery.gte('created_at', new Date(start).toISOString());
+        billingMonthlyQuery = billingMonthlyQuery.gte('created_at', new Date(start).toISOString());
+    }
+    if (end) {
+        monthlyQuery = monthlyQuery.lte('created_at', new Date(end).toISOString());
+        billingMonthlyQuery = billingMonthlyQuery.lte('created_at', new Date(end).toISOString());
+    }
+
+    const [{ data: monthlySales }, { data: monthlyBillings }] = await Promise.all([
+        monthlyQuery,
+        billingMonthlyQuery
+    ]);
 
     const monthlyMap: Record<string, number> = {};
-    (monthlySales || []).forEach((o: any) => {
+    const processSale = (o: any) => {
         const d = new Date(o.created_at);
         const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
         monthlyMap[key] = (monthlyMap[key] || 0) + o.amount;
-    });
+    };
+
+    (monthlySales || []).forEach(processSale);
+    (monthlyBillings || []).forEach(processSale);
 
     const monthly_sales = Object.entries(monthlyMap).map(([month, amount]) => ({
         month, amount: (amount / 100).toFixed(2)
