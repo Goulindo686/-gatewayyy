@@ -243,12 +243,26 @@ export default function GeradorInteligente() {
       }
     } catch (error: any) {
       console.error('Erro ao salvar:', error);
-      alert('❌ Erro ao salvar página.\n\n' +
-            'Possíveis causas:\n' +
-            '• Backend não está rodando (verifique http://localhost:3001)\n' +
-            '• Tabela do banco não foi criada (execute o SQL)\n' +
-            '• Problema de conexão\n\n' +
-            'Erro: ' + (error.message || 'Desconhecido'));
+      
+      // Detectar erro de JSON (backend não está rodando ou retornando HTML)
+      if (error.message && error.message.includes('JSON')) {
+        alert('❌ Erro ao salvar página.\n\n' +
+              '🔴 O BACKEND NÃO ESTÁ RODANDO!\n\n' +
+              'Para iniciar o backend:\n' +
+              '1. Abra um terminal\n' +
+              '2. cd "GATEWAY/GATEWAY DE PAGAMENTOS/backend"\n' +
+              '3. npm run dev\n\n' +
+              'Aguarde a mensagem "PayGateway API running on port 3001"\n' +
+              'Depois tente salvar novamente.\n\n' +
+              'Veja: COMO_INICIAR_BACKEND.md para mais detalhes');
+      } else {
+        alert('❌ Erro ao salvar página.\n\n' +
+              'Possíveis causas:\n' +
+              '• Backend não está rodando (verifique http://localhost:3001)\n' +
+              '• Tabela do banco não foi criada (execute o SQL)\n' +
+              '• Problema de conexão\n\n' +
+              'Erro: ' + (error.message || 'Desconhecido'));
+      }
     } finally {
       setSaving(false);
     }
