@@ -197,6 +197,88 @@ export default function ComponentEditor({
                 <option value="4">4 Colunas</option>
               </select>
             </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                  Produtos
+                </label>
+                <button
+                  onClick={() => {
+                    const newItems = [...(component.config.items || []), {
+                      name: 'Novo Produto',
+                      description: 'Descrição do produto',
+                      price: 99.90,
+                      image: ''
+                    }];
+                    onUpdate({ ...component.config, items: newItems });
+                  }}
+                  className="text-xs px-2 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+                >
+                  + Adicionar Produto
+                </button>
+              </div>
+              {(component.config.items || []).map((item: any, index: number) => (
+                <div key={index} className="mb-3 p-3 bg-slate-50 dark:bg-slate-700 rounded-lg border border-slate-200 dark:border-slate-600">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-slate-600 dark:text-slate-400">Produto {index + 1}</span>
+                    <button
+                      onClick={() => {
+                        const newItems = component.config.items.filter((_: any, i: number) => i !== index);
+                        onUpdate({ ...component.config, items: newItems });
+                      }}
+                      className="text-xs text-red-600 hover:text-red-700"
+                    >
+                      Remover
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={item.name}
+                    onChange={(e) => {
+                      const newItems = [...component.config.items];
+                      newItems[index].name = e.target.value;
+                      onUpdate({ ...component.config, items: newItems });
+                    }}
+                    placeholder="Nome do produto"
+                    className="w-full px-3 py-2 mb-2 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-slate-900 dark:text-white text-sm"
+                  />
+                  <textarea
+                    value={item.description}
+                    onChange={(e) => {
+                      const newItems = [...component.config.items];
+                      newItems[index].description = e.target.value;
+                      onUpdate({ ...component.config, items: newItems });
+                    }}
+                    placeholder="Descrição"
+                    rows={2}
+                    className="w-full px-3 py-2 mb-2 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-slate-900 dark:text-white text-sm"
+                  />
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={item.price}
+                    onChange={(e) => {
+                      const newItems = [...component.config.items];
+                      newItems[index].price = parseFloat(e.target.value) || 0;
+                      onUpdate({ ...component.config, items: newItems });
+                    }}
+                    placeholder="Preço"
+                    className="w-full px-3 py-2 mb-2 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-slate-900 dark:text-white text-sm"
+                  />
+                  <input
+                    type="url"
+                    value={item.image}
+                    onChange={(e) => {
+                      const newItems = [...component.config.items];
+                      newItems[index].image = e.target.value;
+                      onUpdate({ ...component.config, items: newItems });
+                    }}
+                    placeholder="URL da imagem (opcional)"
+                    className="w-full px-3 py-2 bg-white dark:bg-slate-600 border border-slate-300 dark:border-slate-500 rounded text-slate-900 dark:text-white text-sm"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
         );
 

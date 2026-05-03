@@ -119,27 +119,39 @@ export default function PagePreview({ theme, components }: PagePreviewProps) {
                 {component.config.title}
               </h2>
               <div
-                className={`grid grid-cols-1 md:grid-cols-${component.config.columns} gap-8`}
+                className="grid gap-8"
+                style={{
+                  gridTemplateColumns: `repeat(${component.config.columns}, 1fr)`
+                }}
               >
-                {[1, 2, 3].map((item) => (
+                {(component.config.items || []).map((item: any, index: number) => (
                   <div
-                    key={item}
+                    key={index}
                     className="bg-white dark:bg-slate-700 rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow"
                   >
-                    <div className="h-48 bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-600 dark:to-slate-700" />
+                    <div 
+                      className="h-48"
+                      style={{
+                        background: item.image 
+                          ? `url(${item.image})` 
+                          : 'linear-gradient(135deg, #e5e7eb, #d1d5db)',
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center'
+                      }}
+                    />
                     <div className="p-6">
                       <h3 className="text-xl font-bold mb-2 text-slate-900 dark:text-white">
-                        Produto {item}
+                        {item.name}
                       </h3>
                       <p className="text-slate-600 dark:text-slate-400 mb-4">
-                        Descrição do produto
+                        {item.description}
                       </p>
                       {component.config.showPrice && (
                         <p
                           style={{ color: theme.primaryColor }}
                           className="text-2xl font-bold mb-4"
                         >
-                          R$ 99,90
+                          R$ {item.price.toFixed(2).replace('.', ',')}
                         </p>
                       )}
                       <button

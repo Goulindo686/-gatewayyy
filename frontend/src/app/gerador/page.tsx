@@ -33,6 +33,11 @@ interface PageConfig {
 
 export default function GeradorInteligente() {
   const [step, setStep] = useState<'template' | 'editor' | 'preview'>('template');
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [pageName, setPageName] = useState('');
+  const [pageSlug, setPageSlug] = useState('');
+  const [showSaveModal, setShowSaveModal] = useState(false);
   const [pageConfig, setPageConfig] = useState<PageConfig>({
     template: 'custom',
     theme: {
@@ -130,7 +135,27 @@ export default function GeradorInteligente() {
       products: {
         title: 'Nossos Produtos',
         showPrice: true,
-        columns: 3
+        columns: 3,
+        items: [
+          {
+            name: 'Produto 1',
+            description: 'Descrição do produto',
+            price: 99.90,
+            image: ''
+          },
+          {
+            name: 'Produto 2',
+            description: 'Descrição do produto',
+            price: 149.90,
+            image: ''
+          },
+          {
+            name: 'Produto 3',
+            description: 'Descrição do produto',
+            price: 199.90,
+            image: ''
+          }
+        ]
       },
       testimonials: {
         title: 'O Que Dizem Nossos Clientes',
@@ -214,6 +239,186 @@ export default function GeradorInteligente() {
     });
   };
 
+  const handleSave = async () => {
+    if (!pageName || !pageSlug) {
+      setShowSaveModal(true);
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/api/generator/pages`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: pageName,
+          slug: pageSlug,
+          template: pageConfig.template,
+          theme: pageConfig.theme,
+          components: pageConfig.components,
+          isPublished: false
+        })
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        alert('✅ Página salva com sucesso!');
+      } else {
+        alert('❌ Erro ao salvar: ' + data.message);
+      }
+    } catch (error) {
+      console.error('Erro ao salvar:', error);
+      alert('❌ Erro ao salvar página');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleExport = () => {
+    setExporting(true);
+    try {
+      const html = generateHTML();
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${pageSlug || 'minha-pagina'}.html`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      alert('✅ Página exportada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao exportar:', error);
+      alert('❌ Erro ao exportar página');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const generateHTML = () => {
+    const { theme, components } = pageConfig;
+    
+    const componentHTML = components.map(comp => {
+      switch (comp.type) {
+        case 'header':
+          return `
+            <header style="background: ${theme.primaryColor}; padding: 1rem; color: white;">
+              <nav style="max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center;">
+                <h1 style="font-size: 1.5rem; font-weight: bold;">${comp.config.logo}</h1>
+                <ul style="display: flex; gap: 2rem; list-style: none;">
+                  ${comp.config.menuItems.map((item: string) => `<li><a href="#" style="color: white; text-decoration: none;">${item}</a></li>`).join('')}
+                </ul>
+              </nav>
+            </header>
+          `;
+        case 'hero':
+          return `
+            <section style="background: linear-gradient(135deg, ${theme.primaryColor}, ${theme.secondaryColor}); padding: 6rem 2rem; text-align: center; color: white;">
+              <div style="max-width: 800px; margin: 0 auto;">
+                <h1 style="font-size: 3rem; font-weight: bold; margin-bottom: 1rem;">${comp.config.title}</h1>
+                <p style="font-size: 1.25rem; margin-bottom: 2rem;">${comp.config.subtitle}</p>
+                <button style="background: white; color: ${theme.primaryColor}; padding: 1rem 2rem; border: none; border-radius: 0.5rem; font-size: 1.125rem; font-weight: bold; cursor: pointer;">
+                  ${comp.config.buttonText}
+                </button>
+              </div>
+            </section>
+          `;
+        case 'features':
+          return `
+            <section style="padding: 4rem 2rem; background: ${theme.backgroundColor};">
+              <div style="max-width: 1200px; margin: 0 auto;">
+                <h2 style="font-size: 2.5rem; font-weight: bold; text-align: center; margin-bottom: 3rem; color: #1f2937;">${comp.config.title}</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                  ${comp.config.items.map((item: any) => `
+                    <div style="padding: 2rem; border: 1px solid #e5e7eb; border-radius: 1rem;">
+                      <h3 style="font-size: 1.5rem; font-weight: bold; margin-bottom: 0.5rem; color: ${theme.primaryColor};">${item.title}</h3>
+                      <p style="color: #6b7280;">${item.description}</p>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </section>
+          `;
+        case 'products':
+          return `
+            <section style="padding: 4rem 2rem; background: #f9fafb;">
+              <div style="max-width: 1200px; margin: 0 auto;">
+                <h2 style="font-size: 2.5rem; font-weight: bold; text-align: center; margin-bottom: 3rem; color: #1f2937;">${comp.config.title}</h2>
+                <div style="display: grid; grid-template-columns: repeat(${comp.config.columns}, 1fr); gap: 2rem;">
+                  ${comp.config.items.map((item: any) => `
+                    <div style="background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                      <div style="height: 200px; background: ${item.image ? `url(${item.image})` : 'linear-gradient(135deg, #e5e7eb, #d1d5db)'}; background-size: cover; background-position: center;"></div>
+                      <div style="padding: 1.5rem;">
+                        <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 0.5rem; color: #1f2937;">${item.name}</h3>
+                        <p style="color: #6b7280; margin-bottom: 1rem;">${item.description}</p>
+                        ${comp.config.showPrice ? `<p style="font-size: 1.5rem; font-weight: bold; color: ${theme.primaryColor}; margin-bottom: 1rem;">R$ ${item.price.toFixed(2)}</p>` : ''}
+                        <button style="width: 100%; padding: 0.75rem; background: ${theme.primaryColor}; color: white; border: none; border-radius: 0.5rem; font-weight: bold; cursor: pointer;">Comprar</button>
+                      </div>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </section>
+          `;
+        case 'cta':
+          return `
+            <section style="background: ${comp.config.backgroundColor}; padding: 4rem 2rem; text-align: center; color: white;">
+              <div style="max-width: 800px; margin: 0 auto;">
+                <h2 style="font-size: 2.5rem; font-weight: bold; margin-bottom: 2rem;">${comp.config.title}</h2>
+                <button style="background: white; color: ${comp.config.backgroundColor}; padding: 1rem 2rem; border: none; border-radius: 0.5rem; font-size: 1.125rem; font-weight: bold; cursor: pointer;">
+                  ${comp.config.buttonText}
+                </button>
+              </div>
+            </section>
+          `;
+        case 'footer':
+          return `
+            <footer style="background: #1f2937; color: white; padding: 2rem; text-align: center;">
+              <div style="max-width: 1200px; margin: 0 auto;">
+                <p>${comp.config.text}</p>
+                <div style="margin-top: 1rem; display: flex; gap: 2rem; justify-content: center;">
+                  ${comp.config.links.map((link: string) => `<a href="#" style="color: white; text-decoration: none;">${link}</a>`).join('')}
+                </div>
+              </div>
+            </footer>
+          `;
+        default:
+          return '';
+      }
+    }).join('\n');
+
+    return `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${pageName || 'Minha Página'}</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: ${theme.fontFamily}, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: ${theme.backgroundColor};
+    }
+  </style>
+</head>
+<body>
+  ${componentHTML}
+</body>
+</html>
+    `.trim();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800">
       {/* Header */}
@@ -269,13 +474,21 @@ export default function GeradorInteligente() {
                   Preview
                 </button>
                 <div className="h-6 w-px bg-slate-300 dark:bg-slate-600" />
-                <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors">
+                <button 
+                  onClick={() => setShowSaveModal(true)}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors disabled:opacity-50"
+                >
                   <Save className="w-4 h-4" />
-                  Salvar
+                  {saving ? 'Salvando...' : 'Salvar'}
                 </button>
-                <button className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all">
+                <button 
+                  onClick={handleExport}
+                  disabled={exporting}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50"
+                >
                   <Download className="w-4 h-4" />
-                  Exportar
+                  {exporting ? 'Exportando...' : 'Exportar'}
                 </button>
               </div>
             )}
@@ -398,6 +611,15 @@ export default function GeradorInteligente() {
                       })}
                       className="w-full h-10 rounded-lg cursor-pointer"
                     />
+                    <input
+                      type="text"
+                      value={pageConfig.theme.primaryColor}
+                      onChange={(e) => setPageConfig({
+                        ...pageConfig,
+                        theme: { ...pageConfig.theme, primaryColor: e.target.value }
+                      })}
+                      className="w-full mt-1 px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -411,6 +633,38 @@ export default function GeradorInteligente() {
                         theme: { ...pageConfig.theme, secondaryColor: e.target.value }
                       })}
                       className="w-full h-10 rounded-lg cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={pageConfig.theme.secondaryColor}
+                      onChange={(e) => setPageConfig({
+                        ...pageConfig,
+                        theme: { ...pageConfig.theme, secondaryColor: e.target.value }
+                      })}
+                      className="w-full mt-1 px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Cor de Fundo
+                    </label>
+                    <input
+                      type="color"
+                      value={pageConfig.theme.backgroundColor}
+                      onChange={(e) => setPageConfig({
+                        ...pageConfig,
+                        theme: { ...pageConfig.theme, backgroundColor: e.target.value }
+                      })}
+                      className="w-full h-10 rounded-lg cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={pageConfig.theme.backgroundColor}
+                      onChange={(e) => setPageConfig({
+                        ...pageConfig,
+                        theme: { ...pageConfig.theme, backgroundColor: e.target.value }
+                      })}
+                      className="w-full mt-1 px-2 py-1 text-xs bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded text-slate-900 dark:text-white"
                     />
                   </div>
                   <div>
@@ -429,6 +683,8 @@ export default function GeradorInteligente() {
                       <option value="Roboto">Roboto</option>
                       <option value="Poppins">Poppins</option>
                       <option value="Montserrat">Montserrat</option>
+                      <option value="Open Sans">Open Sans</option>
+                      <option value="Lato">Lato</option>
                     </select>
                   </div>
                 </div>
@@ -497,6 +753,64 @@ export default function GeradorInteligente() {
           </div>
         )}
       </main>
+
+      {/* Modal de Salvar */}
+      {showSaveModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-xl p-6 max-w-md w-full border border-slate-200 dark:border-slate-700">
+            <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4">
+              Salvar Página
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Nome da Página
+                </label>
+                <input
+                  type="text"
+                  value={pageName}
+                  onChange={(e) => setPageName(e.target.value)}
+                  placeholder="Ex: Minha Loja Incrível"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  URL (Slug)
+                </label>
+                <input
+                  type="text"
+                  value={pageSlug}
+                  onChange={(e) => setPageSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))}
+                  placeholder="Ex: minha-loja-incrivel"
+                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white"
+                />
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                  Sua página ficará em: /p/{pageSlug || 'seu-slug'}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowSaveModal(false)}
+                className="flex-1 px-4 py-2 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  setShowSaveModal(false);
+                  handleSave();
+                }}
+                disabled={!pageName || !pageSlug}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all disabled:opacity-50"
+              >
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
