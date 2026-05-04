@@ -18,10 +18,11 @@ export async function POST(req: NextRequest) {
             .eq('email', email);
 
         const user = users?.[0];
+        let resetToken: string | null = null;
 
         // If user exists, generate reset token
         if (user) {
-            const resetToken = uuidv4();
+            resetToken = uuidv4();
             const resetExpires = new Date(Date.now() + 3600000); // 1 hour
 
             const { error } = await supabase
@@ -56,8 +57,8 @@ export async function POST(req: NextRequest) {
         return jsonSuccess({ 
             message: 'Se o email existir, as instruções de recuperação serão enviadas.',
             // In development, include the reset URL for testing
-            ...(process.env.NODE_ENV === 'development' && user ? {
-                dev_reset_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.goupay.com.br'}/reset-password?token=${user.password_reset_token || resetToken}`
+            ...(process.env.NODE_ENV === 'development' && resetToken ? {
+                dev_reset_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.goupay.com.br'}/reset-password?token=${resetToken}`
             } : {})
         });
     } catch (err) {
