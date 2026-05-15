@@ -6,7 +6,12 @@ const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
 const { errorHandler } = require('./middlewares/error.middleware');
-const { loginLimiter, registerLimiter, forgotPasswordLimiter } = require('./middlewares/rate-limit.middleware');
+const {
+    loginLimiter,
+    registerLimiter,
+    forgotPasswordLimiter,
+    resetPasswordLimiter,
+} = require('./middlewares/rate-limit.middleware');
 
 // Import routes
 const authRoutes = require('./routes/auth.routes');
@@ -24,6 +29,10 @@ const billingRoutes = require('./routes/billing.routes');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+
+// Confia no primeiro proxy (Vercel, Railway, Render, Cloudflare).
+// Isso faz req.ip retornar o IP real do cliente em vez do IP do proxy.
+app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
@@ -70,6 +79,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth/login', loginLimiter);
 app.use('/api/auth/register', registerLimiter);
 app.use('/api/auth/forgot-password', forgotPasswordLimiter);
+app.use('/api/auth/reset-password', resetPasswordLimiter);
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/checkout', checkoutRoutes);

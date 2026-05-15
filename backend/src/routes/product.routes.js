@@ -3,11 +3,12 @@ const { body } = require('express-validator');
 const productController = require('../controllers/product.controller');
 const { auth, sellerOnly } = require('../middlewares/auth.middleware');
 const { validate } = require('../middlewares/validation.middleware');
+const { publicReadLimiter, readLimiter } = require('../middlewares/rate-limit.middleware');
 
 const router = express.Router();
 
-// Public route for checkout
-router.get('/public/:id', productController.getPublic);
+// Rota pública para checkout — limita enumeração de produtos
+router.get('/public/:id', publicReadLimiter, productController.getPublic);
 
 // Protected routes (seller)
 router.use(auth, sellerOnly);
@@ -18,8 +19,8 @@ router.post('/', [
     validate
 ], productController.create);
 
-router.get('/', productController.list);
-router.get('/:id', productController.getById);
+router.get('/', readLimiter, productController.list);
+router.get('/:id', readLimiter, productController.getById);
 
 router.put('/:id', [
     body('name').optional().notEmpty().withMessage('Nome não pode ser vazio'),
