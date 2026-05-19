@@ -19,7 +19,8 @@ interface Plan {
 interface BumpProduct {
     id: string;
     name: string;
-    price: number;
+    price: number;        // em reais (já dividido pela Next.js route)
+    price_display?: string;
     image_url?: string;
     plans?: Plan[];
 }
@@ -61,15 +62,30 @@ export default function OrderBumpsPage() {
     const [product, setProduct] = useState<any>(null);
     const [bumps, setBumps] = useState<OrderBump[]>([]);
     const [myProducts, setMyProducts] = useState<BumpProduct[]>([]);
+    const [selectedProductPlans, setSelectedProductPlans] = useState<Plan[]>([]);
+    const [loadingPlans, setLoadingPlans] = useState(false);
     const [loading, setLoading] = useState(true);
     const [showForm, setShowForm] = useState(false);
     const [editingBump, setEditingBump] = useState<OrderBump | null>(null);
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState(EMPTY_FORM);
 
-    // Planos do produto selecionado no form
-    const selectedBumpProduct = myProducts.find(p => p.id === form.bump_product_id);
-    const availablePlans = selectedBumpProduct?.plans || [];
+    // Quando o produto selecionado no form muda, busca os planos dele
+    useEffect(() => {
+        if (!form.bump_product_id) {
+            setSelectedProductPlans([]);
+            return;
+        }
+        setLoadingPlans(true);
+        productsAPI.getById(form.bump_product_id)
+            .then(({ data }) => {
+                setSelectedProductPlans(data.product?.plans || []);
+            })
+            .catch(() => setSelectedProductPlans([]))
+            .finally(() => setLoadingPlans(false));
+    }, [form.bump_product_id]);
+
+    const availablePlans = selectedProductPlans;
 
     useEffect(() => {
         loadData();
@@ -385,7 +401,7 @@ export default function OrderBumpsPage() {
                                     <option value="">Selecione um produto...</option>
                                     {myProducts.map(p => (
                                         <option key={p.id} value={p.id}>
-                                            {p.name} — R$ {(p.price / 100).toFixed(2)}
+                                            {p.name} — R$ {p.price_display || Number(p.price).toFixed(2)}
                                         </option>
                                     ))}
                                 </select>
@@ -408,7 +424,7 @@ export default function OrderBumpsPage() {
                                         <option value="">Usar preço base do produto</option>
                                         {availablePlans.map((pl: Plan) => (
                                             <option key={pl.id} value={pl.id}>
-                                                {pl.name} — R$ {(pl.price / 100).toFixed(2)}
+                                                {pl.name} — R$ {(pl as any).price_display || Number(pl.price).toFixed(2)}
                                             </option>
                                         ))}
                                     </select>
