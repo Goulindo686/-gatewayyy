@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
         if (!rlIp.allowed) return rateLimitResponse(rlIp.resetAt);
 
         const body = await req.json();
-        const { product_id, buyer, card_data, plan_id } = body;
+        const { product_id, buyer, card_data, plan_id, selected_bumps } = body;
 
         // Rate limit por email: 5 checkouts por hora
         if (buyer?.email) {
@@ -130,18 +130,78 @@ export async function POST(req: NextRequest) {
             platform_percentage: feePercentage
         });
 
+        let bumpTotalCents = 0;
+        if (Array.isArray(selected_bumps) && selected_bumps.length > 0) {
+            const bumpIds = selected_bumps
+                .map((b: any) => (typeof b === 'string' ? b : b?.bump_id))
+                .filter(Boolean);
+
+            const bumpPlanMap: Record<string, string> = {};
+            for (const b of selected_bumps) {
+                if (typeof b === 'object' && b?.bump_id && b?.plan_id) {
+                    bumpPlanMap[String(b.bump_id)] = String(b.plan_id);
+                }
+            }
+
+            if (bumpIds.length > 0) {
+                const { data: bumps } = await supabase
+                    .from('order_bumps')
+                    .select(`
+                        id, custom_price, bump_product_id, bump_plan_id,
+                        bump_product:bump_product_id (id, price),
+                        bump_plan:bump_plan_id (id, price)
+                    `)
+                    .eq('product_id', product_id)
+                    .eq('is_active', true)
+                    .in('id', bumpIds);
+
+                for (const bump of (bumps || [])) {
+                    let priceCents = 0;
+
+                    if (bump.custom_price != null) {
+                        priceCents = Number(bump.custom_price) || 0;
+                    } else if (bump.bump_plan_id && bump.bump_plan?.price != null) {
+                        priceCents = Number(bump.bump_plan.price) || 0;
+                    } else {
+                        const chosenPlanId = bumpPlanMap[bump.id];
+                        if (chosenPlanId) {
+                            const { data: chosenPlan } = await supabase
+                                .from('product_plans')
+                                .select('id, price')
+                                .eq('id', chosenPlanId)
+                                .eq('product_id', bump.bump_product_id)
+                                .single();
+                            if (chosenPlan?.price != null) {
+                                priceCents = Number(chosenPlan.price) || 0;
+                            }
+                        }
+
+                        if (!priceCents && bump.bump_product?.price != null) {
+                            priceCents = Number(bump.bump_product.price) || 0;
+                        }
+                    }
+
+                    if (priceCents > 0) {
+                        bumpTotalCents += priceCents;
+                    }
+                }
+            }
+        }
+
         let pagarmeOrder;
+        let totalCents = 0;
         try {
             const baseCents = selectedPlan
                 ? selectedPlan.price
                 : (typeof product.price === 'number'
                     ? (product.price >= 100 ? Math.round(product.price) : Math.round(product.price * 100))
                     : Math.round(parseFloat(product.price_display) * 100));
+            totalCents = baseCents + bumpTotalCents;
             const ipHeader = req.headers.get('x-forwarded-for') || '';
             const ip = ipHeader.split(',')[0].trim() || undefined;
             const sessionId = uuidv4();
             pagarmeOrder = await PagarmeService.createOrder({
-                amount: baseCents,
+                amount: totalCents,
                 payment_method: normalizedPaymentMethod,
                 customer: buyer,
                 card_data: normalizedPaymentMethod === 'credit_card' ? card_data : undefined,
@@ -196,18 +256,13 @@ export async function POST(req: NextRequest) {
             }
         }
 
-        const priceCents = selectedPlan
-            ? selectedPlan.price
-            : (typeof product.price === 'number'
-                ? (product.price >= 100 ? product.price : Math.round(product.price * 100))
-                : Math.round(parseFloat(product.price) * 100));
-        const amountDisplay = (priceCents / 100).toFixed(2);
+        const amountDisplay = (totalCents / 100).toFixed(2);
 
         // Save order
         await supabase.from('orders').insert({
             id: orderId, seller_id: product.user_id, product_id: product.id,
             buyer_name: buyer.name, buyer_email: buyer.email, buyer_cpf: buyer.cpf,
-            amount: Math.round(parseFloat(amountDisplay) * 100),
+            amount: totalCents,
             payment_method: normalizedPaymentMethod, status: charge?.status === 'paid' ? 'paid' : 'pending',
             pagarme_order_id: pagarmeOrder.id, pagarme_charge_id: charge?.id,
             pix_qr_code: pix?.qr_code,
@@ -218,7 +273,7 @@ export async function POST(req: NextRequest) {
         // Save transaction
         await supabase.from('transactions').insert({
             id: uuidv4(), user_id: product.user_id, order_id: orderId,
-            type: 'sale', amount: Math.round(parseFloat(amountDisplay) * 100),
+            type: 'sale', amount: totalCents,
             status: charge?.status === 'paid' ? 'confirmed' : 'pending',
             description: `Venda: ${product.name}${selectedPlan ? ` - ${selectedPlan.name}` : ''}`
         });
@@ -226,7 +281,7 @@ export async function POST(req: NextRequest) {
         // If paid immediately, create fee transaction and update sales count
         let buyerUser: any = null;
         if (charge?.status === 'paid') {
-            const feeAmount = Math.min(200, Math.round(parseFloat(amountDisplay) * 100)); // R$2,00 fixo
+            const feeAmount = Math.min(200, totalCents); // R$2,00 fixo
             if (feeAmount > 0) {
                 await supabase.from('transactions').insert({
                     id: uuidv4(), user_id: product.user_id, order_id: orderId,
