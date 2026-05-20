@@ -157,11 +157,13 @@ export async function POST(req: NextRequest) {
 
                 for (const bump of (bumps || [])) {
                     let priceCents = 0;
+                    const bumpPlan = Array.isArray(bump.bump_plan) ? bump.bump_plan[0] : bump.bump_plan;
+                    const bumpProduct = Array.isArray(bump.bump_product) ? bump.bump_product[0] : bump.bump_product;
 
                     if (bump.custom_price != null) {
                         priceCents = Number(bump.custom_price) || 0;
-                    } else if (bump.bump_plan_id && bump.bump_plan?.price != null) {
-                        priceCents = Number(bump.bump_plan.price) || 0;
+                    } else if (bump.bump_plan_id && bumpPlan?.price != null) {
+                        priceCents = Number(bumpPlan.price) || 0;
                     } else {
                         const chosenPlanId = bumpPlanMap[bump.id];
                         if (chosenPlanId) {
@@ -176,8 +178,8 @@ export async function POST(req: NextRequest) {
                             }
                         }
 
-                        if (!priceCents && bump.bump_product?.price != null) {
-                            priceCents = Number(bump.bump_product.price) || 0;
+                        if (!priceCents && bumpProduct?.price != null) {
+                            priceCents = Number(bumpProduct.price) || 0;
                         }
                     }
 
