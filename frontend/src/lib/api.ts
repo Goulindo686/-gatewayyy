@@ -85,6 +85,7 @@ export const withdrawalsAPI = {
 export const adminAPI = {
     getDashboard: () => api.get('/admin/dashboard'),
     listSellers: (params?: any) => api.get('/admin/sellers', { params }),
+    listAdmins: (params?: any) => api.get('/admin/admins', { params }),
     toggleBlock: (id: string, blocked: boolean) => api.put(`/admin/sellers/${id}/block`, { blocked }),
     impersonate: (id: string) => api.post(`/admin/sellers/${id}/impersonate`),
     listTransactions: (params?: any) => api.get('/admin/transactions', { params }),

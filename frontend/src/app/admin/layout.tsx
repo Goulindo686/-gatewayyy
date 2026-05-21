@@ -29,6 +29,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     const navItems = [
         { href: '/admin', icon: <FiHome size={18} />, label: 'Dashboard' },
+        { href: '/admin/admins', icon: <FiShield size={18} />, label: 'Admins' },
         { href: '/admin/sellers', icon: <FiUsers size={18} />, label: 'Vendedores' },
         { href: '/admin/transactions', icon: <FiList size={18} />, label: 'Transações' },
         { href: '/admin/settings', icon: <FiSettings size={18} />, label: 'Configurações' },
