@@ -35,6 +35,7 @@ export default function FacebookPixel({ pixelId, product }: FacebookPixelProps) 
     const pathname = usePathname();
     const searchParams = useSearchParams();
     const [loaded, setLoaded] = useState(false);
+    const safePixelId = String(pixelId || '').replace(/\D/g, '');
 
     useEffect(() => {
         // Verifica se o pixel já foi carregado anteriormente
@@ -68,7 +69,7 @@ export default function FacebookPixel({ pixelId, product }: FacebookPixelProps) 
         return () => clearTimeout(timer);
     }, [loaded, product, pixelId]);
 
-    if (!pixelId) return null;
+    if (!safePixelId) return null;
 
     return (
         <div>
@@ -86,7 +87,7 @@ export default function FacebookPixel({ pixelId, product }: FacebookPixelProps) 
                     t.src=v;s=b.getElementsByTagName(e)[0];
                     s.parentNode.insertBefore(t,s)}(window, document,'script',
                     'https://connect.facebook.net/en_US/fbevents.js');
-                    fbq('init', '${pixelId}');
+                    fbq('init', '${safePixelId}');
                     fbq('track', 'PageView');
                     `,
                 }}

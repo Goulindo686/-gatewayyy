@@ -68,6 +68,16 @@ async function getAllTables() {
  */
 async function backupTable(tableName: string) {
     try {
+        const skipTables = new Set([
+            'api_keys',
+            'rate_limits',
+            'push_subscriptions',
+        ]);
+
+        if (skipTables.has(tableName)) {
+            return null;
+        }
+
         const { data, error } = await supabase
             .from(tableName)
             .select('*');
@@ -76,8 +86,30 @@ async function backupTable(tableName: string) {
             console.error(`Erro ao buscar ${tableName}:`, error.message);
             return null;
         }
+
+        const redactedData = (data || []).map((row: any) => {
+            if (!row || typeof row !== 'object') return row;
+
+            if (tableName === 'users') {
+                const copy: any = { ...row };
+                delete copy.password_hash;
+                delete copy.password;
+                delete copy.password_reset_token;
+                delete copy.password_reset_expires;
+                delete copy.email_verification_token;
+                return copy;
+            }
+
+            if (tableName === 'products') {
+                const copy: any = { ...row };
+                delete copy.facebook_api_token;
+                return copy;
+            }
+
+            return row;
+        });
         
-        return { table: tableName, data: data || [], count: data?.length || 0 };
+        return { table: tableName, data: redactedData, count: data?.length || 0 };
         
     } catch (error: any) {
         console.error(`Erro ao fazer backup de ${tableName}:`, error.message);
@@ -191,10 +223,16 @@ async function cleanOldBackups() {
  */
 export async function GET(request: NextRequest) {
     try {
-        // Verificar autorização (Vercel Cron envia um header especial)
         const authHeader = request.headers.get('authorization');
-        const cronSecret = process.env.CRON_SECRET || 'seu-secret-aqui';
-        
+        const cronSecret = process.env.CRON_SECRET;
+
+        if (!cronSecret) {
+            return NextResponse.json(
+                { error: 'CRON_SECRET não configurado' },
+                { status: 500 }
+            );
+        }
+
         if (authHeader !== `Bearer ${cronSecret}`) {
             return NextResponse.json(
                 { error: 'Não autorizado' },
