@@ -101,6 +101,8 @@ export default function WithdrawalsPage() {
     const needsVerification = balance?.recipient_status !== 'active';
     const availableDisplay = Number(balance?.available || 0);
     const maxConsideringFee = Math.max(0, availableDisplay - WITHDRAWAL_FEE);
+    const exampleBalance = 100;
+    const exampleMax = Math.max(0, exampleBalance - WITHDRAWAL_FEE);
 
     return (
         <div className="animate-fade-in">
@@ -197,16 +199,27 @@ export default function WithdrawalsPage() {
                     background: 'rgba(255, 171, 0, 0.08)', borderRadius: 12, border: '1px solid rgba(255, 171, 0, 0.16)',
                     marginBottom: 18
                 }}>
-                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-primary)', fontWeight: 650, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <FiAlertTriangle size={16} color="#ffab00" /> Atenção: taxa fixa por saque
-                    </p>
+                    <div style={{ margin: 0, fontSize: 13, color: 'var(--text-primary)', fontWeight: 750, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FiAlertTriangle size={16} color="#ffab00" /> ⚠️ Atenção na hora do saque!
+                    </div>
                     <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
-                        Existe uma taxa fixa de <strong>R$ {WITHDRAWAL_FEE.toFixed(2).replace('.', ',')}</strong> por saque (cobrada pelo Pagar.me).
-                        Para sacar todo o seu saldo disponível, solicite no máximo{' '}
-                        <strong>
-                            R$ {maxConsideringFee.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </strong>
-                        {' '}({`saldo R$ ${availableDisplay.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - taxa`}).
+                        Toda retirada tem uma taxa fixa de{' '}
+                        <strong>R$ {WITHDRAWAL_FEE.toFixed(2).replace('.', ',')}</strong> (cobrada pelo Pagar.me).
+                        Então, na hora de sacar, você precisa pedir o valor já descontando essa taxa.
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                        ✅ Exemplo:
+                        <ul style={{ margin: '8px 0 0', paddingLeft: 20, lineHeight: 1.55 }}>
+                            <li>
+                                Se você tem <strong>R$ {exampleBalance.toFixed(2).replace('.', ',')}</strong>, o valor máximo para sacar é{' '}
+                                <strong>R$ {exampleMax.toFixed(2).replace('.', ',')}</strong>.
+                            </li>
+                            <li>Se tentar sacar os <strong>R$ {exampleBalance.toFixed(2).replace('.', ',')}</strong> completos, o saque não será concluído.</li>
+                        </ul>
+                    </div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                        👉 Então sempre faça o saque já descontando a taxa de{' '}
+                        <strong>R$ {WITHDRAWAL_FEE.toFixed(2).replace('.', ',')}</strong>.
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 20 }}>
