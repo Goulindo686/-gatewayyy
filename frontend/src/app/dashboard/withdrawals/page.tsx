@@ -12,6 +12,7 @@ export default function WithdrawalsPage() {
     const [amount, setAmount] = useState('');
     const [requesting, setRequesting] = useState(false);
     const [verifying, setVerifying] = useState(false);
+    const WITHDRAWAL_FEE = 3.67;
 
     useEffect(() => {
         loadData();
@@ -60,8 +61,13 @@ export default function WithdrawalsPage() {
 
     const handleWithdraw = async () => {
         const value = parseFloat(amount);
+        const available = parseFloat(balance?.available || '0');
+        const maxConsideringFee = Math.max(0, available - WITHDRAWAL_FEE);
         if (!value || value < 5) return toast.error('O valor mínimo para saque é R$ 5,00');
-        if (value > parseFloat(balance?.available || '0')) return toast.error('Saldo insuficiente');
+        if (value + WITHDRAWAL_FEE > available) {
+            const maxText = maxConsideringFee.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            return toast.error(`Saldo insuficiente considerando a taxa de R$ ${WITHDRAWAL_FEE.toFixed(2).replace('.', ',')}. Máximo por saque: R$ ${maxText}`);
+        }
 
         setRequesting(true);
         try {
@@ -93,6 +99,8 @@ export default function WithdrawalsPage() {
     }
 
     const needsVerification = balance?.recipient_status !== 'active';
+    const availableDisplay = Number(balance?.available || 0);
+    const maxConsideringFee = Math.max(0, availableDisplay - WITHDRAWAL_FEE);
 
     return (
         <div className="animate-fade-in">
@@ -184,11 +192,34 @@ export default function WithdrawalsPage() {
                     </div>
                 )}
                 <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>Solicitar Saque via Pix</h3>
+                <div style={{
+                    display: 'flex', flexDirection: 'column', gap: 8, padding: 14,
+                    background: 'rgba(255, 171, 0, 0.08)', borderRadius: 12, border: '1px solid rgba(255, 171, 0, 0.16)',
+                    marginBottom: 18
+                }}>
+                    <p style={{ margin: 0, fontSize: 13, color: 'var(--text-primary)', fontWeight: 650, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <FiAlertTriangle size={16} color="#ffab00" /> Atenção: taxa fixa por saque
+                    </p>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+                        Existe uma taxa fixa de <strong>R$ {WITHDRAWAL_FEE.toFixed(2).replace('.', ',')}</strong> por saque (cobrada pelo Pagar.me).
+                        Para sacar todo o seu saldo disponível, solicite no máximo{' '}
+                        <strong>
+                            R$ {maxConsideringFee.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </strong>
+                        {' '}({`saldo R$ ${availableDisplay.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - taxa`}).
+                    </div>
+                </div>
                 <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap', marginBottom: 20 }}>
                     <div style={{ flex: 1, minWidth: 200 }}>
                         <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}>Valor (R$)</label>
                         <input type="number" step="0.01" min="5" className="input-field" placeholder="0.00"
                             value={amount} onChange={e => setAmount(e.target.value)} />
+                        <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                            Máximo por saque (considerando taxa):{' '}
+                            <strong style={{ color: 'var(--text-secondary)' }}>
+                                R$ {maxConsideringFee.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </strong>
+                        </div>
                     </div>
                     <button className="btn-primary" onClick={handleWithdraw} disabled={requesting || needsVerification}
                         style={{ padding: '14px 32px', display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -207,6 +238,7 @@ export default function WithdrawalsPage() {
                     <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                         <li>O valor mínimo para saque é de <strong>R$ 5,00</strong>.</li>
                         <li>Cada transferência possui uma taxa de <strong>R$ 3,67</strong> (cobrada pelo Pagar.me).</li>
+                        <li>Para sacar o saldo total, solicite o valor do saque já descontando a taxa (ex.: saldo R$ 2.000,00 → solicite R$ 1.996,33).</li>
                         <li>O valor será transferido para a chave Pix cadastrada no seu perfil.</li>
                     </ul>
                 </div>
