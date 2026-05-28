@@ -62,8 +62,9 @@ class PagarmeService {
 
             const productMap = Object.fromEntries(dbProducts.map(p => [p.id, p]));
 
-            // Taxa fixa da plataforma: R$1,50 (150 centavos)
-            const PLATFORM_FLAT_FEE = 150;
+            // Taxa da plataforma: R$2,00 fixo + 1,09% sobre o total
+            const PLATFORM_FLAT_FEE = 200;
+            const PLATFORM_PERCENT = 0.0109;
 
             // Use DB prices, not client prices
             const validatedItems = items.map(item => {
@@ -78,9 +79,8 @@ class PagarmeService {
             });
 
             const totalAmountCents = validatedItems.reduce((sum, item) => sum + item.priceCents * item.quantity, 0);
-            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE, totalAmountCents);
-            const sellerAmount = totalAmountCents - platformFeeAmount;
-            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE, totalAmountCents); // nunca cobra mais que o total
+            const percentFee = Math.round(totalAmountCents * PLATFORM_PERCENT);
+            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE + percentFee, totalAmountCents);
             const sellerAmount = totalAmountCents - platformFeeAmount;
 
             const orderData = {
@@ -175,11 +175,13 @@ class PagarmeService {
      */
     async createOrder({ product, buyer, paymentMethod, cardData, sellerId, platformRecipientId, sellerRecipientId, feePercentage, totalAmount }) {
         try {
-            // Taxa fixa da plataforma: R$1,50 (150 centavos)
-            const PLATFORM_FLAT_FEE = 150;
+            // Taxa da plataforma: R$2,00 fixo + 1,09% sobre o total
+            const PLATFORM_FLAT_FEE = 200;
+            const PLATFORM_PERCENT = 0.0109;
             // Usa totalAmount se fornecido (produto + order bumps), senão usa só o preço do produto
             const totalAmountCents = totalAmount || product.price;
-            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE, totalAmountCents);
+            const percentFee = Math.round(totalAmountCents * PLATFORM_PERCENT);
+            const platformFeeAmount = Math.min(PLATFORM_FLAT_FEE + percentFee, totalAmountCents);
             const sellerAmount = totalAmountCents - platformFeeAmount;
 
             const orderData = {
