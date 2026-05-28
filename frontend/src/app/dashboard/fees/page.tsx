@@ -5,14 +5,13 @@ import { FiZap, FiCreditCard } from 'react-icons/fi';
 
 // Taxa fixa da plataforma em todas as vendas
 const PLATFORM_FIXED = 2.00;
-const PLATFORM_PERCENT = 1.09;
 
 // Taxas do cartão por modalidade (já incluem tudo — vendedor só vê o total)
 const CARD_RATES = [
-    { label: 'À vista', installments: '1x',    rate: 3.19 + PLATFORM_PERCENT },
-    { label: 'Parcelado', installments: '2–6x',  rate: 4.49 + PLATFORM_PERCENT },
-    { label: 'Parcelado', installments: '7–12x', rate: 4.99 + PLATFORM_PERCENT },
-    { label: 'Parcelado', installments: '13–18x',rate: 4.99 + PLATFORM_PERCENT },
+    { label: 'À vista',   installments: '1x',     rate: 3.19 },
+    { label: 'Parcelado', installments: '2–6x',   rate: 4.49 },
+    { label: 'Parcelado', installments: '7–12x',  rate: 4.99 },
+    { label: 'Parcelado', installments: '13–18x', rate: 4.99 },
 ];
 
 const PIX_EXAMPLES  = [10, 30, 50, 100, 250, 500];
@@ -40,7 +39,7 @@ export default function FeesPage() {
                     <h2 style={{ fontSize: 18, fontWeight: 700 }}>PIX</h2>
                 </div>
                 <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginBottom: 20 }}>
-                    Taxa: <strong>R$ 2,00 fixo + 1,09%</strong> sobre o valor da venda.
+                    Taxa: <strong>R$ 2,00 fixo</strong> por venda.
                 </p>
 
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}>
@@ -53,7 +52,7 @@ export default function FeesPage() {
                     </thead>
                     <tbody>
                         {PIX_EXAMPLES.map(sale => {
-                            const fee    = PLATFORM_FIXED + sale * (PLATFORM_PERCENT / 100);
+                            const fee    = PLATFORM_FIXED;
                             const seller = Math.max(0, sale - fee);
                             return (
                                 <tr key={sale} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
@@ -95,8 +94,7 @@ export default function FeesPage() {
                                     R$ 2,00 + {r.rate.toFixed(2).replace('.', ',')}%
                                 </td>
                             </tr>
-                        ))}
-                    </tbody>
+                        ))}                    </tbody>
                 </table>
 
                 {/* Simulador */}
