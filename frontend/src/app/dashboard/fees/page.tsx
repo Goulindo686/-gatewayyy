@@ -56,15 +56,15 @@ export default function FeesPage() {
                         <thead>
                             <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
                                 <th style={{ textAlign: 'left', padding: '10px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Modalidade</th>
-                                <th style={{ textAlign: 'right', padding: '10px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Taxa</th>
+                                <th style={{ textAlign: 'right', padding: '10px 0', color: 'var(--text-muted)', fontWeight: 500 }}>Taxa total</th>
                             </tr>
                         </thead>
                         <tbody>
                             {[
-                                { label: 'Crédito à vista',          installments: '1x',      rate: '3,19%' },
-                                { label: 'Crédito parcelado',        installments: '2 – 6x',  rate: '4,49%' },
-                                { label: 'Crédito parcelado',        installments: '7 – 12x', rate: '4,99%' },
-                                { label: 'Crédito parcelado',        installments: '13 – 18x',rate: '4,99%' },
+                                { label: 'Crédito à vista',   installments: '1x',       rate: '5,19%' },
+                                { label: 'Crédito parcelado', installments: '2 – 6x',   rate: '6,49%' },
+                                { label: 'Crédito parcelado', installments: '7 – 12x',  rate: '6,99%' },
+                                { label: 'Crédito parcelado', installments: '13 – 18x', rate: '6,99%' },
                             ].map((r, i) => (
                                 <tr key={i} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                                     <td style={{ padding: '14px 0', fontWeight: 600 }}>
@@ -72,7 +72,7 @@ export default function FeesPage() {
                                         <span style={{ color: 'var(--text-muted)', fontWeight: 400, marginLeft: 6 }}>{r.installments}</span>
                                     </td>
                                     <td style={{ padding: '14px 0', textAlign: 'right', fontWeight: 800, color: '#6366f1', whiteSpace: 'nowrap' }}>
-                                        R$ 2,00 + {r.rate}
+                                        {r.rate}
                                     </td>
                                 </tr>
                             ))}
