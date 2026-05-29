@@ -1,5 +1,6 @@
 const { supabase } = require('../config/database');
 const pagarmeService = require('../services/pagarme.service');
+const emailService = require('../services/email.service');
 
 class CheckoutController {
     async processPayment(req, res, next) {
@@ -206,6 +207,16 @@ class CheckoutController {
             // If paid immediately (credit card), create transaction records
             if (charge?.status === 'paid') {
                 await this._createTransactionRecords(order, product, feePercentage);
+
+                // Envia email de compra aprovada
+                emailService.sendPurchaseApproved({
+                    buyerName: buyer.name,
+                    buyerEmail: buyer.email,
+                    productName: product.name,
+                    amount: (order.amount / 100).toFixed(2),
+                    paymentMethod: payment_method,
+                    orderId: order.id
+                }).catch(err => console.error('[EMAIL] Erro ao enviar email de compra:', err.message));
             }
 
             // Build response

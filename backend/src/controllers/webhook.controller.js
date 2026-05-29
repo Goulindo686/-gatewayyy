@@ -1,6 +1,7 @@
 const { supabase } = require('../config/database');
 const FacebookService = require('../services/facebook.service');
 const TelegramService = require('../services/telegram.service');
+const emailService = require('../services/email.service');
 
 class WebhookController {
     async handlePagarme(req, res, next) {
@@ -255,7 +256,18 @@ class WebhookController {
         }
 
         console.log(`Order ${order.id} paid. Seller: R$${(sellerAmount / 100).toFixed(2)}, Fee: R$${(feeAmount / 100).toFixed(2)}`);
-    }
+
+        // Envia email de compra aprovada para o comprador
+        if (order.buyer_email) {
+            emailService.sendPurchaseApproved({
+                buyerName: order.buyer_name,
+                buyerEmail: order.buyer_email,
+                productName: order.products?.name || 'Produto',
+                amount: (order.amount / 100).toFixed(2),
+                paymentMethod: charge.payment_method || order.payment_method,
+                orderId: order.id
+            }).catch(err => console.error('[EMAIL] Erro ao enviar email de compra:', err.message));
+        }    }
 
     async _handleChargeFailed(charge) {
         await supabase
