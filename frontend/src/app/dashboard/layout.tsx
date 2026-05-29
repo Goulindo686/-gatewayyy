@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
 import { FiHome, FiPackage, FiDollarSign, FiSettings, FiLogOut, FiMenu, FiX, FiPercent, FiBookOpen, FiUser, FiMessageCircle, FiShoppingBag, FiShoppingCart, FiCalendar, FiChevronLeft, FiChevronRight, FiShield, FiRepeat, FiCreditCard } from 'react-icons/fi';
-import { ThemeToggle } from '@/components/theme-toggle';
+import OnboardingBar from '@/components/OnboardingBar';
 import { dashboardAPI } from '@/lib/api';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -516,6 +516,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                     
                 </header>
+
+                {/* Barra de onboarding — aparece apenas para usuários com cadastro incompleto */}
+                <OnboardingBar />
 
                 {/* Dashboard Filters below header (right aligned) */}
                 {pathname === '/dashboard' && (
