@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { dashboardAPI } from '@/lib/api';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { FiShoppingCart, FiRefreshCw, FiSearch, FiCheckCircle, FiClock, FiX } from 'react-icons/fi';
@@ -24,9 +23,19 @@ export default function SalesPage() {
     const loadSales = async (filters?: any) => {
         setLoading(true);
         try {
-            const { data } = await dashboardAPI.getSales(filters || {});
-            setSales(data?.sales || []);
-            setSummary(data?.summary ? { count: data.summary.count, total_amount_display: data.summary.total_amount_display } : null);
+            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+            const params = new URLSearchParams();
+            if (filters?.status) params.set('status', filters.status);
+            if (filters?.method) params.set('method', filters.method);
+            if (filters?.start) params.set('start', filters.start);
+            if (filters?.end) params.set('end', filters.end);
+
+            const { data } = await axios.get(`/api/sales?${params.toString()}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const result = data.data || data;
+            setSales(result?.sales || []);
+            setSummary(result?.summary || null);
         } catch {
             setSales([]);
         } finally {
