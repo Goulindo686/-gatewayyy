@@ -312,6 +312,11 @@ export class PagarmeService {
         return response.data;
     }
 
+    static async getRecipientTransfers(recipientId: string) {
+        const response = await pagarmeApi.get(`/recipients/${recipientId}/transfers?page=1&size=50`);
+        return response.data;
+    }
+
     static async createTransfer(recipientId: string, amount: number) {
         const response = await pagarmeApi.post(`/recipients/${recipientId}/transfers`, { amount });
         return response.data;

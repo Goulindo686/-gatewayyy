@@ -10,18 +10,57 @@ export async function GET(req: NextRequest) {
     const auth = await getAuthUser(req);
     if (!auth) return jsonError('Não autorizado', 401);
 
-    const { data: withdrawals } = await supabase
+    // Busca registros locais do Supabase
+    const { data: localWithdrawals } = await supabase
         .from('withdrawals')
         .select('*')
         .eq('user_id', auth.user.id)
         .order('created_at', { ascending: false });
 
-    const formatted = (withdrawals || []).map(w => ({
-        ...w,
-        amount_display: w.amount_display || (w.amount / 100).toFixed(2)
+    const localFormatted = (localWithdrawals || []).map(w => ({
+        id: w.id,
+        amount_display: w.amount_display || (w.amount / 100).toFixed(2),
+        pix_key: w.pix_key || '—',
+        status: w.status || 'completed',
+        created_at: w.created_at,
+        source: 'local'
     }));
 
-    return jsonSuccess({ withdrawals: formatted });
+    // Busca transferências diretamente do Pagar.me
+    try {
+        const { data: recipient } = await supabase
+            .from('recipients')
+            .select('pagarme_recipient_id')
+            .eq('user_id', auth.user.id)
+            .single();
+
+        if (recipient?.pagarme_recipient_id) {
+            const transfersData = await PagarmeService.getRecipientTransfers(recipient.pagarme_recipient_id);
+            const pagarmeTransfers = (transfersData?.data || []).map((t: any) => ({
+                id: t.id,
+                amount_display: (t.amount / 100).toFixed(2),
+                pix_key: t.bank_account?.pix_key || t.bank_account?.account || '—',
+                status: t.status === 'transferred' ? 'completed' : t.status || 'completed',
+                created_at: t.created_at,
+                source: 'pagarme'
+            }));
+
+            // Mescla: usa Pagar.me como fonte principal, remove duplicatas pelo pagarme_transfer_id
+            const localTransferIds = new Set(
+                (localWithdrawals || []).map(w => w.pagarme_transfer_id).filter(Boolean)
+            );
+            const onlyPagarme = pagarmeTransfers.filter((t: any) => !localTransferIds.has(t.id));
+            const merged = [...localFormatted, ...onlyPagarme]
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+            return jsonSuccess({ withdrawals: merged });
+        }
+    } catch (err: any) {
+        console.error('Pagar.me transfers fetch error:', err.response?.data || err.message);
+        // fallback para registros locais
+    }
+
+    return jsonSuccess({ withdrawals: localFormatted });
 }
 
 export async function POST(req: NextRequest) {
