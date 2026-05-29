@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { withdrawalsAPI, authAPI } from '@/lib/api';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import { FiDollarSign, FiArrowDown, FiClock, FiCheckCircle, FiXCircle, FiInfo, FiLock, FiAlertTriangle } from 'react-icons/fi';
 
@@ -20,12 +21,15 @@ export default function WithdrawalsPage() {
 
     const loadData = async () => {
         try {
+            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+            const headers = { Authorization: `Bearer ${token}` };
+
             const [balanceRes, withdrawalsRes] = await Promise.all([
-                withdrawalsAPI.getBalance(),
-                withdrawalsAPI.list()
+                axios.get('/api/withdrawals/balance', { headers }),
+                axios.get('/api/withdrawals', { headers })
             ]);
-            setBalance(balanceRes.data);
-            setWithdrawals(withdrawalsRes.data.withdrawals || []);
+            setBalance(balanceRes.data.data || balanceRes.data);
+            setWithdrawals(withdrawalsRes.data.data?.withdrawals || withdrawalsRes.data.withdrawals || []);
         } catch (err) {
             console.error(err);
         } finally {

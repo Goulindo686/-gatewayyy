@@ -16,7 +16,12 @@ export async function GET(req: NextRequest) {
         .eq('user_id', auth.user.id)
         .order('created_at', { ascending: false });
 
-    return jsonSuccess({ withdrawals: withdrawals || [] });
+    const formatted = (withdrawals || []).map(w => ({
+        ...w,
+        amount_display: w.amount_display || (w.amount / 100).toFixed(2)
+    }));
+
+    return jsonSuccess({ withdrawals: formatted });
 }
 
 export async function POST(req: NextRequest) {
