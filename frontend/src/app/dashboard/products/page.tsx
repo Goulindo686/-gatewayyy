@@ -70,6 +70,24 @@ export default function ProductsPage() {
                 ? p.plans.map((pl: any) => ({ name: pl.name, price: pl.price_display || (pl.price / 100).toFixed(2) }))
                 : [{ name: 'Padrão', price: p.price_display || (p.price / 100).toFixed(2) }];
             setPlans(loadedPlans);
+
+            // Detecta se é produto de assinatura e carrega o intervalo atual
+            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+            try {
+                const subRes = await axios.get(`/api/subscriptions/plans?product_id=${p.id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const subPlans = subRes.data?.plans || [];
+                if (subPlans.length > 0) {
+                    setIsSubscription(true);
+                    setSubInterval(subPlans[0].interval || 'month');
+                } else {
+                    setIsSubscription(false);
+                }
+            } catch {
+                setIsSubscription(false);
+            }
+
             setSelectedFile(null);
             setImagePreview(p.image_url || null);
             setShowModal(true);
@@ -84,6 +102,7 @@ export default function ProductsPage() {
                 facebook_api_token: product.facebook_api_token || ''
             });
             setPlans([{ name: 'Padrão', price: product.price_display || (product.price / 100).toFixed(2) }]);
+            setIsSubscription(false);
             setSelectedFile(null);
             setImagePreview(product.image_url || null);
             setShowModal(true);
@@ -127,33 +146,70 @@ export default function ProductsPage() {
                 return;
             }
 
+            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
             const productData: any = { ...form, image_url: finalImageUrl, plans: normalizedPlans };
             if (!editing && normalizedPlans[0]) productData.price = normalizedPlans[0].price;
 
             let savedProduct: any;
             if (editing) {
-                const { data } = await productsAPI.update(editing.id, productData);
+                // Usa a Next.js API Route para garantir que product_plans é atualizado
+                const { data } = await axios.put(`/api/products/${editing.id}`, productData, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
                 savedProduct = data.product;
-                toast.success('Produto atualizado!');
+
+                // Se for assinatura, atualiza os planos no Pagar.me
+                // (desativa os antigos e cria novos com o preço atualizado)
+                if (isSubscription) {
+                    try {
+                        // Busca planos existentes no Pagar.me
+                        const subRes = await axios.get(`/api/subscriptions/plans?product_id=${editing.id}`, {
+                            headers: { 'Authorization': `Bearer ${token}` }
+                        });
+                        const existingSubPlans = subRes.data?.plans || [];
+
+                        // Desativa os planos antigos
+                        for (const oldPlan of existingSubPlans) {
+                            await axios.delete(`/api/subscriptions/plans/${oldPlan.id}`, {
+                                headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                        }
+
+                        // Cria novos planos com os preços atualizados
+                        for (const pl of normalizedPlans) {
+                            await axios.post('/api/subscriptions/plans', {
+                                name: `${form.name} — ${pl.name}`,
+                                amount: pl.price,
+                                interval: subInterval,
+                                interval_count: 1,
+                                product_id: editing.id
+                            }, { headers: { 'Authorization': `Bearer ${token}` } });
+                        }
+                        toast.success('Produto e planos de assinatura atualizados!');
+                    } catch (subErr: any) {
+                        toast.error('Produto salvo, mas erro ao atualizar planos: ' + (subErr.response?.data?.error || subErr.message));
+                    }
+                } else {
+                    toast.success('Produto atualizado!');
+                }
             } else {
                 const { data } = await productsAPI.create(productData);
                 savedProduct = data.product;
                 toast.success('Produto criado!');
-            }
 
-            // Se for assinatura, cria plano no Pagar.me para cada plano de preço
-            if (isSubscription && !editing && savedProduct) {
-                const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-                for (const pl of normalizedPlans) {
-                    await axios.post('/api/subscriptions/plans', {
-                        name: `${form.name} — ${pl.name}`,
-                        amount: pl.price,
-                        interval: subInterval,
-                        interval_count: 1,
-                        product_id: savedProduct.id
-                    }, { headers: { 'Authorization': `Bearer ${token}` } });
+                // Se for assinatura, cria plano no Pagar.me para cada plano de preço
+                if (isSubscription && savedProduct) {
+                    for (const pl of normalizedPlans) {
+                        await axios.post('/api/subscriptions/plans', {
+                            name: `${form.name} — ${pl.name}`,
+                            amount: pl.price,
+                            interval: subInterval,
+                            interval_count: 1,
+                            product_id: savedProduct.id
+                        }, { headers: { 'Authorization': `Bearer ${token}` } });
+                    }
+                    toast.success('Planos de assinatura criados!');
                 }
-                toast.success('Planos de assinatura criados!');
             }
 
             setShowModal(false);
@@ -321,25 +377,30 @@ export default function ProductsPage() {
                                     value={form.name} onChange={e => update('name', e.target.value)} />
                             </div>
 
-                            {/* Toggle Assinatura */}
-                            {!editing && (
+                            {/* Toggle Assinatura — aparece na criação ou quando editando produto de assinatura */}
+                            {(!editing || isSubscription) && (
                                 <div style={{ marginBottom: 16, padding: 14, borderRadius: 12, border: '1px solid var(--border-color)', background: 'rgba(255,255,255,0.02)' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                         <div>
                                             <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)' }}>Produto de Assinatura</div>
                                             <div style={{ fontSize: 12, color: 'var(--text-muted)', marginTop: 2 }}>Cobra o cliente automaticamente a cada ciclo via cartão</div>
                                         </div>
-                                        <button type="button" onClick={() => setIsSubscription(!isSubscription)} style={{
-                                            width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
-                                            background: isSubscription ? 'var(--accent-primary)' : 'var(--border-color)',
-                                            position: 'relative', transition: 'background 0.2s', flexShrink: 0
-                                        }}>
-                                            <span style={{
-                                                position: 'absolute', top: 3, left: isSubscription ? 23 : 3,
-                                                width: 18, height: 18, borderRadius: '50%', background: 'white',
-                                                transition: 'left 0.2s', display: 'block'
-                                            }} />
-                                        </button>
+                                        {/* Na edição de assinatura, o toggle fica fixo como ativo */}
+                                        {!editing ? (
+                                            <button type="button" onClick={() => setIsSubscription(!isSubscription)} style={{
+                                                width: 44, height: 24, borderRadius: 12, border: 'none', cursor: 'pointer',
+                                                background: isSubscription ? 'var(--accent-primary)' : 'var(--border-color)',
+                                                position: 'relative', transition: 'background 0.2s', flexShrink: 0
+                                            }}>
+                                                <span style={{
+                                                    position: 'absolute', top: 3, left: isSubscription ? 23 : 3,
+                                                    width: 18, height: 18, borderRadius: '50%', background: 'white',
+                                                    transition: 'left 0.2s', display: 'block'
+                                                }} />
+                                            </button>
+                                        ) : (
+                                            <span style={{ fontSize: 11, color: 'var(--accent-primary)', fontWeight: 600, background: 'rgba(108,92,231,0.12)', padding: '3px 10px', borderRadius: 20 }}>Ativo</span>
+                                        )}
                                     </div>
                                     {isSubscription && (
                                         <div style={{ marginTop: 12 }}>
