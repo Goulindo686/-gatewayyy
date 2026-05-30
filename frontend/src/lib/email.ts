@@ -3,8 +3,8 @@ import nodemailer from 'nodemailer';
 function createTransporter() {
     return nodemailer.createTransport({
         host: process.env.SMTP_HOST || 'smtpout.secureserver.net',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false, // false para 587 (STARTTLS)
+        port: 587,
+        secure: false,
         auth: {
             user: process.env.SMTP_USER,
             pass: process.env.SMTP_PASS,
