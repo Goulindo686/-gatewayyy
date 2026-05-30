@@ -1,15 +1,17 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtpout.secureserver.net',
-    port: parseInt(process.env.SMTP_PORT || '465'),
-    secure: process.env.SMTP_SECURE !== 'false',
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-    tls: { rejectUnauthorized: false },
-});
+function createTransporter() {
+    return nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtpout.secureserver.net',
+        port: parseInt(process.env.SMTP_PORT || '465'),
+        secure: process.env.SMTP_SECURE !== 'false',
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+        tls: { rejectUnauthorized: false },
+    });
+}
 
 export async function sendPurchaseApprovedEmail({
     buyerName,
@@ -27,13 +29,14 @@ export async function sendPurchaseApprovedEmail({
     orderId: string;
 }) {
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
-        console.log(`[EMAIL] SMTP não configurado. Pulando envio para ${buyerEmail}`);
+        console.log(`[EMAIL] SMTP não configurado. SMTP_USER=${process.env.SMTP_USER ? 'ok' : 'MISSING'} SMTP_PASS=${process.env.SMTP_PASS ? 'ok' : 'MISSING'}`);
         return;
     }
 
     const methodLabel = paymentMethod === 'credit_card' ? 'Cartão de Crédito' : 'PIX';
     const memberAreaUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://goupay.com.br'}/area-membros`;
     const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+    const transporter = createTransporter();
 
     const html = `
 <!DOCTYPE html>

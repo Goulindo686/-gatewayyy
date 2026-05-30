@@ -359,7 +359,7 @@ export async function POST(req: NextRequest) {
                 amount: amountDisplay,
                 paymentMethod: normalizedPaymentMethod,
                 orderId,
-            }).catch(err => console.error('[EMAIL] Erro ao enviar:', err.message));
+            }).catch(err => console.error('[EMAIL] Erro completo:', err));
         }
 
         // Build response
