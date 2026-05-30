@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const maxDuration = 30; // aumenta o timeout para 30 segundos
 
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
@@ -18,11 +19,11 @@ export async function POST(req: NextRequest) {
             .eq('email', email);
 
         const user = users?.[0];
-        console.log(`[FORGOT-PASSWORD] Email: ${email}, User found: ${!!user}, Users count: ${users?.length}`);
+        console.log(`[FORGOT-PASSWORD] Email: ${email}, User found: ${!!user}`);
 
         if (user) {
             const resetToken = uuidv4();
-            const resetExpires = new Date(Date.now() + 3600000); // 1 hora
+            const resetExpires = new Date(Date.now() + 3600000);
 
             const { error } = await supabase
                 .from('users')
@@ -33,20 +34,20 @@ export async function POST(req: NextRequest) {
                 .eq('id', user.id);
 
             if (!error) {
+                // Envia o email aguardando a resposta completa
                 try {
                     await sendPasswordResetEmail({
                         toEmail: user.email,
                         userName: user.name,
                         resetToken,
                     });
-                    console.log(`[FORGOT-PASSWORD] Email enviado com sucesso para ${user.email}`);
+                    console.log(`[FORGOT-PASSWORD] Email enviado para ${user.email}`);
                 } catch (emailErr: any) {
-                    console.error(`[FORGOT-PASSWORD] ERRO ao enviar email:`, emailErr?.message, emailErr?.code);
+                    console.error(`[FORGOT-PASSWORD] ERRO:`, emailErr?.message, emailErr?.code, emailErr?.response);
                 }
             }
         }
 
-        // Sempre retorna sucesso para não revelar se o email existe
         return jsonSuccess({
             message: 'Se o email existir, as instruções de recuperação serão enviadas.'
         });
