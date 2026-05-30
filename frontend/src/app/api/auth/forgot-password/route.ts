@@ -37,7 +37,11 @@ export async function POST(req: NextRequest) {
                     toEmail: user.email,
                     userName: user.name,
                     resetToken,
-                }).catch(err => console.error('[EMAIL] Erro ao enviar recuperação de senha:', err.message));
+                }).then(() => {
+                    console.log(`[FORGOT-PASSWORD] Email enviado com sucesso para ${user.email}`);
+                }).catch(err => {
+                    console.error(`[FORGOT-PASSWORD] ERRO ao enviar email para ${user.email}:`, err?.message, err?.code, JSON.stringify(err?.response || ''));
+                });
             }
         }
 
