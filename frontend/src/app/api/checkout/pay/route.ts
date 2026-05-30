@@ -5,6 +5,7 @@ import { supabase } from '@/lib/db';
 import { PagarmeService } from '@/lib/pagarme';
 import { jsonError, jsonSuccess, generateToken, hashPassword } from '@/lib/auth';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
+import { sendPurchaseApprovedEmail } from '@/lib/email';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
@@ -349,6 +350,16 @@ export async function POST(req: NextRequest) {
                     status: 'active'
                 }, { onConflict: 'user_id, product_id' });
             }
+
+            // Envia email de compra aprovada
+            sendPurchaseApprovedEmail({
+                buyerName: buyer.name,
+                buyerEmail: buyer.email,
+                productName: product.name,
+                amount: amountDisplay,
+                paymentMethod: normalizedPaymentMethod,
+                orderId,
+            }).catch(err => console.error('[EMAIL] Erro ao enviar:', err.message));
         }
 
         // Build response

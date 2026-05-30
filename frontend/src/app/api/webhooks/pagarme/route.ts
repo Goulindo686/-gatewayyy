@@ -7,6 +7,7 @@ import { jsonError, jsonSuccess } from '@/lib/auth';
 import { v4 as uuidv4 } from 'uuid';
 import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
+import { sendPurchaseApprovedEmail } from '@/lib/email';
 
 export async function POST(req: NextRequest) {
     try {
@@ -499,6 +500,18 @@ export async function POST(req: NextRequest) {
                 });
             } catch (pushError) {
                 console.error('Error sending Push notification:', pushError);
+            }
+
+            // Envia email de compra aprovada para o comprador
+            if (order.buyer_email) {
+                sendPurchaseApprovedEmail({
+                    buyerName: order.buyer_name || 'cliente',
+                    buyerEmail: order.buyer_email,
+                    productName,
+                    amount: (order.amount / 100).toFixed(2),
+                    paymentMethod: order.payment_method || 'pix',
+                    orderId: order.id,
+                }).catch(err => console.error('[EMAIL] Erro ao enviar email de compra:', err.message));
             }
         } else {
             // For other statuses (failed, etc.)
