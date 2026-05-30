@@ -4,6 +4,7 @@ export const runtime = 'nodejs';
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { jsonError, jsonSuccess } from '@/lib/auth';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,6 +17,17 @@ export async function POST(req: NextRequest) {
         if (!password || password.length < 6) {
             return jsonError('Senha deve ter no mínimo 6 caracteres');
         }
+
+        const ip =
+            req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+            req.headers.get('x-real-ip') ||
+            'unknown';
+
+        const rlIp = await checkRateLimit({ key: `auth:reset:ip:${ip}`, limit: 20, windowSecs: 900, failOpen: false });
+        if (!rlIp.allowed) return rateLimitResponse(rlIp.resetAt);
+
+        const rlToken = await checkRateLimit({ key: `auth:reset:token:${String(token).slice(0, 64)}`, limit: 10, windowSecs: 3600, failOpen: false });
+        if (!rlToken.allowed) return rateLimitResponse(rlToken.resetAt);
 
         // Find user by reset token
         const { data: users, error: findError } = await supabase

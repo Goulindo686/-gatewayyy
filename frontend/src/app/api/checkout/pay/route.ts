@@ -353,15 +353,21 @@ export async function POST(req: NextRequest) {
 
             // Envia email de compra aprovada
             try {
-                await sendPurchaseApprovedEmail({
-                    buyerName: buyer.name,
-                    buyerEmail: buyer.email,
-                    productName: product.name,
-                    amount: amountDisplay,
-                    paymentMethod: normalizedPaymentMethod,
-                    orderId,
-                });
-                console.log(`[EMAIL] Email de compra enviado para ${buyer.email}`);
+                const buyerEmail = buyer.email.toLowerCase().trim();
+                const rlEmailSend = await checkRateLimit({ key: `email:purchase:buyer:${buyerEmail}`, limit: 3, windowSecs: 3600, failOpen: true });
+                if (rlEmailSend.allowed) {
+                    await sendPurchaseApprovedEmail({
+                        buyerName: buyer.name,
+                        buyerEmail: buyer.email,
+                        productName: product.name,
+                        amount: amountDisplay,
+                        paymentMethod: normalizedPaymentMethod,
+                        orderId,
+                    });
+                    console.log(`[EMAIL] Email de compra enviado para ${buyer.email}`);
+                } else {
+                    console.warn(`[EMAIL] Rate limit atingido para envio de email de compra: ${buyerEmail}`);
+                }
             } catch (emailErr: any) {
                 console.error('[EMAIL] Erro ao enviar email de compra:', emailErr?.message);
             }

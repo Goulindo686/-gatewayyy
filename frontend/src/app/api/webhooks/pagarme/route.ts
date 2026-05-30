@@ -4,6 +4,7 @@ import { NextRequest } from 'next/server';
 import { createHmac } from 'crypto';
 import { supabase } from '@/lib/db';
 import { jsonError, jsonSuccess } from '@/lib/auth';
+import { checkRateLimit } from '@/lib/rate-limit';
 import { v4 as uuidv4 } from 'uuid';
 import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
@@ -512,14 +513,23 @@ export async function POST(req: NextRequest) {
                     if (prod?.name) emailProductName = prod.name;
                 }
 
-                sendPurchaseApprovedEmail({
-                    buyerName: order.buyer_name || 'cliente',
-                    buyerEmail: order.buyer_email,
-                    productName: emailProductName,
-                    amount: (order.amount / 100).toFixed(2),
-                    paymentMethod: order.payment_method || 'pix',
-                    orderId: order.id,
-                }).catch(err => console.error('[EMAIL] Erro ao enviar email de compra:', err.message));
+                const rl = await checkRateLimit({ key: `email:purchase:order:${order.id}`, limit: 1, windowSecs: 86400, failOpen: true });
+                if (rl.allowed) {
+                    try {
+                        await sendPurchaseApprovedEmail({
+                            buyerName: order.buyer_name || 'cliente',
+                            buyerEmail: order.buyer_email,
+                            productName: emailProductName,
+                            amount: (order.amount / 100).toFixed(2),
+                            paymentMethod: order.payment_method || 'pix',
+                            orderId: order.id,
+                        });
+                    } catch (err: any) {
+                        console.error('[EMAIL] Erro ao enviar email de compra:', err?.message);
+                    }
+                } else {
+                    console.warn(`[EMAIL] Rate limit atingido para email de compra do pedido ${order.id}`);
+                }
             }
         } else {
             // For other statuses (failed, etc.)

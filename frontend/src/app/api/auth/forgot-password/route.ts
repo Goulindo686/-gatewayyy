@@ -6,6 +6,7 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { jsonError, jsonSuccess } from '@/lib/auth';
 import { sendPasswordResetEmail } from '@/lib/email';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
@@ -17,6 +18,17 @@ export async function POST(req: NextRequest) {
 
         const normalizedEmail = String(email).toLowerCase().trim();
         if (!normalizedEmail) return jsonError('Email é obrigatório');
+
+        const ip =
+            req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+            req.headers.get('x-real-ip') ||
+            'unknown';
+
+        const rlIp = await checkRateLimit({ key: `auth:forgot:ip:${ip}`, limit: 10, windowSecs: 900, failOpen: false });
+        if (!rlIp.allowed) return rateLimitResponse(rlIp.resetAt);
+
+        const rlEmail = await checkRateLimit({ key: `auth:forgot:email:${normalizedEmail}`, limit: 3, windowSecs: 3600, failOpen: false });
+        if (!rlEmail.allowed) return rateLimitResponse(rlEmail.resetAt);
 
         const { data: users, error: userErr } = await supabase
             .from('users')
