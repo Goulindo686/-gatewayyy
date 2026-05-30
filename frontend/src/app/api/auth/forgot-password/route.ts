@@ -18,6 +18,7 @@ export async function POST(req: NextRequest) {
             .eq('email', email);
 
         const user = users?.[0];
+        console.log(`[FORGOT-PASSWORD] Email: ${email}, User found: ${!!user}, Users count: ${users?.length}`);
 
         if (user) {
             const resetToken = uuidv4();
