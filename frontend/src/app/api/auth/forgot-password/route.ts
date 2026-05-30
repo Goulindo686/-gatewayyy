@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
     try {
+        const requestId = uuidv4().slice(0, 8);
         const { email } = await req.json();
 
         if (!email) return jsonError('Email é obrigatório');
@@ -17,14 +18,17 @@ export async function POST(req: NextRequest) {
         const normalizedEmail = String(email).toLowerCase().trim();
         if (!normalizedEmail) return jsonError('Email é obrigatório');
 
-        const { data: users } = await supabase
+        const { data: users, error: userErr } = await supabase
             .from('users')
             .select('id, email, name')
             .ilike('email', normalizedEmail)
             .limit(1);
 
         const user = users?.[0];
-        console.log(`[FORGOT-PASSWORD] Email: ${normalizedEmail}, User found: ${!!user}`);
+        console.log(`[FORGOT-PASSWORD][${requestId}] Email: ${normalizedEmail}, User found: ${!!user}`);
+        if (userErr) {
+            console.error(`[FORGOT-PASSWORD][${requestId}] Erro ao buscar usuário:`, userErr.message, userErr.code, userErr.details);
+        }
 
         if (user) {
             const resetToken = uuidv4();
@@ -45,10 +49,12 @@ export async function POST(req: NextRequest) {
                         userName: user.name,
                         resetToken,
                     });
-                    console.log(`[FORGOT-PASSWORD] Email de recuperação enviado para ${user.email}`);
+                    console.log(`[FORGOT-PASSWORD][${requestId}] Email de recuperação enviado para ${user.email}`);
                 } catch (sendErr: any) {
-                    console.error('[FORGOT-PASSWORD] Erro ao enviar email de recuperação:', sendErr?.message);
+                    console.error(`[FORGOT-PASSWORD][${requestId}] Erro ao enviar email de recuperação:`, sendErr?.message, sendErr?.code);
                 }
+            } else {
+                console.error(`[FORGOT-PASSWORD][${requestId}] Erro ao salvar token de recuperação no banco:`, error.message, error.code, error.details);
             }
         }
 
