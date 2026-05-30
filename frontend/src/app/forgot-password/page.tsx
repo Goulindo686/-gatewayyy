@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { authAPI } from '@/lib/api';
+import axios from 'axios';
 import toast from 'react-hot-toast';
-import { FiMail, FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft } from 'react-icons/fi';
 
 export default function ForgotPasswordPage() {
     const [loading, setLoading] = useState(false);
@@ -15,7 +15,8 @@ export default function ForgotPasswordPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            await authAPI.forgotPassword(email);
+            // Chama direto a Next.js API Route que tem o SMTP configurado
+            await axios.post('/api/auth/forgot-password', { email });
             setSent(true);
             toast.success('Email de recuperação enviado!');
         } catch {

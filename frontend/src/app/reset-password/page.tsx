@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { authAPI } from '@/lib/api';
+import axios from 'axios';
 import toast from 'react-hot-toast';
 import { FiLock, FiArrowLeft, FiEye, FiEyeOff } from 'react-icons/fi';
 
@@ -43,7 +43,8 @@ function ResetPasswordForm() {
 
         setLoading(true);
         try {
-            await authAPI.resetPassword({ token, password });
+            // Chama direto a Next.js API Route
+            await axios.post('/api/auth/reset-password', { token, password });
             toast.success('Senha alterada com sucesso!');
             setTimeout(() => router.push('/login'), 2000);
         } catch (err: any) {
