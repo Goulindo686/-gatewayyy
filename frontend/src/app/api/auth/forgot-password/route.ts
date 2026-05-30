@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30; // aumenta o timeout para 30 segundos
+export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
@@ -13,13 +14,17 @@ export async function POST(req: NextRequest) {
 
         if (!email) return jsonError('Email é obrigatório');
 
+        const normalizedEmail = String(email).toLowerCase().trim();
+        if (!normalizedEmail) return jsonError('Email é obrigatório');
+
         const { data: users } = await supabase
             .from('users')
             .select('id, email, name')
-            .eq('email', email);
+            .ilike('email', normalizedEmail)
+            .limit(1);
 
         const user = users?.[0];
-        console.log(`[FORGOT-PASSWORD] Email: ${email}, User found: ${!!user}`);
+        console.log(`[FORGOT-PASSWORD] Email: ${normalizedEmail}, User found: ${!!user}`);
 
         if (user) {
             const resetToken = uuidv4();
@@ -34,20 +39,16 @@ export async function POST(req: NextRequest) {
                 .eq('id', user.id);
 
             if (!error) {
-                // Chama a rota interna de envio de email (mesmo mecanismo do email de compra)
-                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.goupay.com.br';
-                fetch(`${baseUrl}/api/auth/send-reset-email`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
+                try {
+                    await sendPasswordResetEmail({
                         toEmail: user.email,
                         userName: user.name,
                         resetToken,
-                        secret: process.env.INTERNAL_SECRET || 'goupay-internal-2026'
-                    })
-                }).catch(err => console.error('[FORGOT-PASSWORD] Erro ao chamar send-reset-email:', err.message));
-                
-                console.log(`[FORGOT-PASSWORD] Solicitação de email disparada para ${user.email}`);
+                    });
+                    console.log(`[FORGOT-PASSWORD] Email de recuperação enviado para ${user.email}`);
+                } catch (sendErr: any) {
+                    console.error('[FORGOT-PASSWORD] Erro ao enviar email de recuperação:', sendErr?.message);
+                }
             }
         }
 
