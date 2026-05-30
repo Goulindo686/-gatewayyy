@@ -504,10 +504,18 @@ export async function POST(req: NextRequest) {
 
             // Envia email de compra aprovada para o comprador
             if (order.buyer_email) {
+                // Garante que o nome do produto está correto — busca direto se necessário
+                let emailProductName = productName;
+                if ((!emailProductName || emailProductName === 'Produto') && order.product_id) {
+                    const { data: prod } = await supabase
+                        .from('products').select('name').eq('id', order.product_id).single();
+                    if (prod?.name) emailProductName = prod.name;
+                }
+
                 sendPurchaseApprovedEmail({
                     buyerName: order.buyer_name || 'cliente',
                     buyerEmail: order.buyer_email,
-                    productName,
+                    productName: emailProductName,
                     amount: (order.amount / 100).toFixed(2),
                     paymentMethod: order.payment_method || 'pix',
                     orderId: order.id,
