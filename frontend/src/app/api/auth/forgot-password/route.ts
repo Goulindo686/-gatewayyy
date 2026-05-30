@@ -34,17 +34,20 @@ export async function POST(req: NextRequest) {
                 .eq('id', user.id);
 
             if (!error) {
-                // Envia o email aguardando a resposta completa
-                try {
-                    await sendPasswordResetEmail({
+                // Chama a rota interna de envio de email (mesmo mecanismo do email de compra)
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://www.goupay.com.br';
+                fetch(`${baseUrl}/api/auth/send-reset-email`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
                         toEmail: user.email,
                         userName: user.name,
                         resetToken,
-                    });
-                    console.log(`[FORGOT-PASSWORD] Email enviado para ${user.email}`);
-                } catch (emailErr: any) {
-                    console.error(`[FORGOT-PASSWORD] ERRO:`, emailErr?.message, emailErr?.code, emailErr?.response);
-                }
+                        secret: process.env.INTERNAL_SECRET || 'goupay-internal-2026'
+                    })
+                }).catch(err => console.error('[FORGOT-PASSWORD] Erro ao chamar send-reset-email:', err.message));
+                
+                console.log(`[FORGOT-PASSWORD] Solicitação de email disparada para ${user.email}`);
             }
         }
 
