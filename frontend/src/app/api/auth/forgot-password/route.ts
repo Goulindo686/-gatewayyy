@@ -33,15 +33,16 @@ export async function POST(req: NextRequest) {
                 .eq('id', user.id);
 
             if (!error) {
-                sendPasswordResetEmail({
-                    toEmail: user.email,
-                    userName: user.name,
-                    resetToken,
-                }).then(() => {
+                try {
+                    await sendPasswordResetEmail({
+                        toEmail: user.email,
+                        userName: user.name,
+                        resetToken,
+                    });
                     console.log(`[FORGOT-PASSWORD] Email enviado com sucesso para ${user.email}`);
-                }).catch(err => {
-                    console.error(`[FORGOT-PASSWORD] ERRO ao enviar email para ${user.email}:`, err?.message, err?.code, JSON.stringify(err?.response || ''));
-                });
+                } catch (emailErr: any) {
+                    console.error(`[FORGOT-PASSWORD] ERRO ao enviar email:`, emailErr?.message, emailErr?.code);
+                }
             }
         }
 

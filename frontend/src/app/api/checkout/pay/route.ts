@@ -352,14 +352,19 @@ export async function POST(req: NextRequest) {
             }
 
             // Envia email de compra aprovada
-            sendPurchaseApprovedEmail({
-                buyerName: buyer.name,
-                buyerEmail: buyer.email,
-                productName: product.name,
-                amount: amountDisplay,
-                paymentMethod: normalizedPaymentMethod,
-                orderId,
-            }).catch(err => console.error('[EMAIL] Erro completo:', err));
+            try {
+                await sendPurchaseApprovedEmail({
+                    buyerName: buyer.name,
+                    buyerEmail: buyer.email,
+                    productName: product.name,
+                    amount: amountDisplay,
+                    paymentMethod: normalizedPaymentMethod,
+                    orderId,
+                });
+                console.log(`[EMAIL] Email de compra enviado para ${buyer.email}`);
+            } catch (emailErr: any) {
+                console.error('[EMAIL] Erro ao enviar email de compra:', emailErr?.message);
+            }
         }
 
         // Build response
