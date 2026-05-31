@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
-import { createHmac } from 'crypto';
+import { createHmac, timingSafeEqual } from 'crypto';
 import { supabase } from '@/lib/db';
 import { jsonError, jsonSuccess } from '@/lib/auth';
 import { checkRateLimit } from '@/lib/rate-limit';
@@ -10,6 +10,21 @@ import { v4 as uuidv4 } from 'uuid';
 import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
+
+function safeEqual(a: string, b: string) {
+    const aBuf = Buffer.from(a);
+    const bBuf = Buffer.from(b);
+    if (aBuf.length !== bBuf.length) return false;
+    return timingSafeEqual(aBuf, bBuf);
+}
+
+function isValidBasicAuth(req: NextRequest, username: string, password: string) {
+    const auth = req.headers.get('authorization') || '';
+    if (!auth.startsWith('Basic ')) return false;
+    const token = auth.slice('Basic '.length).trim();
+    const expected = Buffer.from(`${username}:${password}`).toString('base64');
+    return safeEqual(token, expected);
+}
 
 function isValidPagarmeSignature({
     secret,
@@ -47,22 +62,33 @@ export async function POST(req: NextRequest) {
         if (!rlIp.allowed) return jsonError('Too many requests', 429);
 
         const webhookSecret = process.env.PAGARME_WEBHOOK_SECRET;
+        const webhookUser = process.env.PAGARME_WEBHOOK_USER;
+        const webhookPass = process.env.PAGARME_WEBHOOK_PASS;
         const signature = req.headers.get('x-hub-signature') || req.headers.get('x-pagarme-signature');
 
         const rawBody = await req.text();
 
         if (process.env.NODE_ENV === 'production') {
-            if (!webhookSecret) {
-                console.error('[WEBHOOK] PAGARME_WEBHOOK_SECRET não configurado — rejeitando por segurança');
+            const hasHmac = !!webhookSecret;
+            const hasBasic = !!(webhookUser && webhookPass);
+            if (!hasHmac && !hasBasic) {
+                console.error('[WEBHOOK] Webhook auth não configurada (defina PAGARME_WEBHOOK_SECRET ou PAGARME_WEBHOOK_USER/PAGARME_WEBHOOK_PASS)');
                 return jsonError('Webhook não configurado', 500);
             }
-            if (!signature) {
+
+            if (hasHmac && signature) {
+                if (!isValidPagarmeSignature({ secret: webhookSecret!, rawBody, signatureHeader: signature })) {
+                    console.warn('[WEBHOOK] Assinatura inválida — rejeitado');
+                    return jsonError('Assinatura inválida', 401);
+                }
+            } else if (hasBasic) {
+                if (!isValidBasicAuth(req, webhookUser!, webhookPass!)) {
+                    console.warn('[WEBHOOK] Basic auth inválido — rejeitado');
+                    return jsonError('Não autorizado', 401);
+                }
+            } else {
                 console.warn('[WEBHOOK] Assinatura ausente — rejeitado');
                 return jsonError('Assinatura ausente', 401);
-            }
-            if (!isValidPagarmeSignature({ secret: webhookSecret, rawBody, signatureHeader: signature })) {
-                console.warn('[WEBHOOK] Assinatura inválida — rejeitado');
-                return jsonError('Assinatura inválida', 401);
             }
         }
 
