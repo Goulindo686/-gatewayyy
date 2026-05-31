@@ -3,12 +3,20 @@ export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { getAuthUser, jsonError, jsonSuccess } from '@/lib/auth';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { PagarmeService } from '@/lib/pagarme';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(req: NextRequest) {
     const auth = await getAuthUser(req);
     if (!auth) return jsonError('Não autorizado', 401);
+
+    const ip =
+        req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+        req.headers.get('x-real-ip') ||
+        'unknown';
+    const rl = await checkRateLimit({ key: `withdrawals:get:ip:${ip}`, limit: 120, windowSecs: 60, failOpen: true });
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     // Busca registros locais do Supabase
     const { data: localWithdrawals } = await supabase
@@ -68,6 +76,17 @@ export async function POST(req: NextRequest) {
     if (!auth) return jsonError('Não autorizado', 401);
 
     try {
+        const ip =
+            req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+            req.headers.get('x-real-ip') ||
+            'unknown';
+
+        const rlIp = await checkRateLimit({ key: `withdrawals:post:ip:${ip}`, limit: 10, windowSecs: 3600, failOpen: true });
+        if (!rlIp.allowed) return rateLimitResponse(rlIp.resetAt);
+
+        const rlUser = await checkRateLimit({ key: `withdrawals:post:user:${auth.user.id}`, limit: 5, windowSecs: 3600, failOpen: true });
+        if (!rlUser.allowed) return rateLimitResponse(rlUser.resetAt);
+
         const { amount } = await req.json();
         if (!amount || amount <= 0) return jsonError('Valor inválido');
 

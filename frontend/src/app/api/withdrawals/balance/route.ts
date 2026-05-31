@@ -3,11 +3,19 @@ export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { supabase, fetchAll } from '@/lib/db';
 import { getAuthUser, jsonError, jsonSuccess } from '@/lib/auth';
+import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { PagarmeService } from '@/lib/pagarme';
 
 export async function GET(req: NextRequest) {
     const auth = await getAuthUser(req);
     if (!auth) return jsonError('Não autorizado', 401);
+
+    const ip =
+        req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+        req.headers.get('x-real-ip') ||
+        'unknown';
+    const rl = await checkRateLimit({ key: `withdrawals:balance:ip:${ip}`, limit: 120, windowSecs: 60, failOpen: true });
+    if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
     try {
         // Get recipient ID
