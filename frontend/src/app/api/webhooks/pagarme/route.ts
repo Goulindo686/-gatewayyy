@@ -425,7 +425,6 @@ export async function POST(req: NextRequest) {
 
             // Get platform fee percentage
             let feePercentage = parseFloat(process.env.PLATFORM_FEE_PERCENTAGE || '2');
-            const PLATFORM_FLAT_FEE = 200; // R$ 2,00 em centavos
             let sellerDisplayName: string | null = null;
             try {
                 const { data: settingsRow } = await supabase
@@ -448,7 +447,11 @@ export async function POST(req: NextRequest) {
                 }
                 sellerDisplayName = sellerUser?.name || sellerUser?.email || null;
             } catch {}
-            const feeAmount = feePercentage > 0 ? Math.min(PLATFORM_FLAT_FEE, order.amount) : 0;
+            const feeAmount = feePercentage > 0
+                ? (order.payment_method === 'credit_card'
+                    ? Math.min(order.amount, Math.round(order.amount * (feePercentage / 100)))
+                    : Math.min(200, order.amount))
+                : 0;
 
             // Update original 'sale' or 'api_sale' transaction to confirmed
             await supabase.from('transactions')
@@ -457,13 +460,14 @@ export async function POST(req: NextRequest) {
                 .in('type', ['sale', 'api_sale']);
 
             if (feeAmount > 0) {
+                const feeLabel = order.payment_method === 'credit_card' ? `${feePercentage}% (cartão)` : 'R$ 2,00 (PIX)';
                 await supabase.from('transactions').insert({
                     user_id: order.seller_id,
                     order_id: order.id,
                     type: 'fee',
                     amount: feeAmount,
                     status: 'confirmed',
-                    description: `Taxa de plataforma (R$ 2,00) - Pedido ${order.id}`
+                    description: `Taxa de plataforma (${feeLabel}) - Pedido ${order.id}`
                 });
             }
 

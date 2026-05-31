@@ -10,6 +10,21 @@ const pagarmeApi = axios.create({
 });
 
 export class PagarmeService {
+    static calculatePlatformFeeCents(input: { amountCents: number; paymentMethod: string; feePercentage: number }) {
+        const amountCents = Math.max(0, Math.round(input.amountCents || 0));
+        const feePercentage = Number.isFinite(input.feePercentage) ? Math.max(0, Math.min(100, input.feePercentage)) : 0;
+        const paymentMethod = (input.paymentMethod || '').toLowerCase();
+
+        if (feePercentage <= 0 || amountCents <= 0) return 0;
+
+        if (paymentMethod === 'credit_card' || paymentMethod === 'card') {
+            return Math.min(amountCents, Math.round(amountCents * (feePercentage / 100)));
+        }
+
+        const PLATFORM_FLAT_FEE = 200;
+        return Math.min(PLATFORM_FLAT_FEE, amountCents);
+    }
+
     static async createRecipient(data: {
         name: string; email: string; cpf_cnpj: string; type: string;
         bank_code?: string; agency?: string; agency_digit?: string; account?: string; account_digit?: string; account_type?: string;
@@ -99,11 +114,14 @@ export class PagarmeService {
 
         const platId = (process.env.PLATFORM_RECIPIENT_ID || '').trim();
         const sellId = (data.seller_recipient_id || '').trim();
-        const PLATFORM_FLAT_FEE = 200; // R$2,00 em centavos
-
-        // Se feePercentage === 0 (admin), não cobra taxa da plataforma
         const applyFee = (data.platform_fee_percentage || 0) > 0;
-        const platformFeeAmount = applyFee ? Math.min(PLATFORM_FLAT_FEE, data.amount) : 0;
+        const platformFeeAmount = applyFee
+            ? PagarmeService.calculatePlatformFeeCents({
+                amountCents: data.amount,
+                paymentMethod: data.payment_method,
+                feePercentage: data.platform_fee_percentage || 0
+            })
+            : 0;
         const sellerAmount = data.amount - platformFeeAmount;
 
         console.log('[PAGARME SERVICE] Split Config:', {
@@ -234,13 +252,17 @@ export class PagarmeService {
 
         const platId = (process.env.PLATFORM_RECIPIENT_ID || '').trim();
         const sellId = (data.seller_recipient_id || '').trim();
-        const PLATFORM_FLAT_FEE = 200; // R$2,00 em centavos
 
         const totalAmountCents = data.items.reduce((sum: number, item: any) => sum + Math.round(item.price * 100) * item.quantity, 0);
 
-        // Se feePercentage === 0 (admin), não cobra taxa da plataforma
         const applyFee2 = (data.platform_fee_percentage || 0) > 0;
-        const platformFeeAmount = applyFee2 ? Math.min(PLATFORM_FLAT_FEE, totalAmountCents) : 0;
+        const platformFeeAmount = applyFee2
+            ? PagarmeService.calculatePlatformFeeCents({
+                amountCents: totalAmountCents,
+                paymentMethod: data.payment_method,
+                feePercentage: data.platform_fee_percentage || 0
+            })
+            : 0;
         const sellerAmount = totalAmountCents - platformFeeAmount;
 
         console.log('[PAGARME SERVICE] MultiItem Split Config:', {

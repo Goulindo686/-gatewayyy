@@ -286,13 +286,18 @@ export async function POST(req: NextRequest) {
         // If paid immediately, create fee transaction and update sales count
         let buyerUser: any = null;
         if (charge?.status === 'paid') {
-            const feeAmount = Math.min(200, totalCents); // R$2,00 fixo
+            const feeAmount = feePercentage > 0
+                ? (normalizedPaymentMethod === 'credit_card'
+                    ? Math.min(totalCents, Math.round(totalCents * (feePercentage / 100)))
+                    : Math.min(200, totalCents))
+                : 0;
             if (feeAmount > 0) {
+                const feeLabel = normalizedPaymentMethod === 'credit_card' ? `${feePercentage}% (cartão)` : 'R$ 2,00 (PIX)';
                 await supabase.from('transactions').insert({
                     id: uuidv4(), user_id: product.user_id, order_id: orderId,
                     type: 'fee', amount: feeAmount,
                     status: 'confirmed',
-                    description: `Taxa de plataforma (R$2,00 fixo) - Pedido ${orderId}`
+                    description: `Taxa de plataforma (${feeLabel}) - Pedido ${orderId}`
                 });
             }
 
