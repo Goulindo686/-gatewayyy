@@ -28,7 +28,9 @@ export async function POST(req: NextRequest) {
             const rlEmail = await checkRateLimit({ key: `checkout:email:${buyer.email.toLowerCase().trim()}`, limit: 5, windowSecs: 3600, failOpen: false });
             if (!rlEmail.allowed) return rateLimitResponse(rlEmail.resetAt);
         }
-        const enableCreditCard = process.env.ENABLE_CREDIT_CARD ? (process.env.ENABLE_CREDIT_CARD === 'true') : false;
+        const enableCreditCard = process.env.ENABLE_CREDIT_CARD
+            ? (process.env.ENABLE_CREDIT_CARD === 'true')
+            : true;
         const normalizedPaymentMethod = (body.payment_method === 'card' ? 'credit_card' : body.payment_method) || 'pix';
 
         const extractPix = (pagarmeOrder: any) => {
