@@ -1,4 +1,5 @@
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
 import { createHmac } from 'crypto';
@@ -10,27 +11,69 @@ import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
 
+function isValidPagarmeSignature({
+    secret,
+    rawBody,
+    signatureHeader,
+}: {
+    secret: string;
+    rawBody: string;
+    signatureHeader: string;
+}) {
+    const provided = signatureHeader.trim();
+    const providedHex = provided.includes('=') ? provided.split('=').slice(1).join('=').trim() : provided;
+
+    const sha1 = createHmac('sha1', secret).update(rawBody).digest('hex');
+    const sha256 = createHmac('sha256', secret).update(rawBody).digest('hex');
+
+    const candidates = new Set<string>([
+        sha1,
+        sha256,
+        `sha1=${sha1}`,
+        `sha256=${sha256}`,
+    ]);
+
+    return candidates.has(provided) || candidates.has(providedHex);
+}
+
 export async function POST(req: NextRequest) {
     try {
-        // Verificação de assinatura HMAC do Pagar.me
+        const ip =
+            req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+            req.headers.get('x-real-ip') ||
+            'unknown';
+
+        const rlIp = await checkRateLimit({ key: `webhook:pagarme:ip:${ip}`, limit: 120, windowSecs: 60, failOpen: false });
+        if (!rlIp.allowed) return jsonError('Too many requests', 429);
+
         const webhookSecret = process.env.PAGARME_WEBHOOK_SECRET;
         const signature = req.headers.get('x-hub-signature') || req.headers.get('x-pagarme-signature');
 
         const rawBody = await req.text();
 
-        if (webhookSecret && signature) {
-            const expected = 'sha1=' + createHmac('sha1', webhookSecret).update(rawBody).digest('hex');
-            if (signature !== expected) {
+        if (process.env.NODE_ENV === 'production') {
+            if (!webhookSecret) {
+                console.error('[WEBHOOK] PAGARME_WEBHOOK_SECRET não configurado — rejeitando por segurança');
+                return jsonError('Webhook não configurado', 500);
+            }
+            if (!signature) {
+                console.warn('[WEBHOOK] Assinatura ausente — rejeitado');
+                return jsonError('Assinatura ausente', 401);
+            }
+            if (!isValidPagarmeSignature({ secret: webhookSecret, rawBody, signatureHeader: signature })) {
                 console.warn('[WEBHOOK] Assinatura inválida — rejeitado');
                 return jsonError('Assinatura inválida', 401);
             }
-        } else {
-            // Secret não configurado ou assinatura ausente — aceita mas loga aviso
-            console.warn('[WEBHOOK] Rodando sem verificação de assinatura. Configure PAGARME_WEBHOOK_SECRET para maior segurança.');
         }
 
         const body = JSON.parse(rawBody);
         const { type, data } = body;
+
+        const eventId = String(data?.id || '');
+        if (eventId) {
+            const rlEvent = await checkRateLimit({ key: `webhook:pagarme:event:${eventId}`, limit: 20, windowSecs: 3600, failOpen: true });
+            if (!rlEvent.allowed) return jsonError('Too many requests', 429);
+        }
 
         console.log('Webhook received:', type, 'ID:', data.id, 'Order ID:', data.order?.id);
 

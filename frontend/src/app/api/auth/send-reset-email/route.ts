@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic';
 export const maxDuration = 30;
+export const runtime = 'nodejs';
 
 import { NextRequest } from 'next/server';
 import { jsonError, jsonSuccess } from '@/lib/auth';
@@ -10,7 +11,11 @@ export async function POST(req: NextRequest) {
         const { toEmail, userName, resetToken, secret } = await req.json();
 
         // Verifica secret interno para evitar chamadas externas
-        const expectedSecret = process.env.INTERNAL_SECRET || 'goupay-internal-2026';
+        const expectedSecret = process.env.INTERNAL_SECRET;
+        if (!expectedSecret) {
+            console.error('[SEND-RESET-EMAIL] INTERNAL_SECRET não configurado');
+            return jsonError('Não configurado', 500);
+        }
         if (secret !== expectedSecret) {
             return jsonError('Não autorizado', 401);
         }
