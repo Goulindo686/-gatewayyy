@@ -25,6 +25,17 @@ export class PagarmeService {
         return Math.min(PLATFORM_FLAT_FEE, amountCents);
     }
 
+    static getStatementDescriptor() {
+        const raw = (process.env.PAGARME_STATEMENT_DESCRIPTOR || process.env.PLATFORM_NAME || 'GOUPAYPAGTO').toString();
+        const cleaned = raw
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-zA-Z0-9]/g, '')
+            .toUpperCase()
+            .slice(0, 13);
+        return cleaned.length >= 3 ? cleaned : 'GOUPAYPAGTO';
+    }
+
     static async createRecipient(data: {
         name: string; email: string; cpf_cnpj: string; type: string;
         bank_code?: string; agency?: string; agency_digit?: string; account?: string; account_digit?: string; account_type?: string;
@@ -153,7 +164,7 @@ export class PagarmeService {
                 split: splitRules,
                 pix: {
                     expires_in: 3600,
-                    additional_information: [{ name: 'Plataforma', value: process.env.PLATFORM_NAME || 'PayGateway' }]
+                    additional_information: [{ name: 'Plataforma', value: process.env.PLATFORM_NAME || 'GOUPAY PAGAMENTOS' }]
                 }
             });
         } else if (data.payment_method === 'credit_card' || data.payment_method === 'card') {
@@ -171,7 +182,7 @@ export class PagarmeService {
                 credit_card: {
                     operation_type: 'auth_and_capture',
                     installments: finalInstallments,
-                    statement_descriptor: 'PEDIDO',
+                    statement_descriptor: PagarmeService.getStatementDescriptor(),
                     card: {
                         number: cleanNumber,
                         holder_name: card.holder_name || data.customer.name,
@@ -291,7 +302,10 @@ export class PagarmeService {
             orderData.payments.push({
                 payment_method: 'pix',
                 split: splitRules,
-                pix: { expires_in: 3600 }
+                pix: {
+                    expires_in: 3600,
+                    additional_information: [{ name: 'Plataforma', value: process.env.PLATFORM_NAME || 'GOUPAY PAGAMENTOS' }]
+                }
             });
         } else if (data.payment_method === 'credit_card' || data.payment_method === 'card') {
             const card = data.card_data || {};
@@ -308,7 +322,7 @@ export class PagarmeService {
                 credit_card: {
                     operation_type: 'auth_and_capture',
                     installments: finalInstallments,
-                    statement_descriptor: 'LOJA',
+                    statement_descriptor: PagarmeService.getStatementDescriptor(),
                     card: {
                         number: cleanNumber,
                         holder_name: card.holder_name || data.customer.name,
