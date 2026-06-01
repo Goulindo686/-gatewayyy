@@ -202,7 +202,7 @@ export async function POST(req: NextRequest) {
                     ? (product.price >= 100 ? Math.round(product.price) : Math.round(product.price * 100))
                     : Math.round(parseFloat(product.price_display) * 100));
             totalCents = baseCents + bumpTotalCents;
-            const ipHeader = req.headers.get('x-forwarded-for') || '';
+            const ipHeader = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
             const ip = ipHeader.split(',')[0].trim() || undefined;
             const sessionId = uuidv4();
             pagarmeOrder = await PagarmeService.createOrder({
@@ -213,7 +213,13 @@ export async function POST(req: NextRequest) {
                 seller_recipient_id: recipient.pagarme_recipient_id,
                 platform_fee_percentage: feePercentage,
                 ip,
-                session_id: sessionId
+                session_id: sessionId,
+                items: [{
+                    amount: totalCents,
+                    description: product.name,
+                    quantity: 1,
+                    code: product.id
+                }]
             });
         } catch (pagarmeErr: any) {
             console.error('Pagar.me API Error:', pagarmeErr.response?.data || pagarmeErr.message);
@@ -267,6 +273,7 @@ export async function POST(req: NextRequest) {
         await supabase.from('orders').insert({
             id: orderId, seller_id: product.user_id, product_id: product.id,
             buyer_name: buyer.name, buyer_email: buyer.email, buyer_cpf: buyer.cpf,
+            buyer_phone: buyer.phone?.replace(/\D/g, ''),
             amount: totalCents,
             payment_method: normalizedPaymentMethod, status: charge?.status === 'paid' ? 'paid' : 'pending',
             pagarme_order_id: pagarmeOrder.id, pagarme_charge_id: charge?.id,

@@ -375,7 +375,7 @@ export default function CheckoutPage() {
         try {
             const methodToSend = enableCreditCard ? paymentMethod : 'pix';
             if (!isValidCPF(form.cpf)) { toast.error('CPF inválido'); setProcessing(false); return; }
-            if (!settings.hide_phone && !isValidPhone(form.phone)) { toast.error('Telefone inválido'); setProcessing(false); return; }
+            if ((!settings.hide_phone || methodToSend === 'credit_card') && !isValidPhone(form.phone)) { toast.error('Telefone inválido'); setProcessing(false); return; }
             if (methodToSend === 'credit_card') {
                 if (!isValidCEP(form.cep)) { toast.error('CEP inválido'); setProcessing(false); return; }
                 if (!isValidUF(form.state)) { toast.error('UF inválida'); setProcessing(false); return; }
@@ -390,7 +390,7 @@ export default function CheckoutPage() {
                     name: form.name,
                     email: form.email,
                     cpf: form.cpf,
-                    ...(settings.hide_phone ? {} : { phone: form.phone }),
+                    ...(!settings.hide_phone || methodToSend === 'credit_card' ? { phone: form.phone } : {}),
                     ...(includeAddress ? {
                         address: {
                             line_1: `${form.street || ''}, ${form.number || ''}, ${form.neighborhood || ''}`.trim(),
@@ -729,7 +729,7 @@ export default function CheckoutPage() {
                                             />
                                         </div>
                                     </div>
-                                    {!settings.hide_phone && (
+                                    {(!settings.hide_phone || paymentMethod === 'credit_card') && (
                                         <div className="group">
                                             <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Seu celular *</label>
                                             <div className="flex gap-3">
