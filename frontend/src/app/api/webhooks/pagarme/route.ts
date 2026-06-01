@@ -134,6 +134,13 @@ export async function POST(req: NextRequest) {
             data?.orderId ||
             (type.startsWith('order.') ? data.id : undefined);
 
+        // ESTRATÉGIA 4: Buscar por Order ID quando vier como order_id/orderId em eventos de charge.*
+        if (!order && pagarmeOrderId) {
+            const { data: o } = await supabase
+                .from('orders').select('*').eq('pagarme_order_id', pagarmeOrderId).single();
+            if (o) order = o;
+        }
+
         // ─── BILLING CHARGES LOOKUP ─────────────────────────────────────────
         // If order not found in 'orders' table, check 'billings' table
         if (!order && !type.includes('transfer') && !type.includes('subscription')) {
@@ -259,15 +266,16 @@ export async function POST(req: NextRequest) {
                         .update({ status: txStatus })
                         .eq('id', apiTx.id);
                 }
-
-                return jsonSuccess({ received: true });
+                if (apiTx) {
+                    return jsonSuccess({ received: true });
+                }
             }
         }
 
         if (!order && type.includes('transfer')) {
             // Lógica de transferência (mantida abaixo)
         } else if (!order) {
-            console.log('Order not found for webhook:', type, data.id);
+            console.log('Order not found for webhook:', type, data.id, 'pagarmeOrderId:', pagarmeOrderId);
             return jsonSuccess({ received: true }); 
         }
 
