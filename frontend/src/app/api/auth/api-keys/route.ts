@@ -1,14 +1,21 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { getAuthUser, jsonError, jsonSuccess } from '@/lib/auth';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 
+function getErrorMessage(error: unknown) {
+    return error instanceof Error ? error.message : 'Erro interno';
+}
+
 export async function GET(req: NextRequest) {
     try {
         const auth = await getAuthUser(req);
         if (!auth || !auth.user) {
-            return jsonError('Não autorizado', 401);
+            return jsonError('Nao autorizado', 401);
+        }
+        if (auth.tokenPayload?.impersonated_by) {
+            return jsonError('Acao bloqueada durante acesso como vendedor', 403);
         }
         const user = auth.user;
 
@@ -28,8 +35,8 @@ export async function GET(req: NextRequest) {
         if (error) throw error;
 
         return jsonSuccess({ keys });
-    } catch (error: any) {
-        return jsonError(error.message, 500);
+    } catch (error: unknown) {
+        return jsonError(getErrorMessage(error), 500);
     }
 }
 
@@ -37,7 +44,10 @@ export async function POST(req: NextRequest) {
     try {
         const auth = await getAuthUser(req);
         if (!auth || !auth.user) {
-            return jsonError('Não autorizado', 401);
+            return jsonError('Nao autorizado', 401);
+        }
+        if (auth.tokenPayload?.impersonated_by) {
+            return jsonError('Acao bloqueada durante acesso como vendedor', 403);
         }
         const user = auth.user;
 
@@ -49,7 +59,7 @@ export async function POST(req: NextRequest) {
         if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
         const newKey = 'gou_live_' + uuidv4().replace(/-/g, '');
-        
+
         const { data, error } = await supabase
             .from('api_keys')
             .insert({
@@ -63,7 +73,7 @@ export async function POST(req: NextRequest) {
         if (error) throw error;
 
         return jsonSuccess({ key: data });
-    } catch (error: any) {
-        return jsonError(error.message, 500);
+    } catch (error: unknown) {
+        return jsonError(getErrorMessage(error), 500);
     }
 }

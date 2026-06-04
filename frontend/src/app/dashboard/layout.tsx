@@ -113,15 +113,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('admin_token');
+        localStorage.removeItem('admin_user');
         router.push('/login');
     };
 
     const handleExitImpersonation = () => {
         const adminToken = localStorage.getItem('admin_token');
+        const adminUser = localStorage.getItem('admin_user');
         if (adminToken) {
             localStorage.setItem('token', adminToken);
+            if (adminUser) localStorage.setItem('user', adminUser);
             localStorage.removeItem('admin_token');
-            localStorage.removeItem('user');
+            localStorage.removeItem('admin_user');
         }
         router.push('/admin/sellers');
     };
