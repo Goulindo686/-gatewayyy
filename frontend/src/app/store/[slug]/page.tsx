@@ -578,6 +578,7 @@ export default function StorePage() {
                         padding: 8px;
                         gap: 7px;
                         align-items: center;
+                        justify-content: center;
                     }
                     h1 {
                         font-size: 30px !important;
@@ -655,6 +656,7 @@ export default function StorePage() {
                         height: 36px;
                         min-width: 0;
                         flex-basis: 100%;
+                        max-width: 100%;
                         padding: 0 11px;
                         order: 5;
                     }
