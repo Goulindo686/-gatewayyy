@@ -3,11 +3,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { storeAPI } from '@/lib/api';
-import { FiArrowRight, FiBookOpen, FiCheckCircle, FiGrid, FiPackage, FiSearch, FiShield, FiShoppingBag, FiUser, FiZap } from 'react-icons/fi';
+import { FiArrowRight, FiBookOpen, FiCheckCircle, FiChevronLeft, FiChevronRight, FiGrid, FiPackage, FiSearch, FiShield, FiShoppingBag, FiUser, FiZap } from 'react-icons/fi';
 import { useCart } from '@/contexts/CartContext';
 import toast from 'react-hot-toast';
 
 type TemplateKey = 'creator' | 'academy' | 'studio';
+const PRODUCTS_PER_PAGE = 3;
 
 const templateStyles: Record<TemplateKey, {
     bg: string;
@@ -64,6 +65,7 @@ export default function StorePage() {
     const [products, setProducts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [productPage, setProductPage] = useState(1);
     const activeCategory = searchParams.get('category') || '';
     const [quickProduct, setQuickProduct] = useState<any>(null);
     const [quickPlan, setQuickPlan] = useState<any>(null);
@@ -105,6 +107,13 @@ export default function StorePage() {
         );
     }, [products, searchTerm]);
 
+    useEffect(() => {
+        setProductPage(1);
+    }, [searchTerm, activeCategory, products.length]);
+
+    const totalProductPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+    const safeProductPage = Math.min(productPage, totalProductPages);
+    const paginatedProducts = filteredProducts.slice((safeProductPage - 1) * PRODUCTS_PER_PAGE, safeProductPage * PRODUCTS_PER_PAGE);
     const featuredProduct = filteredProducts[0];
 
     const handleCategoryClick = (catSlug: string) => {
@@ -300,33 +309,71 @@ export default function StorePage() {
                         <p style={{ color: theme.muted, fontSize: 14 }}>Tente buscar por outro termo ou categoria.</p>
                     </div>
                 ) : (
-                    <div className={`products-grid template-${template}`} style={{ display: 'grid', gridTemplateColumns: template === 'academy' ? 'repeat(auto-fill, minmax(340px, 1fr))' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 22 }}>
-                        {filteredProducts.map(product => (
-                            <article key={product.id} className="store-product-card" style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: template === 'studio' ? 8 : 20, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                                <button className="store-product-media" onClick={() => openQuick(product)} style={{ height: template === 'academy' ? 170 : 210, border: 'none', padding: 0, cursor: 'pointer', background: product.image_url ? `url(${product.image_url}) center/cover` : `linear-gradient(135deg, ${accent}, ${theme.surfaceAlt})` }} aria-label={`Ver ${product.name}`} />
-                                <div className="store-product-body" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
-                                        <h3 className="store-product-title" style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.25 }}>{product.name}</h3>
-                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: accent, fontSize: 11, fontWeight: 900, whiteSpace: 'nowrap' }}>
-                                            <FiBookOpen size={13} /> Online
-                                        </span>
-                                    </div>
-                                    <p className="store-product-description" style={{ color: theme.muted, fontSize: 13, lineHeight: 1.6, minHeight: 42, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                        {product.description || 'Produto digital com compra segura e entrega online.'}
-                                    </p>
-                                    <div style={{ marginTop: 'auto', display: 'grid', gap: 12 }}>
-                                        <div>
-                                            <div style={{ color: theme.muted, fontSize: 12, fontWeight: 700 }}>{product.has_plans ? 'A partir de' : 'Preco'}</div>
-                                            <div className="store-product-price" style={{ fontSize: 24, fontWeight: 950 }}>R$ {product.price_display}</div>
+                    <>
+                        <div className={`products-grid template-${template}`} style={{ display: 'grid', gridTemplateColumns: template === 'academy' ? 'repeat(3, minmax(0, 1fr))' : 'repeat(3, minmax(0, 1fr))', gap: 18 }}>
+                            {paginatedProducts.map(product => (
+                                <article key={product.id} className="store-product-card" style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: template === 'studio' ? 8 : 18, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+                                    <button className="store-product-media" onClick={() => openQuick(product)} style={{ height: template === 'academy' ? 150 : 178, border: 'none', padding: 0, cursor: 'pointer', background: product.image_url ? `url(${product.image_url}) center/cover` : `linear-gradient(135deg, ${accent}, ${theme.surfaceAlt})` }} aria-label={`Ver ${product.name}`} />
+                                    <div className="store-product-body" style={{ padding: 16, display: 'flex', flexDirection: 'column', gap: 12, flex: 1 }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'flex-start' }}>
+                                            <h3 className="store-product-title" style={{ fontSize: 17, fontWeight: 900, lineHeight: 1.25 }}>{product.name}</h3>
+                                            <span className="store-online-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: accent, fontSize: 11, fontWeight: 900, whiteSpace: 'nowrap' }}>
+                                                <FiBookOpen size={13} /> Online
+                                            </span>
                                         </div>
-                                        <button className="store-card-action" onClick={() => openQuick(product)} style={{ width: '100%', border: 'none', borderRadius: 12, background: accent, color: 'white', padding: 13, fontWeight: 900, cursor: 'pointer' }}>
-                                            Ver produto
-                                        </button>
+                                        <p className="store-product-description" style={{ color: theme.muted, fontSize: 13, lineHeight: 1.5, minHeight: 38, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                            {product.description || 'Produto digital com compra segura e entrega online.'}
+                                        </p>
+                                        <div style={{ marginTop: 'auto', display: 'grid', gap: 10 }}>
+                                            <div>
+                                                <div className="store-price-label" style={{ color: theme.muted, fontSize: 12, fontWeight: 700 }}>{product.has_plans ? 'A partir de' : 'Preco'}</div>
+                                                <div className="store-product-price" style={{ fontSize: 22, fontWeight: 950 }}>R$ {product.price_display}</div>
+                                            </div>
+                                            <button className="store-card-action" onClick={() => openQuick(product)} style={{ width: '100%', border: 'none', borderRadius: 12, background: accent, color: 'white', padding: 12, fontWeight: 900, cursor: 'pointer' }}>
+                                                Ver produto
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            </article>
-                        ))}
-                    </div>
+                                </article>
+                            ))}
+                        </div>
+
+                        {totalProductPages > 1 && (
+                            <div className="product-pagination" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 18, flexWrap: 'wrap' }}>
+                                <button
+                                    type="button"
+                                    className="product-page-arrow"
+                                    onClick={() => setProductPage(page => Math.max(1, page - 1))}
+                                    disabled={safeProductPage === 1}
+                                    style={{ ...paginationButtonStyle(false, accent, theme), opacity: safeProductPage === 1 ? 0.45 : 1 }}
+                                    aria-label="Produtos anteriores"
+                                >
+                                    <FiChevronLeft size={16} />
+                                </button>
+                                {Array.from({ length: totalProductPages }, (_, index) => index + 1).map(page => (
+                                    <button
+                                        key={page}
+                                        type="button"
+                                        className="product-page-button"
+                                        onClick={() => setProductPage(page)}
+                                        style={paginationButtonStyle(page === safeProductPage, accent, theme)}
+                                    >
+                                        {page}
+                                    </button>
+                                ))}
+                                <button
+                                    type="button"
+                                    className="product-page-arrow"
+                                    onClick={() => setProductPage(page => Math.min(totalProductPages, page + 1))}
+                                    disabled={safeProductPage === totalProductPages}
+                                    style={{ ...paginationButtonStyle(false, accent, theme), opacity: safeProductPage === totalProductPages ? 0.45 : 1 }}
+                                    aria-label="Proximos produtos"
+                                >
+                                    <FiChevronRight size={16} />
+                                </button>
+                            </div>
+                        )}
+                    </>
                 )}
             </main>
 
@@ -682,39 +729,60 @@ export default function StorePage() {
                         font-size: 12px !important;
                     }
                     .products-grid {
-                        grid-template-columns: 1fr !important;
-                        gap: 14px !important;
+                        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                        gap: 10px !important;
                     }
                     .store-product-card {
-                        border-radius: 14px !important;
+                        border-radius: 12px !important;
                     }
                     .store-product-card:hover {
                         transform: none;
                         box-shadow: none;
                     }
                     .store-product-media {
-                        height: 142px !important;
+                        height: 92px !important;
                     }
                     .store-product-body {
-                        padding: 14px !important;
-                        gap: 10px !important;
+                        padding: 10px !important;
+                        gap: 8px !important;
                     }
                     .store-product-title {
-                        font-size: 16px !important;
-                        line-height: 1.25 !important;
+                        font-size: 13px !important;
+                        line-height: 1.2 !important;
+                        display: -webkit-box;
+                        -webkit-line-clamp: 2;
+                        -webkit-box-orient: vertical;
+                        overflow: hidden;
+                    }
+                    .store-online-badge {
+                        font-size: 0 !important;
+                        gap: 0 !important;
                     }
                     .store-product-description {
-                        font-size: 12px !important;
-                        line-height: 1.45 !important;
+                        font-size: 10px !important;
+                        line-height: 1.35 !important;
                         min-height: 0 !important;
                     }
+                    .store-price-label {
+                        font-size: 10px !important;
+                    }
                     .store-product-price {
-                        font-size: 21px !important;
+                        font-size: 16px !important;
                     }
                     .store-card-action {
-                        min-height: 42px;
-                        padding: 11px 13px !important;
-                        border-radius: 11px !important;
+                        min-height: 34px;
+                        padding: 8px 9px !important;
+                        border-radius: 9px !important;
+                        font-size: 12px !important;
+                    }
+                    .product-pagination {
+                        margin-top: 14px !important;
+                    }
+                    .product-page-button,
+                    .product-page-arrow {
+                        min-width: 34px !important;
+                        height: 34px !important;
+                        padding: 0 10px !important;
                     }
                     .trust-row {
                         padding-top: 16px !important;
@@ -746,6 +814,24 @@ function categoryButtonStyle(active: boolean, accent: string, theme: typeof temp
         fontSize: 13,
         fontWeight: 850,
         whiteSpace: 'nowrap',
+        cursor: 'pointer'
+    };
+}
+
+function paginationButtonStyle(active: boolean, accent: string, theme: typeof templateStyles.creator): React.CSSProperties {
+    return {
+        minWidth: 40,
+        height: 40,
+        border: `1px solid ${active ? accent : theme.border}`,
+        background: active ? accent : theme.surface,
+        color: active ? 'white' : theme.text,
+        borderRadius: 999,
+        padding: '0 14px',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontSize: 13,
+        fontWeight: 900,
         cursor: 'pointer'
     };
 }
