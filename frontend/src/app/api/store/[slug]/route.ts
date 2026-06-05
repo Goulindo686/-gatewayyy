@@ -4,6 +4,21 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { jsonError, jsonSuccess } from '@/lib/auth';
 
+function sanitizeStoreNavLinks(value: unknown) {
+    if (!Array.isArray(value)) return [];
+
+    return value
+        .map((item: any) => ({
+            label: String(item?.label || '').trim().slice(0, 24),
+            url: String(item?.url || '').trim().slice(0, 180)
+        }))
+        .filter(item =>
+            item.label &&
+            (item.url.startsWith('/') || item.url.startsWith('#') || item.url.startsWith('https://') || item.url.startsWith('http://'))
+        )
+        .slice(0, 5);
+}
+
 export async function GET(req: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
     const { slug } = await params;
     const categorySlug = req.nextUrl.searchParams.get('category');
@@ -13,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
         // Simple eq with slug, since it should be sanitized
         const { data: users, error: userError } = await supabase
             .from('users')
-            .select('id, name, store_name, store_description, store_theme, store_banner_url, store_active, store_template, store_accent_color, store_headline, store_cta_text')
+            .select('id, name, store_name, store_description, store_theme, store_banner_url, store_active, store_template, store_accent_color, store_headline, store_cta_text, store_nav_links')
             .ilike('store_slug', slug);
 
         if (userError) {
@@ -101,7 +116,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ slug
                 template: user.store_template || 'creator',
                 accent_color: user.store_accent_color || '#6c5ce7',
                 headline: user.store_headline || user.store_name,
-                cta_text: user.store_cta_text || 'Ver produtos'
+                cta_text: user.store_cta_text || 'Ver produtos',
+                nav_links: sanitizeStoreNavLinks(user.store_nav_links)
             },
             categories: categories || [],
             products: formattedProducts

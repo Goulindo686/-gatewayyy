@@ -25,6 +25,21 @@ const BANK_CODES: Record<string, string> = {
     'mercado pago': '323', 'c6': '336', 'picpay': '380', 'btg': '208',
 };
 
+function sanitizeStoreNavLinks(value: unknown) {
+    if (!Array.isArray(value)) return [];
+
+    return value
+        .map((item: any) => ({
+            label: String(item?.label || '').trim().slice(0, 24),
+            url: String(item?.url || '').trim().slice(0, 180)
+        }))
+        .filter(item =>
+            item.label &&
+            (item.url.startsWith('/') || item.url.startsWith('#') || item.url.startsWith('https://') || item.url.startsWith('http://'))
+        )
+        .slice(0, 5);
+}
+
 export async function PUT(req: NextRequest) {
     const auth = await getAuthUser(req);
     if (!auth) return jsonError('Não autorizado', 401);
@@ -47,7 +62,7 @@ export async function PUT(req: NextRequest) {
             'bank_name', 'bank_agency', 'bank_agency_digit', 'bank_account', 'bank_account_digit', 'bank_account_type',
             'store_name', 'store_slug', 'store_description', 'store_active',
             'store_theme', 'store_banner_url', 'store_template', 'store_accent_color',
-            'store_headline', 'store_cta_text',
+            'store_headline', 'store_cta_text', 'store_nav_links',
             'webhook_url'
         ];
 
@@ -58,6 +73,8 @@ export async function PUT(req: NextRequest) {
                 if (field === 'cpf_cnpj') {
                     const value = typeof body[field] === 'string' ? body[field].trim() : body[field];
                     updateData[field] = value === '' ? null : value;
+                } else if (field === 'store_nav_links') {
+                    updateData[field] = sanitizeStoreNavLinks(body[field]);
                 } else {
                     updateData[field] = body[field];
                 }

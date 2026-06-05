@@ -91,6 +91,14 @@ export default function StorePage() {
     const theme = templateStyles[template] || templateStyles.creator;
     const accent = store?.accent_color || '#6c5ce7';
     const slug = params.slug as string;
+    const customNavLinks = Array.isArray(store?.nav_links)
+        ? store.nav_links.filter((link: any) => link?.label && link?.url).slice(0, 5)
+        : [];
+    const navLinks = [
+        { label: 'Inicio', url: '#top' },
+        { label: 'Loja', url: '#store-products' },
+        ...customNavLinks
+    ];
 
     const filteredProducts = useMemo(() => {
         const term = searchTerm.trim().toLowerCase();
@@ -105,6 +113,22 @@ export default function StorePage() {
 
     const handleCategoryClick = (catSlug: string) => {
         router.push(catSlug === activeCategory ? `/store/${slug}` : `/store/${slug}?category=${catSlug}`);
+    };
+
+    const handleNavClick = (url: string) => {
+        if (url.startsWith('#')) {
+            if (url.length > 1) {
+                document.querySelector(url)?.scrollIntoView({ behavior: 'smooth' });
+            }
+            return;
+        }
+
+        if (url.startsWith('/')) {
+            router.push(url);
+            return;
+        }
+
+        window.open(url, '_blank', 'noopener,noreferrer');
     };
 
     const addProductToCart = (product: any, plan?: any) => {
@@ -160,31 +184,60 @@ export default function StorePage() {
         : `radial-gradient(circle at top right, ${accent}44, transparent 34%), linear-gradient(135deg, ${theme.bg}, ${theme.surfaceAlt})`;
 
     return (
-        <div style={{ minHeight: '100vh', background: theme.bg, color: theme.text, fontFamily: 'Inter, Outfit, sans-serif' }}>
-            <header style={{ position: 'sticky', top: 0, zIndex: 100, background: template === 'academy' ? 'rgba(248,250,252,0.86)' : 'rgba(9,9,11,0.78)', backdropFilter: 'blur(14px)', borderBottom: `1px solid ${theme.border}` }}>
-                <div className="store-shell store-header" style={{ maxWidth: 1240, margin: '0 auto', padding: '14px 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 18 }}>
-                    <button onClick={() => router.push(`/store/${slug}`)} style={{ border: 'none', background: 'transparent', color: theme.text, fontSize: 18, fontWeight: 900, cursor: 'pointer', textAlign: 'left' }}>
+        <div id="top" style={{ minHeight: '100vh', background: theme.bg, color: theme.text, fontFamily: 'Inter, Outfit, sans-serif' }}>
+            <header className="store-floating-header">
+                <div
+                    className="store-topbar"
+                    style={{
+                        color: theme.text,
+                        background: template === 'academy' ? 'rgba(255,255,255,0.84)' : 'rgba(30,34,45,0.82)',
+                        border: `1px solid ${template === 'academy' ? 'rgba(15,23,42,0.12)' : 'rgba(255,255,255,0.14)'}`,
+                        boxShadow: template === 'academy' ? '0 18px 50px rgba(15,23,42,0.10)' : '0 18px 54px rgba(0,0,0,0.32)'
+                    }}
+                >
+                    <button className="topbar-brand" onClick={() => router.push(`/store/${slug}`)} style={{ color: theme.text }}>
                         {store.name || slug}
                     </button>
 
-                    <div className="store-search" style={{ flex: 1, maxWidth: 480, position: 'relative' }}>
-                        <FiSearch size={17} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: theme.muted }} />
+                    <span className="topbar-divider" />
+
+                    <nav className="topbar-nav" aria-label="Navegacao da loja">
+                        {navLinks.map((link, index) => (
+                            <button
+                                key={`${link.label}-${index}`}
+                                type="button"
+                                onClick={() => handleNavClick(link.url)}
+                                className="topbar-tab"
+                                style={{
+                                    color: theme.text,
+                                    background: index === 0 ? (template === 'academy' ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.16)') : 'transparent'
+                                }}
+                            >
+                                {link.label}
+                            </button>
+                        ))}
+                    </nav>
+
+                    <span className="topbar-divider optional-divider" />
+
+                    <div className="store-search topbar-search">
+                        <FiSearch size={15} style={{ color: theme.muted, flex: '0 0 auto' }} />
                         <input
-                            placeholder="Buscar produtos digitais"
+                            placeholder="Buscar"
                             value={searchTerm}
                             onChange={e => setSearchTerm(e.target.value)}
-                            style={{ width: '100%', height: 42, background: theme.surface, color: theme.text, border: `1px solid ${theme.border}`, borderRadius: 12, padding: '0 14px 0 42px', outline: 'none' }}
+                            style={{ color: theme.text }}
                         />
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <button onClick={() => router.push(`/store/${slug}/cart`)} style={{ display: 'inline-flex', alignItems: 'center', gap: 9, height: 42, padding: '0 14px', borderRadius: 12, border: 'none', background: accent, color: 'white', fontWeight: 800, cursor: 'pointer' }}>
-                            <FiShoppingBag size={17} /> Carrinho <span style={{ background: 'rgba(255,255,255,0.22)', borderRadius: 8, padding: '2px 7px', fontSize: 12 }}>{totalItems}</span>
-                        </button>
-                        <button className="store-login" onClick={() => router.push('/login')} style={{ display: 'inline-flex', alignItems: 'center', gap: 8, height: 42, padding: '0 14px', borderRadius: 12, border: `1px solid ${theme.border}`, background: theme.surface, color: theme.text, fontWeight: 800, cursor: 'pointer' }}>
-                            <FiUser size={16} /> Entrar
-                        </button>
-                    </div>
+                    <button className="topbar-icon-action" onClick={() => router.push(`/store/${slug}/cart`)} style={{ background: accent, color: 'white' }} aria-label="Abrir carrinho">
+                        <FiShoppingBag size={17} />
+                        <span>{totalItems}</span>
+                    </button>
+
+                    <button className="store-login topbar-login" onClick={() => router.push('/login')} style={{ color: theme.text, background: template === 'academy' ? 'rgba(15,23,42,0.08)' : 'rgba(255,255,255,0.12)' }}>
+                        <FiUser size={16} /> Entrar
+                    </button>
                 </div>
             </header>
 
@@ -194,7 +247,7 @@ export default function StorePage() {
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: accent, background: template === 'academy' ? `${accent}12` : 'rgba(255,255,255,0.08)', border: `1px solid ${template === 'academy' ? `${accent}24` : theme.border}`, borderRadius: 999, padding: '8px 12px', fontSize: 12, fontWeight: 900, marginBottom: 18 }}>
                             <FiZap size={14} /> Produtos digitais com acesso online
                         </div>
-                        <h1 style={{ maxWidth: 760, fontSize: template === 'studio' ? 58 : 48, lineHeight: 1.02, letterSpacing: '-1px', fontWeight: 950, marginBottom: 16 }}>
+                        <h1 style={{ maxWidth: 760, fontSize: template === 'studio' ? 58 : 48, lineHeight: 1.02, letterSpacing: 0, fontWeight: 950, marginBottom: 16 }}>
                             {store.headline || store.name}
                         </h1>
                         <p style={{ maxWidth: 680, color: theme.muted, fontSize: 17, lineHeight: 1.7, marginBottom: 26 }}>
@@ -341,6 +394,120 @@ export default function StorePage() {
             )}
 
             <style jsx>{`
+                .store-floating-header {
+                    position: sticky;
+                    top: 0;
+                    z-index: 100;
+                    padding: 16px 18px 0;
+                    pointer-events: none;
+                }
+                .store-topbar {
+                    width: min(1120px, 100%);
+                    min-height: 54px;
+                    margin: 0 auto;
+                    border-radius: 999px;
+                    backdrop-filter: blur(18px);
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 7px 10px 7px 18px;
+                    pointer-events: auto;
+                    overflow: hidden;
+                }
+                .topbar-brand {
+                    border: none;
+                    background: transparent;
+                    font-size: 17px;
+                    font-weight: 950;
+                    cursor: pointer;
+                    white-space: nowrap;
+                    max-width: 190px;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    padding: 0;
+                }
+                .topbar-divider {
+                    width: 1px;
+                    height: 26px;
+                    background: rgba(148,163,184,0.35);
+                    flex: 0 0 auto;
+                }
+                .topbar-nav {
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                    min-width: 0;
+                    overflow-x: auto;
+                    scrollbar-width: none;
+                }
+                .topbar-nav::-webkit-scrollbar {
+                    display: none;
+                }
+                .topbar-tab {
+                    height: 36px;
+                    border: none;
+                    border-radius: 999px;
+                    padding: 0 14px;
+                    font-size: 13px;
+                    font-weight: 850;
+                    cursor: pointer;
+                    white-space: nowrap;
+                }
+                .topbar-search {
+                    margin-left: auto;
+                    height: 38px;
+                    min-width: 150px;
+                    max-width: 210px;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 0 12px;
+                    border-radius: 999px;
+                    background: rgba(255,255,255,0.10);
+                    border: 1px solid rgba(148,163,184,0.24);
+                }
+                .topbar-search input {
+                    width: 100%;
+                    min-width: 0;
+                    border: none;
+                    outline: none;
+                    background: transparent;
+                    font-size: 13px;
+                    font-weight: 750;
+                }
+                .topbar-search input::placeholder {
+                    color: rgba(148,163,184,0.92);
+                }
+                .topbar-icon-action,
+                .topbar-login {
+                    height: 38px;
+                    border: none;
+                    border-radius: 999px;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 7px;
+                    font-weight: 900;
+                    cursor: pointer;
+                    flex: 0 0 auto;
+                }
+                .topbar-icon-action {
+                    min-width: 58px;
+                    padding: 0 12px;
+                }
+                .topbar-icon-action span {
+                    min-width: 18px;
+                    height: 18px;
+                    border-radius: 999px;
+                    display: grid;
+                    place-items: center;
+                    background: rgba(255,255,255,0.22);
+                    font-size: 11px;
+                    line-height: 1;
+                }
+                .topbar-login {
+                    padding: 0 14px;
+                }
                 .store-product-card {
                     transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease;
                 }
@@ -358,11 +525,28 @@ export default function StorePage() {
                         justify-self: stretch !important;
                         max-width: none !important;
                     }
-                    .store-header {
+                    .store-floating-header {
+                        padding: 12px 12px 0;
+                    }
+                    .store-topbar {
+                        border-radius: 24px;
                         flex-wrap: wrap;
+                        padding: 9px;
+                        gap: 8px;
+                    }
+                    .topbar-brand {
+                        padding-left: 6px;
+                        max-width: 150px;
+                    }
+                    .topbar-nav {
+                        flex: 1;
+                        order: 2;
+                    }
+                    .optional-divider {
+                        display: none;
                     }
                     .store-search {
-                        order: 3;
+                        order: 5;
                         flex-basis: 100%;
                         max-width: none !important;
                     }
@@ -389,6 +573,22 @@ export default function StorePage() {
                     }
                     .store-login {
                         display: none !important;
+                    }
+                    .topbar-brand {
+                        max-width: 118px;
+                        font-size: 15px;
+                    }
+                    .topbar-divider:first-of-type {
+                        display: none;
+                    }
+                    .topbar-tab {
+                        height: 34px;
+                        padding: 0 11px;
+                        font-size: 12px;
+                    }
+                    .topbar-icon-action {
+                        min-width: 50px;
+                        height: 36px;
                     }
                     .products-grid {
                         grid-template-columns: 1fr !important;
