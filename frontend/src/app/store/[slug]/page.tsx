@@ -8,7 +8,7 @@ import { useCart } from '@/contexts/CartContext';
 import toast from 'react-hot-toast';
 
 type TemplateKey = 'creator' | 'academy' | 'studio';
-const PRODUCTS_PER_PAGE = 3;
+const PRODUCTS_PER_PAGE = 4;
 
 const templateStyles: Record<TemplateKey, {
     bg: string;
