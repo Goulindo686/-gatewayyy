@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { authAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
-import { FiCheck, FiExternalLink, FiImage, FiLayout, FiPlus, FiPower, FiSave, FiTrash2, FiUpload } from 'react-icons/fi';
+import { FiCheck, FiExternalLink, FiImage, FiLayout, FiPower, FiSave, FiUpload } from 'react-icons/fi';
 
 const STORE_TEMPLATES = [
     {
@@ -39,12 +39,7 @@ type StoreForm = {
     store_accent_color: string;
     store_headline: string;
     store_cta_text: string;
-    store_nav_links: StoreNavLink[];
-};
-
-type StoreNavLink = {
-    label: string;
-    url: string;
+    store_badge_text: string;
 };
 
 const initialForm: StoreForm = {
@@ -58,21 +53,11 @@ const initialForm: StoreForm = {
     store_accent_color: '#6c5ce7',
     store_headline: '',
     store_cta_text: 'Ver produtos',
-    store_nav_links: []
+    store_badge_text: 'Produtos digitais com acesso online'
 };
 
 function slugify(value: string) {
     return value.toLowerCase().trim().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
-}
-
-function sanitizeNavLinks(links: StoreNavLink[]) {
-    return links
-        .map(link => ({
-            label: String(link.label || '').trim().slice(0, 24),
-            url: String(link.url || '').trim().slice(0, 180)
-        }))
-        .filter(link => link.label && (link.url.startsWith('/') || link.url.startsWith('#') || link.url.startsWith('https://') || link.url.startsWith('http://')))
-        .slice(0, 5);
 }
 
 export default function StoreSettingsPage() {
@@ -86,7 +71,6 @@ export default function StoreSettingsPage() {
     }, []);
 
     const hydrateForm = (user: any) => {
-        const navLinks = Array.isArray(user.store_nav_links) ? user.store_nav_links : [];
         setForm({
             store_active: user.store_active || false,
             store_name: user.store_name || '',
@@ -98,7 +82,7 @@ export default function StoreSettingsPage() {
             store_accent_color: user.store_accent_color || '#6c5ce7',
             store_headline: user.store_headline || '',
             store_cta_text: user.store_cta_text || 'Ver produtos',
-            store_nav_links: sanitizeNavLinks(navLinks)
+            store_badge_text: user.store_badge_text || 'Produtos digitais com acesso online'
         });
     };
 
@@ -117,33 +101,6 @@ export default function StoreSettingsPage() {
         setForm(prev => ({ ...prev, [field]: value }));
     };
 
-    const updateNavLink = (index: number, field: keyof StoreNavLink, value: string) => {
-        setForm(prev => ({
-            ...prev,
-            store_nav_links: prev.store_nav_links.map((link, i) => i === index ? { ...link, [field]: value } : link)
-        }));
-    };
-
-    const addNavLink = () => {
-        setForm(prev => {
-            if (prev.store_nav_links.length >= 5) {
-                toast.error('Voce pode adicionar ate 5 abas extras');
-                return prev;
-            }
-            return {
-                ...prev,
-                store_nav_links: [...prev.store_nav_links, { label: '', url: `/store/${prev.store_slug || 'sua-loja'}` }]
-            };
-        });
-    };
-
-    const removeNavLink = (index: number) => {
-        setForm(prev => ({
-            ...prev,
-            store_nav_links: prev.store_nav_links.filter((_, i) => i !== index)
-        }));
-    };
-
     const handleSave = async () => {
         if (!form.store_name.trim()) return toast.error('Informe o nome da loja');
         if (!form.store_slug.trim()) return toast.error('Informe o link da loja');
@@ -154,7 +111,7 @@ export default function StoreSettingsPage() {
                 ...form,
                 store_slug: slugify(form.store_slug),
                 store_headline: form.store_headline.trim() || form.store_name.trim(),
-                store_nav_links: sanitizeNavLinks(form.store_nav_links)
+                store_badge_text: form.store_badge_text.trim() || 'Produtos digitais com acesso online'
             });
             const updatedUser = data.user || data;
             if (updatedUser) {
@@ -259,62 +216,16 @@ export default function StoreSettingsPage() {
                             <label className="store-label">Texto do botao principal</label>
                             <input className="input-field" placeholder="Ver produtos" value={form.store_cta_text} onChange={e => update('store_cta_text', e.target.value)} />
                         </div>
-                    </div>
-                </section>
-
-                <section className="glass-card" style={{ padding: 24 }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 18 }}>
                         <div>
-                            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Abas do topo</h3>
-                            <p style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Adicione links extras ao menu arredondado da loja.</p>
+                            <label className="store-label">Texto do selo do topo</label>
+                            <input
+                                className="input-field"
+                                placeholder="Produtos digitais com acesso online"
+                                value={form.store_badge_text}
+                                maxLength={60}
+                                onChange={e => update('store_badge_text', e.target.value)}
+                            />
                         </div>
-                        <button
-                            type="button"
-                            onClick={addNavLink}
-                            disabled={form.store_nav_links.length >= 5}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-primary)', borderRadius: 12, padding: '10px 14px', cursor: form.store_nav_links.length >= 5 ? 'not-allowed' : 'pointer', fontWeight: 800 }}
-                        >
-                            <FiPlus size={15} /> Adicionar aba
-                        </button>
-                    </div>
-
-                    <div style={{ display: 'grid', gap: 12 }}>
-                        {form.store_nav_links.length === 0 && (
-                            <div style={{ padding: 16, border: '1px dashed var(--border-color)', borderRadius: 12, color: 'var(--text-secondary)', fontSize: 13 }}>
-                                A loja ja mostra Inicio e Loja. Adicione abas como Cursos, Comunidade, Suporte ou Ofertas.
-                            </div>
-                        )}
-
-                        {form.store_nav_links.map((link, index) => (
-                            <div key={index} className="store-nav-link-row" style={{ display: 'grid', gridTemplateColumns: '0.8fr 1.2fr 42px', gap: 10, alignItems: 'center' }}>
-                                <input
-                                    className="input-field"
-                                    placeholder="Nome da aba"
-                                    value={link.label}
-                                    maxLength={24}
-                                    onChange={e => updateNavLink(index, 'label', e.target.value)}
-                                />
-                                <input
-                                    className="input-field"
-                                    placeholder={`/store/${form.store_slug || 'sua-loja'}#store-products`}
-                                    value={link.url}
-                                    maxLength={180}
-                                    onChange={e => updateNavLink(index, 'url', e.target.value)}
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => removeNavLink(index)}
-                                    style={{ width: 42, height: 42, borderRadius: 12, border: '1px solid var(--border-color)', background: 'var(--bg-secondary)', color: 'var(--text-secondary)', cursor: 'pointer', display: 'grid', placeItems: 'center' }}
-                                    aria-label="Remover aba"
-                                >
-                                    <FiTrash2 size={16} />
-                                </button>
-                            </div>
-                        ))}
-
-                        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 12 }}>
-                            Links aceitos: caminhos internos que comecam com /, secoes que comecam com # ou URLs externas com http/https.
-                        </p>
                     </div>
                 </section>
 
@@ -421,7 +332,7 @@ export default function StoreSettingsPage() {
                         <div style={{ maxWidth: '100%', minHeight: 36, borderRadius: 999, padding: '5px 8px', display: 'flex', alignItems: 'center', gap: 8, background: form.store_template === 'academy' ? 'rgba(255,255,255,0.86)' : 'rgba(255,255,255,0.10)', border: '1px solid rgba(148,163,184,0.24)', color: form.store_template === 'academy' ? '#0f172a' : 'white', overflow: 'hidden' }}>
                             <strong style={{ fontSize: 11, whiteSpace: 'nowrap' }}>{form.store_name || 'Sua loja'}</strong>
                             <span style={{ width: 1, alignSelf: 'stretch', background: 'rgba(148,163,184,0.35)' }} />
-                            {['Inicio', 'Loja', ...sanitizeNavLinks(form.store_nav_links).map(link => link.label)].slice(0, 4).map((label, index) => (
+                            {['Inicio', 'Loja'].map((label, index) => (
                                 <span key={`${label}-${index}`} style={{ borderRadius: 999, padding: '6px 9px', background: index === 0 ? 'rgba(148,163,184,0.28)' : 'transparent', fontSize: 10, fontWeight: 800, whiteSpace: 'nowrap' }}>
                                     {label}
                                 </span>
@@ -465,8 +376,7 @@ export default function StoreSettingsPage() {
                 }
                 @media (max-width: 760px) {
                     .store-two-cols,
-                    .template-grid,
-                    .store-nav-link-row {
+                    .template-grid {
                         grid-template-columns: 1fr !important;
                     }
                 }

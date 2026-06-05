@@ -91,13 +91,9 @@ export default function StorePage() {
     const theme = templateStyles[template] || templateStyles.creator;
     const accent = store?.accent_color || '#6c5ce7';
     const slug = params.slug as string;
-    const customNavLinks = Array.isArray(store?.nav_links)
-        ? store.nav_links.filter((link: any) => link?.label && link?.url).slice(0, 5)
-        : [];
     const navLinks = [
         { label: 'Inicio', url: '#top' },
-        { label: 'Loja', url: '#store-products' },
-        ...customNavLinks
+        { label: 'Loja', url: '#store-products' }
     ];
 
     const filteredProducts = useMemo(() => {
@@ -245,7 +241,7 @@ export default function StorePage() {
                 <div className={`store-shell hero-${template}`} style={{ maxWidth: 1240, margin: '0 auto', padding: template === 'studio' ? '84px 24px 56px' : '70px 24px 48px', display: 'grid', gridTemplateColumns: featuredProduct && template !== 'academy' ? '1.1fr 0.9fr' : '1fr', gap: 32, alignItems: 'end' }}>
                     <div>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: accent, background: template === 'academy' ? `${accent}12` : 'rgba(255,255,255,0.08)', border: `1px solid ${template === 'academy' ? `${accent}24` : theme.border}`, borderRadius: 999, padding: '8px 12px', fontSize: 12, fontWeight: 900, marginBottom: 18 }}>
-                            <FiZap size={14} /> Produtos digitais com acesso online
+                            <FiZap size={14} /> {store.badge_text || 'Produtos digitais com acesso online'}
                         </div>
                         <h1 style={{ maxWidth: 760, fontSize: template === 'studio' ? 58 : 48, lineHeight: 1.02, letterSpacing: 0, fontWeight: 950, marginBottom: 16 }}>
                             {store.headline || store.name}
@@ -395,11 +391,14 @@ export default function StorePage() {
 
             <style jsx>{`
                 .store-floating-header {
-                    position: sticky;
+                    position: fixed;
                     top: 0;
+                    left: 0;
+                    right: 0;
                     z-index: 100;
                     padding: 16px 18px 0;
                     pointer-events: none;
+                    background: transparent;
                 }
                 .store-topbar {
                     width: min(1120px, 100%);
