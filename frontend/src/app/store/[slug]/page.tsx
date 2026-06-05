@@ -266,7 +266,7 @@ export default function StorePage() {
                                 <div style={{ fontSize: 12, color: accent, fontWeight: 900, marginBottom: 8 }}>Produto em destaque</div>
                                 <h3 style={{ fontSize: 22, fontWeight: 900, marginBottom: 10 }}>{featuredProduct.name}</h3>
                                 <p style={{ color: theme.muted, fontSize: 13, lineHeight: 1.6, marginBottom: 18, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{featuredProduct.description || 'Produto digital disponivel para compra online.'}</p>
-                                <button onClick={() => openQuick(featuredProduct)} style={{ width: '100%', border: 'none', borderRadius: 12, background: accent, color: 'white', padding: 13, fontWeight: 900, cursor: 'pointer' }}>
+                                <button className="store-card-action" onClick={() => openQuick(featuredProduct)} style={{ width: '100%', border: 'none', borderRadius: 12, background: accent, color: 'white', padding: 13, fontWeight: 900, cursor: 'pointer' }}>
                                     Ver detalhes
                                 </button>
                             </div>
@@ -282,11 +282,11 @@ export default function StorePage() {
                         <p style={{ color: theme.muted, fontSize: 14 }}>{filteredProducts.length} produto{filteredProducts.length === 1 ? '' : 's'} disponiveis</p>
                     </div>
                     <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }} className="category-row">
-                        <button onClick={() => handleCategoryClick('')} style={{ ...categoryButtonStyle(!activeCategory, accent, theme) }}>
+                        <button className="category-button" onClick={() => handleCategoryClick('')} style={{ ...categoryButtonStyle(!activeCategory, accent, theme) }}>
                             <FiGrid size={14} /> Todos
                         </button>
                         {categories.map(cat => (
-                            <button key={cat.id} onClick={() => handleCategoryClick(cat.slug)} style={{ ...categoryButtonStyle(activeCategory === cat.slug, accent, theme) }}>
+                            <button className="category-button" key={cat.id} onClick={() => handleCategoryClick(cat.slug)} style={{ ...categoryButtonStyle(activeCategory === cat.slug, accent, theme) }}>
                                 {cat.name}
                             </button>
                         ))}
@@ -303,23 +303,23 @@ export default function StorePage() {
                     <div className={`products-grid template-${template}`} style={{ display: 'grid', gridTemplateColumns: template === 'academy' ? 'repeat(auto-fill, minmax(340px, 1fr))' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: 22 }}>
                         {filteredProducts.map(product => (
                             <article key={product.id} className="store-product-card" style={{ background: theme.surface, border: `1px solid ${theme.border}`, borderRadius: template === 'studio' ? 8 : 20, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-                                <button onClick={() => openQuick(product)} style={{ height: template === 'academy' ? 170 : 210, border: 'none', padding: 0, cursor: 'pointer', background: product.image_url ? `url(${product.image_url}) center/cover` : `linear-gradient(135deg, ${accent}, ${theme.surfaceAlt})` }} aria-label={`Ver ${product.name}`} />
-                                <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
+                                <button className="store-product-media" onClick={() => openQuick(product)} style={{ height: template === 'academy' ? 170 : 210, border: 'none', padding: 0, cursor: 'pointer', background: product.image_url ? `url(${product.image_url}) center/cover` : `linear-gradient(135deg, ${accent}, ${theme.surfaceAlt})` }} aria-label={`Ver ${product.name}`} />
+                                <div className="store-product-body" style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 14, flex: 1 }}>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'flex-start' }}>
-                                        <h3 style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.25 }}>{product.name}</h3>
+                                        <h3 className="store-product-title" style={{ fontSize: 18, fontWeight: 900, lineHeight: 1.25 }}>{product.name}</h3>
                                         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, color: accent, fontSize: 11, fontWeight: 900, whiteSpace: 'nowrap' }}>
                                             <FiBookOpen size={13} /> Online
                                         </span>
                                     </div>
-                                    <p style={{ color: theme.muted, fontSize: 13, lineHeight: 1.6, minHeight: 42, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                    <p className="store-product-description" style={{ color: theme.muted, fontSize: 13, lineHeight: 1.6, minHeight: 42, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                                         {product.description || 'Produto digital com compra segura e entrega online.'}
                                     </p>
                                     <div style={{ marginTop: 'auto', display: 'grid', gap: 12 }}>
                                         <div>
                                             <div style={{ color: theme.muted, fontSize: 12, fontWeight: 700 }}>{product.has_plans ? 'A partir de' : 'Preco'}</div>
-                                            <div style={{ fontSize: 24, fontWeight: 950 }}>R$ {product.price_display}</div>
+                                            <div className="store-product-price" style={{ fontSize: 24, fontWeight: 950 }}>R$ {product.price_display}</div>
                                         </div>
-                                        <button onClick={() => openQuick(product)} style={{ width: '100%', border: 'none', borderRadius: 12, background: accent, color: 'white', padding: 13, fontWeight: 900, cursor: 'pointer' }}>
+                                        <button className="store-card-action" onClick={() => openQuick(product)} style={{ width: '100%', border: 'none', borderRadius: 12, background: accent, color: 'white', padding: 13, fontWeight: 900, cursor: 'pointer' }}>
                                             Ver produto
                                         </button>
                                     </div>
@@ -517,7 +517,8 @@ export default function StorePage() {
                 }
                 @media (max-width: 900px) {
                     .hero-creator,
-                    .hero-studio {
+                    .hero-studio,
+                    .hero-academy {
                         grid-template-columns: 1fr !important;
                     }
                     .featured-card {
@@ -564,33 +565,165 @@ export default function StorePage() {
                 }
                 @media (max-width: 620px) {
                     .store-shell {
-                        padding-left: 14px !important;
-                        padding-right: 14px !important;
+                        padding-left: 12px !important;
+                        padding-right: 12px !important;
+                    }
+                    .store-floating-header {
+                        padding: max(10px, env(safe-area-inset-top)) 10px 0;
+                    }
+                    .store-topbar {
+                        width: min(350px, calc(100vw - 20px));
+                        min-height: 0;
+                        border-radius: 18px;
+                        padding: 8px;
+                        gap: 7px;
+                        align-items: center;
                     }
                     h1 {
-                        font-size: 34px !important;
+                        font-size: 30px !important;
+                        line-height: 1.08 !important;
+                    }
+                    .hero-creator,
+                    .hero-studio,
+                    .hero-academy {
+                        padding-top: 148px !important;
+                        padding-bottom: 26px !important;
+                        gap: 18px !important;
+                    }
+                    .hero-creator p,
+                    .hero-studio p,
+                    .hero-academy p {
+                        font-size: 15px !important;
+                        line-height: 1.55 !important;
+                        margin-bottom: 18px !important;
+                    }
+                    .hero-creator > div:first-child > div:first-child,
+                    .hero-studio > div:first-child > div:first-child,
+                    .hero-academy > div:first-child > div:first-child {
+                        max-width: 100%;
+                        font-size: 11px !important;
+                        padding: 7px 10px !important;
+                        margin-bottom: 14px !important;
+                    }
+                    .hero-creator > div:first-child button,
+                    .hero-studio > div:first-child button,
+                    .hero-academy > div:first-child button {
+                        width: 100%;
+                        justify-content: center;
+                        padding: 13px 16px !important;
+                        border-radius: 13px !important;
+                    }
+                    .hero-creator > div:first-child span,
+                    .hero-studio > div:first-child span,
+                    .hero-academy > div:first-child span {
+                        font-size: 12px !important;
                     }
                     .store-login {
                         display: none !important;
                     }
                     .topbar-brand {
-                        max-width: 118px;
-                        font-size: 15px;
+                        max-width: 88px;
+                        font-size: 13px;
+                        padding-left: 2px;
                     }
                     .topbar-divider:first-of-type {
                         display: none;
                     }
+                    .topbar-nav {
+                        flex: 0 0 auto;
+                        order: 3;
+                        gap: 3px;
+                    }
                     .topbar-tab {
-                        height: 34px;
-                        padding: 0 11px;
-                        font-size: 12px;
+                        height: 32px;
+                        padding: 0 10px;
+                        font-size: 11px;
                     }
                     .topbar-icon-action {
-                        min-width: 50px;
+                        order: 2;
+                        min-width: 48px;
+                        height: 32px;
+                        padding: 0 9px;
+                        gap: 5px;
+                    }
+                    .topbar-icon-action span {
+                        min-width: 17px;
+                        height: 17px;
+                        font-size: 10px;
+                    }
+                    .topbar-search {
                         height: 36px;
+                        min-width: 0;
+                        flex-basis: 100%;
+                        padding: 0 11px;
+                        order: 5;
+                    }
+                    .topbar-search input {
+                        font-size: 12px;
+                    }
+                    .featured-card {
+                        display: none !important;
+                    }
+                    .store-section-head {
+                        gap: 14px !important;
+                        margin-bottom: 16px !important;
+                    }
+                    .store-section-head h2 {
+                        font-size: 22px !important;
+                    }
+                    .category-row {
+                        margin-left: -2px;
+                        padding-bottom: 8px !important;
+                    }
+                    .category-button {
+                        padding: 8px 12px !important;
+                        font-size: 12px !important;
                     }
                     .products-grid {
                         grid-template-columns: 1fr !important;
+                        gap: 14px !important;
+                    }
+                    .store-product-card {
+                        border-radius: 14px !important;
+                    }
+                    .store-product-card:hover {
+                        transform: none;
+                        box-shadow: none;
+                    }
+                    .store-product-media {
+                        height: 142px !important;
+                    }
+                    .store-product-body {
+                        padding: 14px !important;
+                        gap: 10px !important;
+                    }
+                    .store-product-title {
+                        font-size: 16px !important;
+                        line-height: 1.25 !important;
+                    }
+                    .store-product-description {
+                        font-size: 12px !important;
+                        line-height: 1.45 !important;
+                        min-height: 0 !important;
+                    }
+                    .store-product-price {
+                        font-size: 21px !important;
+                    }
+                    .store-card-action {
+                        min-height: 42px;
+                        padding: 11px 13px !important;
+                        border-radius: 11px !important;
+                    }
+                    .trust-row {
+                        padding-top: 16px !important;
+                        padding-bottom: 16px !important;
+                    }
+                    .product-modal {
+                        width: calc(100vw - 20px) !important;
+                        border-radius: 16px !important;
+                    }
+                    .product-modal-grid > div:first-child {
+                        min-height: 190px !important;
                     }
                 }
             `}</style>
