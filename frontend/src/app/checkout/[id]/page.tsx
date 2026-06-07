@@ -647,12 +647,14 @@ export default function CheckoutPage() {
                                             R$ {selectedPlan ? selectedPlan.price_display : product.price_display}
                                         </div>
                                     </div>
-                                    <details className="mt-2">
-                                        <summary className="text-xs font-semibold cursor-pointer opacity-70" style={{ color: textSecondary }}>Ver mais</summary>
-                                        <div className="text-xs leading-relaxed opacity-70 mt-2" style={{ color: textSecondary }}>
-                                            {product.description || 'Produto digital com entrega imediata via e-mail.'}
-                                        </div>
-                                    </details>
+                                    {product.description && (
+                                        <details className="mt-2">
+                                            <summary className="text-xs font-semibold cursor-pointer opacity-70" style={{ color: textSecondary }}>Ver mais</summary>
+                                            <div className="text-xs leading-relaxed opacity-70 mt-2" style={{ color: textSecondary }}>
+                                                {product.description}
+                                            </div>
+                                        </details>
+                                    )}
                                 </div>
                             </div>
                         </div>

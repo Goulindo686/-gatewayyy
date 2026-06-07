@@ -477,9 +477,12 @@ export default function CartPage() {
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                                         <div style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>{item.name}</div>
                                                         {('plan_name' in item) && (item as any).plan_name ? <div style={{ fontSize: 12, color: '#00cec9', fontWeight: 700 }}>{(item as any).plan_name}</div> : null}
-                                                        <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
-                                                            {(details[item.id]?.description || 'Sem descrição')}
-                                                        </div>
+
+                                                        {details[item.id]?.description && (
+                                                            <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
+                                                                {details[item.id].description}
+                                                            </div>
+                                                        )}
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#141417', borderRadius: 8, padding: '4px 8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                                                 <FiMinus size={14} style={{ cursor: 'pointer' }} onClick={() => updateQuantity(item.id, -1)} />
@@ -556,9 +559,12 @@ export default function CartPage() {
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                                                         <div style={{ fontSize: 15, fontWeight: 700, color: 'white' }}>{item.name}</div>
                                                         {('plan_name' in item) && (item as any).plan_name ? <div style={{ fontSize: 12, color: '#00cec9', fontWeight: 700 }}>{(item as any).plan_name}</div> : null}
-                                                        <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
-                                                            {(details[item.id]?.description || 'Sem descrição')}
-                                                        </div>
+
+                                                        {details[item.id]?.description && (
+                                                            <div style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.5 }}>
+                                                                {details[item.id].description}
+                                                            </div>
+                                                        )}
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 8 }}>
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, background: '#141417', borderRadius: 8, padding: '4px 8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                                                 <FiMinus size={14} style={{ cursor: 'pointer' }} onClick={() => updateQuantity(item.id, -1)} />

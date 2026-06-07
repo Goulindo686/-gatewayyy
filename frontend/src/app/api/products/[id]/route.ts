@@ -50,7 +50,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         const updateData: any = {};
 
         if (body.name) updateData.name = body.name;
-        if (body.description !== undefined) updateData.description = body.description;
+        if (body.description !== undefined) {
+            updateData.description = typeof body.description === 'string' && body.description.trim()
+                ? body.description.trim()
+                : null;
+        }
         if (body.price) {
             updateData.price = Math.round(parseFloat(body.price) * 100);
             updateData.price_display = parseFloat(body.price).toFixed(2);

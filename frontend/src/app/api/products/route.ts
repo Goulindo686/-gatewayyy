@@ -100,6 +100,9 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { name, description, price, image_url, type, status, facebook_pixel_id, facebook_api_token, plans } = body;
+        const cleanDescription = typeof description === 'string' && description.trim()
+            ? description.trim()
+            : null;
 
         if (!name) return jsonError('Nome é obrigatório');
 
@@ -118,7 +121,7 @@ export async function POST(req: NextRequest) {
             id: uuidv4(),
             user_id: auth.user.id,
             name,
-            description,
+            description: cleanDescription,
             price: basePrice,
             price_display: basePriceDisplay,
             image_url,

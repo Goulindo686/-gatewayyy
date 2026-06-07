@@ -18,7 +18,7 @@ export default function ProductsPage() {
     const [selectedProductForEnroll, setSelectedProductForEnroll] = useState<any>(null);
     const [editing, setEditing] = useState<any>(null);
     const [form, setForm] = useState({
-        name: '', price: '', image_url: '', type: 'digital', status: 'active',
+        name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active',
         facebook_pixel_id: '', facebook_api_token: ''
     });
     const [plans, setPlans] = useState<Array<{ name: string; price: string }>>([{ name: 'Padrão', price: '' }]);
@@ -43,7 +43,7 @@ export default function ProductsPage() {
 
     const openCreate = () => {
         setEditing(null);
-        setForm({ name: '', price: '', image_url: '', type: 'digital', status: 'active', facebook_pixel_id: '', facebook_api_token: '' });
+        setForm({ name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active', facebook_pixel_id: '', facebook_api_token: '' });
         setSelectedFile(null);
         setImagePreview(null);
         setPlans([{ name: 'Padrão', price: '' }]);
@@ -59,6 +59,7 @@ export default function ProductsPage() {
             const p = data.product || product;
             setForm({
                 name: p.name,
+                description: p.description || '',
                 price: p.price_display || (p.price / 100).toFixed(2),
                 image_url: p.image_url || '',
                 type: p.type,
@@ -94,6 +95,7 @@ export default function ProductsPage() {
         } catch {
             setForm({
                 name: product.name,
+                description: product.description || '',
                 price: product.price_display || (product.price / 100).toFixed(2),
                 image_url: product.image_url || '',
                 type: product.type,
@@ -147,7 +149,7 @@ export default function ProductsPage() {
             }
 
             const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-            const productData: any = { ...form, image_url: finalImageUrl, plans: normalizedPlans };
+            const productData: any = { ...form, description: form.description.trim() || null, image_url: finalImageUrl, plans: normalizedPlans };
             if (!editing && normalizedPlans[0]) productData.price = normalizedPlans[0].price;
 
             let savedProduct: any;
@@ -312,9 +314,12 @@ export default function ProductsPage() {
                                         {product.type === 'digital' ? 'Digital' : 'Físico'}
                                     </span>
                                 </div>
-                                <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 16, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                    {product.description || 'Sem descrição'}
-                                </p>
+
+                                {product.description && (
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginBottom: 16, lineHeight: 1.5, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                                        {product.description}
+                                    </p>
+                                )}
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ fontSize: 22, fontWeight: 700 }} className="gradient-text">
                                         R$ {product.price_display || (product.price / 100).toFixed(2)}
@@ -375,6 +380,21 @@ export default function ProductsPage() {
                                 <label style={{ display: 'block', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Nome do produto</label>
                                 <input type="text" className="input-field" placeholder="Ex: Curso de Marketing Digital" required
                                     value={form.name} onChange={e => update('name', e.target.value)} />
+                            </div>
+
+                            <div style={{ marginBottom: 16 }}>
+                                <label style={{ display: 'block', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Descricao do produto</label>
+                                <textarea
+                                    className="input-field"
+                                    rows={4}
+                                    maxLength={600}
+                                    placeholder="Explique o que o cliente vai receber. Opcional."
+                                    value={form.description}
+                                    onChange={e => update('description', e.target.value)}
+                                />
+                                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 4 }}>
+                                    Se deixar vazio, nenhuma descricao sera exibida.
+                                </p>
                             </div>
 
                             {/* Toggle Assinatura — aparece na criação ou quando editando produto de assinatura */}
