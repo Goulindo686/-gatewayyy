@@ -10,6 +10,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
+import { sendFacebookEvent } from '@/lib/facebook-capi';
 
 function safeEqual(a: string, b: string) {
     const aBuf = Buffer.from(a);
@@ -486,7 +487,7 @@ export async function POST(req: NextRequest) {
             if (order.product_id) {
                 const { data: product } = await supabase
                     .from('products')
-                    .select('id, name, sales_count, type, image_url')
+                    .select('id, name, sales_count, type, image_url, facebook_pixel_id, facebook_api_token')
                     .eq('id', order.product_id)
                     .single();
                 
@@ -498,6 +499,32 @@ export async function POST(req: NextRequest) {
                     await supabase.from('products')
                         .update({ sales_count: (product.sales_count || 0) + 1 })
                         .eq('id', order.product_id);
+
+                    if (!order.facebook_capi_sent_at) {
+                        try {
+                            const capiResult = await sendFacebookEvent({
+                                eventName: 'Purchase',
+                                product,
+                                order,
+                                buyer: {
+                                    name: order.buyer_name,
+                                    email: order.buyer_email,
+                                    phone: order.buyer_phone
+                                },
+                                eventId: order.facebook_event_id || order.id
+                            });
+
+                            if ((capiResult as any).ok) {
+                                await supabase.from('orders')
+                                    .update({ facebook_capi_sent_at: new Date().toISOString() })
+                                    .eq('id', order.id);
+                            } else if (!(capiResult as any).skipped) {
+                                console.warn('[FACEBOOK CAPI] Webhook purchase not sent:', capiResult);
+                            }
+                        } catch (fbErr) {
+                            console.error('[FACEBOOK CAPI] Webhook purchase error:', fbErr);
+                        }
+                    }
                     
                     // Enroll user if digital product
                     if (product.type === 'digital' && order.buyer_email) {

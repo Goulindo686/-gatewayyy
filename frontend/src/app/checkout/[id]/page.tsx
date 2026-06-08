@@ -6,7 +6,7 @@ import Script from 'next/script';
 import { productsAPI, checkoutAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { FiShoppingCart, FiCreditCard, FiSmartphone, FiCheck, FiCopy, FiPackage, FiArrowRight, FiClock, FiLock, FiChevronDown, FiTag, FiPlusCircle } from 'react-icons/fi';
-import FacebookPixel from '@/components/FacebookPixel';
+import FacebookPixel, { getFacebookCookies, trackFacebookPurchase } from '@/components/FacebookPixel';
 
 const DEFAULT_SETTINGS = {
     theme: 'light', // Alterado para light por padrão conforme a imagem
@@ -219,6 +219,7 @@ export default function CheckoutPage() {
     const [result, setResult] = useState<any>(null);
     const [pixPaid, setPixPaid] = useState(false);
     const pollingRef = useRef<any>(null);
+    const purchaseTrackedRef = useRef(false);
     const [countdown, setCountdown] = useState(5);
     const countdownRef = useRef<any>(null);
     const [timerSeconds, setTimerSeconds] = useState(0);
@@ -343,6 +344,13 @@ export default function CheckoutPage() {
         }, 1000);
     };
 
+    const trackPurchaseOnce = (order: any) => {
+        if (purchaseTrackedRef.current || !order?.id || !product?.facebook_pixel_id) return;
+        const amount = Number(order.amount_display || grandTotalDisplay || 0);
+        trackFacebookPurchase(product, amount, order.id);
+        purchaseTrackedRef.current = true;
+    };
+
     const startPixPolling = (orderId: string) => {
         // Estratégia de backoff exponencial para reduzir Edge Requests:
         // Começa verificando a cada 5s, vai aumentando progressivamente até 30s.
@@ -358,6 +366,7 @@ export default function CheckoutPage() {
                 const { data } = await checkoutAPI.getOrderStatus(orderId);
                 if (data.order?.status === 'paid') {
                     setPixPaid(true);
+                    trackPurchaseOnce(data.order);
                     toast.success('Pagamento confirmado! 🎉');
                     if (data.auth) autoLoginAndRedirect(data.auth);
                     return; // para o polling
@@ -406,6 +415,10 @@ export default function CheckoutPage() {
                 }
             };
             const payload: any = buyer;
+            payload.facebook = {
+                ...getFacebookCookies(),
+                event_source_url: typeof window !== 'undefined' ? window.location.href : undefined
+            };
             if (methodToSend === 'credit_card') {
                 payload.card_data = {
                     number: form.card_number.replace(/\s/g, ''), holder_name: form.card_holder,
@@ -423,6 +436,7 @@ export default function CheckoutPage() {
             const { data } = await checkoutAPI.pay(payload);
             setResult(data);
             if (data.order?.status === 'paid') {
+                trackPurchaseOnce(data.order);
                 toast.success('Pagamento aprovado! 🎉');
                 if (data.auth) autoLoginAndRedirect(data.auth);
             } else if (methodToSend === 'pix') {

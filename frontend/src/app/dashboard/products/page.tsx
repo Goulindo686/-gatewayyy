@@ -25,6 +25,8 @@ export default function ProductsPage() {
     const [isSubscription, setIsSubscription] = useState(false);
     const [subInterval, setSubInterval] = useState<'month' | 'week' | 'year'>('month');
     const [uploading, setUploading] = useState(false);
+    const [testingPixel, setTestingPixel] = useState(false);
+    const [pixelTestCode, setPixelTestCode] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -44,6 +46,7 @@ export default function ProductsPage() {
     const openCreate = () => {
         setEditing(null);
         setForm({ name: '', description: '', price: '', image_url: '', type: 'digital', status: 'active', facebook_pixel_id: '', facebook_api_token: '' });
+        setPixelTestCode('');
         setSelectedFile(null);
         setImagePreview(null);
         setPlans([{ name: 'Padrão', price: '' }]);
@@ -67,6 +70,7 @@ export default function ProductsPage() {
                 facebook_pixel_id: p.facebook_pixel_id || '',
                 facebook_api_token: p.facebook_api_token || ''
             });
+            setPixelTestCode('');
             const loadedPlans = Array.isArray(p.plans) && p.plans.length > 0
                 ? p.plans.map((pl: any) => ({ name: pl.name, price: pl.price_display || (pl.price / 100).toFixed(2) }))
                 : [{ name: 'Padrão', price: p.price_display || (p.price / 100).toFixed(2) }];
@@ -265,6 +269,30 @@ export default function ProductsPage() {
     };
 
     const update = (field: string, value: string) => setForm({ ...form, [field]: value });
+
+    const testFacebookPixel = async () => {
+        if (!form.facebook_pixel_id.trim()) return toast.error('Informe o Pixel ID');
+        if (!form.facebook_api_token.trim()) return toast.error('Informe o Access Token');
+
+        setTestingPixel(true);
+        try {
+            const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+            const { data } = await axios.post('/api/products/facebook-test', {
+                product_id: editing?.id,
+                product_name: form.name || 'Teste de Pixel',
+                facebook_pixel_id: form.facebook_pixel_id,
+                facebook_api_token: form.facebook_api_token,
+                test_event_code: pixelTestCode.trim() || undefined
+            }, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            toast.success(data.message || 'Pixel testado com sucesso!');
+        } catch (err: any) {
+            toast.error(err.response?.data?.error || 'Erro ao testar Pixel');
+        } finally {
+            setTestingPixel(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -505,7 +533,7 @@ export default function ProductsPage() {
                             <div style={{ marginBottom: 16 }}>
                                 <label style={{ display: 'block', fontSize: 13, color: 'var(--text-secondary)', marginBottom: 6 }}>Facebook Pixel ID (Opcional)</label>
                                 <input type="text" className="input-field" placeholder="Ex: 1234567890"
-                                    value={form.facebook_pixel_id} onChange={e => update('facebook_pixel_id', e.target.value)} />
+                                    value={form.facebook_pixel_id} onChange={e => update('facebook_pixel_id', e.target.value.replace(/\D/g, ''))} />
                                 <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
                                     ID do Pixel para rastreamento de eventos no checkout.
                                 </p>
@@ -518,6 +546,23 @@ export default function ProductsPage() {
                                 <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
                                     Token de acesso para enviar eventos via API (Server-side) quando o pagamento for aprovado.
                                 </p>
+                                <input
+                                    type="text"
+                                    className="input-field"
+                                    placeholder="Codigo de teste do Meta (opcional)"
+                                    value={pixelTestCode}
+                                    onChange={e => setPixelTestCode(e.target.value)}
+                                    style={{ marginTop: 10 }}
+                                />
+                                <button
+                                    type="button"
+                                    className="btn-secondary"
+                                    onClick={testFacebookPixel}
+                                    disabled={testingPixel || !form.facebook_pixel_id || !form.facebook_api_token}
+                                    style={{ marginTop: 10, width: '100%' }}
+                                >
+                                    {testingPixel ? 'Testando Pixel...' : 'Testar Pixel do Facebook'}
+                                </button>
                             </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 16, marginBottom: 24 }}>

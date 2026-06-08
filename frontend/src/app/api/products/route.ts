@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import { NextRequest } from 'next/server';
 import { fetchAll, supabase } from '@/lib/db';
 import { getAuthUser, jsonError, jsonSuccess } from '@/lib/auth';
+import { normalizeFacebookSettings } from '@/lib/facebook-capi';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function GET(req: NextRequest) {
@@ -103,6 +104,7 @@ export async function POST(req: NextRequest) {
         const cleanDescription = typeof description === 'string' && description.trim()
             ? description.trim()
             : null;
+        const facebookSettings = normalizeFacebookSettings({ facebook_pixel_id, facebook_api_token });
 
         if (!name) return jsonError('Nome é obrigatório');
 
@@ -127,8 +129,8 @@ export async function POST(req: NextRequest) {
             image_url,
             type: type || 'digital',
             status: status || 'active',
-            facebook_pixel_id,
-            facebook_api_token
+            facebook_pixel_id: facebookSettings.facebook_pixel_id,
+            facebook_api_token: facebookSettings.facebook_api_token
         }).select().single();
 
         if (error) {

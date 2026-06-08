@@ -6,6 +6,7 @@ import { PagarmeService } from '@/lib/pagarme';
 import { jsonError, jsonSuccess, generateToken, hashPassword } from '@/lib/auth';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
+import { sendFacebookEvent } from '@/lib/facebook-capi';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
@@ -22,6 +23,7 @@ export async function POST(req: NextRequest) {
 
         const body = await req.json();
         const { product_id, buyer, card_data, plan_id, selected_bumps } = body;
+        const facebook = body.facebook || {};
 
         // Rate limit por email: 5 checkouts por hora
         if (buyer?.email) {
@@ -253,6 +255,8 @@ export async function POST(req: NextRequest) {
         }
 
         const orderId = uuidv4();
+        const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || req.headers.get('x-real-ip') || undefined;
+        const clientUserAgent = req.headers.get('user-agent') || undefined;
 
         let pix: { qr_code?: string; qr_code_url?: string; expires_at?: string } | null = null;
         if (normalizedPaymentMethod === 'pix') {
@@ -279,7 +283,12 @@ export async function POST(req: NextRequest) {
             pagarme_order_id: pagarmeOrder.id, pagarme_charge_id: charge?.id,
             pix_qr_code: pix?.qr_code,
             pix_qr_code_url: pix?.qr_code_url,
-            pix_expires_at: pix?.expires_at
+            pix_expires_at: pix?.expires_at,
+            facebook_event_id: orderId,
+            facebook_fbp: typeof facebook.fbp === 'string' ? facebook.fbp : null,
+            facebook_fbc: typeof facebook.fbc === 'string' ? facebook.fbc : null,
+            client_ip: clientIp,
+            client_user_agent: clientUserAgent
         });
 
         // Save transaction
@@ -293,6 +302,39 @@ export async function POST(req: NextRequest) {
         // If paid immediately, create fee transaction and update sales count
         let buyerUser: any = null;
         if (charge?.status === 'paid') {
+            try {
+                const capiResult = await sendFacebookEvent({
+                    eventName: 'Purchase',
+                    product,
+                    order: {
+                        id: orderId,
+                        amount: totalCents,
+                        facebook_event_id: orderId,
+                        facebook_fbp: facebook.fbp,
+                        facebook_fbc: facebook.fbc,
+                        client_ip: clientIp,
+                        client_user_agent: clientUserAgent
+                    },
+                    buyer,
+                    eventId: orderId,
+                    eventSourceUrl: facebook.event_source_url,
+                    ip: clientIp,
+                    userAgent: clientUserAgent,
+                    fbp: facebook.fbp,
+                    fbc: facebook.fbc
+                });
+
+                if ((capiResult as any).ok) {
+                    await supabase.from('orders')
+                        .update({ facebook_capi_sent_at: new Date().toISOString() })
+                        .eq('id', orderId);
+                } else if (!(capiResult as any).skipped) {
+                    console.warn('[FACEBOOK CAPI] Purchase not sent:', capiResult);
+                }
+            } catch (fbErr) {
+                console.error('[FACEBOOK CAPI] Purchase error:', fbErr);
+            }
+
             const feeAmount = feePercentage > 0
                 ? (normalizedPaymentMethod === 'credit_card'
                     ? Math.min(totalCents, Math.round(totalCents * (feePercentage / 100)))
