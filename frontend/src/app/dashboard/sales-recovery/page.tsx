@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { FiClock, FiMail, FiPackage, FiSave, FiZap } from 'react-icons/fi';
+import { FiCheckCircle, FiClock, FiMail, FiPackage, FiSave, FiSend, FiShield, FiZap } from 'react-icons/fi';
 
 type RecoverySetting = {
     enabled: boolean;
@@ -70,53 +70,387 @@ export default function SalesRecoveryPage() {
 
     if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: 80 }}>Carregando...</div>;
 
+    const enabledCount = products.filter(product => product.recovery.enabled).length;
+    const totalReminders = products.reduce((sum, product) => sum + (product.reminders_sent || 0), 0);
+
     return (
         <div className="animate-fade-in">
-            <div style={{ marginBottom: 28 }}>
-                <h1 style={{ fontSize: 28, fontWeight: 700, marginBottom: 6 }}>Recuperacao de Vendas</h1>
-                <p style={{ color: 'var(--text-secondary)', fontSize: 14, maxWidth: 760, lineHeight: 1.6 }}>
-                    Envie automaticamente um lembrete com o QR Code Pix original quando um cliente gerar o pagamento e nao concluir a compra.
-                </p>
+            <div className="recovery-hero">
+                <div className="recovery-hero-copy">
+                    <div className="hero-kicker"><FiMail size={15} /> Recuperacao via Gmail</div>
+                    <h1>Recuperacao de Vendas</h1>
+                    <p>
+                        Quando o cliente gera um Pix e nao finaliza a compra, o sistema envia automaticamente um Gmail com o QR Code Pix original para tentar recuperar o pagamento pendente.
+                    </p>
+                </div>
+                <div className="hero-steps">
+                    <div><span><FiPackage size={15} /></span> Cliente gera Pix</div>
+                    <div><span><FiClock size={15} /></span> Sistema aguarda o prazo</div>
+                    <div><span><FiSend size={15} /></span> Gmail e enviado</div>
+                </div>
             </div>
-            <div className="glass-card" style={{ padding: 20, marginBottom: 22, display: 'flex', gap: 14, alignItems: 'flex-start' }}>
-                <FiZap size={20} style={{ color: 'var(--accent-secondary)', flexShrink: 0 }} />
-                <p style={{ color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.6 }}>
-                    Ative por produto e escolha o intervalo. Pedidos pagos ou expirados sao ignorados, e cada pedido pendente recebe somente um lembrete.
-                </p>
+
+            <div className="recovery-summary">
+                <div className="summary-card">
+                    <span><FiCheckCircle size={18} /></span>
+                    <div>
+                        <strong>{enabledCount}</strong>
+                        <small>produtos com recuperacao ativa</small>
+                    </div>
+                </div>
+                <div className="summary-card">
+                    <span><FiMail size={18} /></span>
+                    <div>
+                        <strong>{totalReminders}</strong>
+                        <small>Gmails de recuperacao enviados</small>
+                    </div>
+                </div>
+                <div className="summary-card">
+                    <span><FiShield size={18} /></span>
+                    <div>
+                        <strong>1x</strong>
+                        <small>um lembrete por pedido pendente</small>
+                    </div>
+                </div>
             </div>
+
+            <div className="gmail-notice">
+                <FiZap size={20} />
+                <div>
+                    <strong>Como funciona</strong>
+                    <p>
+                        Ative por produto e escolha depois de quanto tempo o Gmail sera enviado. Pedidos pagos ou expirados sao ignorados automaticamente.
+                    </p>
+                </div>
+            </div>
+
             {products.length === 0 ? (
-                <div className="glass-card" style={{ textAlign: 'center', padding: 56 }}>
-                    <FiPackage size={42} style={{ opacity: 0.3, marginBottom: 12 }} />
-                    <p>Crie um produto na aba Produtos para ativar esta funcao.</p>
+                <div className="glass-card empty-state">
+                    <FiPackage size={42} />
+                    <h3>Nenhum produto disponivel</h3>
+                    <p>Crie um produto na aba Produtos para ativar a recuperacao por Gmail.</p>
                 </div>
             ) : <div style={{ display: 'grid', gap: 14 }}>
                 {products.map(product => (
-                    <div key={product.id} className="glass-card recovery-card" style={{ padding: 20, display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: 18, alignItems: 'center' }}>
-                        <div>
-                            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>{product.name}</div>
-                            <div style={{ color: 'var(--text-muted)', fontSize: 12 }}>
-                                R$ {String(product.price_display).replace('.', ',')} | <FiMail size={12} style={{ verticalAlign: -2 }} /> {product.reminders_sent} lembretes enviados
+                    <div key={product.id} className="glass-card recovery-card">
+                        <div className="product-main">
+                            <div className="product-icon">
+                                <FiPackage size={18} />
+                            </div>
+                            <div>
+                                <div className="product-title-row">
+                                    <h3>{product.name}</h3>
+                                    <span className={product.recovery.enabled ? 'status-pill enabled' : 'status-pill'}>
+                                        {product.recovery.enabled ? 'Ativada' : 'Desativada'}
+                                    </span>
+                                </div>
+                                <div className="product-meta">
+                                    <span>R$ {String(product.price_display).replace('.', ',')}</span>
+                                    <span><FiMail size={12} /> {product.reminders_sent} Gmails enviados</span>
+                                </div>
                             </div>
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13 }}>
-                                <FiClock size={15} />
-                                <select className="input-field" value={product.recovery.delay_minutes} onChange={event => updateRecovery(product.id, 'delay_minutes', Number(event.target.value))} style={{ width: 150, padding: 9 }}>
+                        <div className="product-actions">
+                            <label className="delay-control">
+                                <span><FiClock size={15} /> Enviar apos</span>
+                                <select className="input-field" value={product.recovery.delay_minutes} onChange={event => updateRecovery(product.id, 'delay_minutes', Number(event.target.value))}>
                                     <option value={15}>apos 15 minutos</option><option value={30}>apos 30 minutos</option><option value={60}>apos 1 hora</option><option value={180}>apos 3 horas</option><option value={360}>apos 6 horas</option><option value={720}>apos 12 horas</option><option value={1440}>apos 24 horas</option>
                                 </select>
                             </label>
-                            <label style={{ display: 'flex', alignItems: 'center', gap: 7, fontSize: 13, fontWeight: 700 }}>
-                                <input type="checkbox" checked={product.recovery.enabled} onChange={event => updateRecovery(product.id, 'enabled', event.target.checked)} style={{ width: 18, height: 18 }} />
-                                {product.recovery.enabled ? 'Ativada' : 'Desativada'}
+                            <label className="toggle-control">
+                                <input type="checkbox" checked={product.recovery.enabled} onChange={event => updateRecovery(product.id, 'enabled', event.target.checked)} />
+                                <span>{product.recovery.enabled ? 'Recuperacao ativa' : 'Ativar recuperacao'}</span>
                             </label>
-                            <button className="btn-primary" onClick={() => save(product)} disabled={savingId === product.id} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '10px 14px' }}>
+                            <button className="btn-primary save-button" onClick={() => save(product)} disabled={savingId === product.id}>
                                 <FiSave size={14} /> {savingId === product.id ? 'Salvando...' : 'Salvar'}
                             </button>
                         </div>
                     </div>
                 ))}
             </div>}
-            <style jsx>{`@media (max-width: 780px) { .recovery-card { grid-template-columns: 1fr !important; } }`}</style>
+            <style jsx>{`
+                .recovery-hero {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) 340px;
+                    gap: 22px;
+                    align-items: stretch;
+                    padding: 28px;
+                    margin-bottom: 18px;
+                    border: 1px solid rgba(255,255,255,0.10);
+                    border-radius: 18px;
+                    background:
+                        linear-gradient(135deg, rgba(108,92,231,0.20), rgba(0,206,201,0.08)),
+                        var(--bg-secondary);
+                    box-shadow: 0 22px 60px rgba(0,0,0,0.22);
+                    overflow: hidden;
+                }
+                .recovery-hero-copy h1 {
+                    font-size: 32px;
+                    line-height: 1.1;
+                    font-weight: 800;
+                    margin: 10px 0 10px;
+                    color: var(--text-primary);
+                }
+                .recovery-hero-copy p {
+                    color: var(--text-secondary);
+                    font-size: 15px;
+                    line-height: 1.7;
+                    max-width: 780px;
+                    margin: 0;
+                }
+                .hero-kicker {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    padding: 7px 11px;
+                    border-radius: 999px;
+                    background: rgba(255,255,255,0.08);
+                    color: var(--accent-secondary);
+                    font-size: 12px;
+                    font-weight: 800;
+                    text-transform: uppercase;
+                    letter-spacing: 0;
+                }
+                .hero-steps {
+                    display: grid;
+                    gap: 10px;
+                    align-content: center;
+                }
+                .hero-steps div {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    padding: 13px 14px;
+                    border: 1px solid rgba(255,255,255,0.10);
+                    border-radius: 12px;
+                    background: rgba(10,10,14,0.34);
+                    color: var(--text-primary);
+                    font-size: 13px;
+                    font-weight: 700;
+                }
+                .hero-steps span,
+                .summary-card span,
+                .product-icon {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 34px;
+                    height: 34px;
+                    border-radius: 10px;
+                    background: rgba(108,92,231,0.16);
+                    color: var(--accent-secondary);
+                    flex-shrink: 0;
+                }
+                .recovery-summary {
+                    display: grid;
+                    grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 14px;
+                    margin-bottom: 16px;
+                }
+                .summary-card {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 16px;
+                    border: 1px solid rgba(255,255,255,0.08);
+                    border-radius: 14px;
+                    background: rgba(255,255,255,0.035);
+                }
+                .summary-card strong {
+                    display: block;
+                    color: var(--text-primary);
+                    font-size: 20px;
+                    line-height: 1;
+                    margin-bottom: 4px;
+                }
+                .summary-card small {
+                    color: var(--text-muted);
+                    font-size: 12px;
+                }
+                .gmail-notice {
+                    display: flex;
+                    gap: 14px;
+                    align-items: flex-start;
+                    padding: 18px 20px;
+                    margin-bottom: 22px;
+                    border: 1px solid rgba(0,206,201,0.18);
+                    border-radius: 14px;
+                    background: rgba(0,206,201,0.055);
+                    color: var(--text-secondary);
+                }
+                .gmail-notice > svg {
+                    color: var(--accent-secondary);
+                    flex-shrink: 0;
+                    margin-top: 2px;
+                }
+                .gmail-notice strong {
+                    display: block;
+                    color: var(--text-primary);
+                    margin-bottom: 4px;
+                }
+                .gmail-notice p {
+                    margin: 0;
+                    font-size: 13px;
+                    line-height: 1.6;
+                }
+                .empty-state {
+                    text-align: center;
+                    padding: 58px 24px;
+                }
+                .empty-state svg {
+                    color: var(--text-muted);
+                    opacity: 0.45;
+                    margin-bottom: 14px;
+                }
+                .empty-state h3 {
+                    margin: 0 0 6px;
+                    color: var(--text-primary);
+                    font-size: 18px;
+                }
+                .empty-state p {
+                    margin: 0;
+                    color: var(--text-secondary);
+                }
+                .recovery-card {
+                    padding: 18px;
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) auto;
+                    gap: 18px;
+                    align-items: center;
+                    border-radius: 14px;
+                    transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+                }
+                .recovery-card:hover {
+                    transform: translateY(-1px);
+                    border-color: rgba(108,92,231,0.28);
+                    background: rgba(255,255,255,0.045);
+                }
+                .product-main {
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    min-width: 0;
+                }
+                .product-title-row {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    flex-wrap: wrap;
+                    margin-bottom: 7px;
+                }
+                .product-title-row h3 {
+                    margin: 0;
+                    color: var(--text-primary);
+                    font-size: 16px;
+                    font-weight: 800;
+                    line-height: 1.25;
+                }
+                .status-pill {
+                    display: inline-flex;
+                    align-items: center;
+                    padding: 4px 9px;
+                    border-radius: 999px;
+                    background: rgba(255,255,255,0.06);
+                    color: var(--text-muted);
+                    font-size: 11px;
+                    font-weight: 800;
+                }
+                .status-pill.enabled {
+                    background: rgba(85,239,196,0.12);
+                    color: #55efc4;
+                }
+                .product-meta {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                    color: var(--text-muted);
+                    font-size: 12px;
+                }
+                .product-meta span {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 5px;
+                }
+                .product-actions {
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    flex-wrap: wrap;
+                    justify-content: flex-end;
+                }
+                .delay-control {
+                    display: grid;
+                    gap: 6px;
+                    color: var(--text-secondary);
+                    font-size: 12px;
+                    font-weight: 700;
+                }
+                .delay-control span {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                }
+                .delay-control select {
+                    width: 165px;
+                    padding: 9px;
+                }
+                .toggle-control {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    min-height: 40px;
+                    padding: 0 12px;
+                    border: 1px solid rgba(255,255,255,0.08);
+                    border-radius: 10px;
+                    color: var(--text-primary);
+                    background: rgba(255,255,255,0.03);
+                    font-size: 13px;
+                    font-weight: 800;
+                    white-space: nowrap;
+                }
+                .toggle-control input {
+                    width: 18px;
+                    height: 18px;
+                    accent-color: var(--accent-primary);
+                }
+                .save-button {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 7px;
+                    min-height: 40px;
+                    padding: 10px 14px;
+                    white-space: nowrap;
+                }
+                @media (max-width: 980px) {
+                    .recovery-hero {
+                        grid-template-columns: 1fr;
+                    }
+                    .recovery-summary {
+                        grid-template-columns: 1fr;
+                    }
+                }
+                @media (max-width: 780px) {
+                    .recovery-card {
+                        grid-template-columns: 1fr;
+                    }
+                    .product-actions {
+                        justify-content: stretch;
+                    }
+                    .delay-control,
+                    .delay-control select,
+                    .toggle-control,
+                    .save-button {
+                        width: 100%;
+                    }
+                    .recovery-hero {
+                        padding: 22px;
+                    }
+                    .recovery-hero-copy h1 {
+                        font-size: 26px;
+                    }
+                }
+            `}</style>
         </div>
     );
 }
