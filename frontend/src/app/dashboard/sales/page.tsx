@@ -70,7 +70,15 @@ export default function SalesPage() {
         }
     };
 
-    // Filtragem local por busca (nome, CPF, email)
+    const formatPhone = (phone?: string | null) => {
+        const digits = String(phone || '').replace(/\D/g, '');
+        if (!digits) return '—';
+        if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+        if (digits.length === 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+        return phone || digits;
+    };
+
+    // Filtragem local por busca (nome, CPF, email e telefone)
     const filtered = useMemo(() => {
         if (!search.trim()) return sales;
         const q = search.trim().toLowerCase().replace(/\D/g, '') || search.trim().toLowerCase();
@@ -78,12 +86,14 @@ export default function SalesPage() {
             const name = (o.buyer_name || '').toLowerCase();
             const email = (o.buyer_email || '').toLowerCase();
             const cpf = (o.buyer_cpf || '').replace(/\D/g, '');
+            const phone = (o.buyer_phone || '').replace(/\D/g, '');
             const searchLower = search.trim().toLowerCase();
             const searchDigits = search.trim().replace(/\D/g, '');
             return (
                 name.includes(searchLower) ||
                 email.includes(searchLower) ||
-                (searchDigits && cpf.includes(searchDigits))
+                (searchDigits && cpf.includes(searchDigits)) ||
+                (searchDigits && phone.includes(searchDigits))
             );
         });
     }, [sales, search]);
@@ -193,7 +203,7 @@ export default function SalesPage() {
                     <input
                         type="text"
                         className="input-field"
-                        placeholder="Buscar por nome, e-mail ou CPF..."
+                        placeholder="Buscar por nome, e-mail, CPF ou telefone..."
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         style={{ paddingLeft: 40, paddingRight: search ? 40 : 16 }}
@@ -233,6 +243,7 @@ export default function SalesPage() {
                                     <th>Cliente</th>
                                     <th>E-mail</th>
                                     <th>CPF</th>
+                                    <th>Telefone</th>
                                     <th>Valor</th>
                                     <th>Método</th>
                                     <th>Status</th>
@@ -250,6 +261,7 @@ export default function SalesPage() {
                                             <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{o.buyer_name || '—'}</td>
                                             <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{o.buyer_email || '—'}</td>
                                             <td style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{o.buyer_cpf || '—'}</td>
+                                            <td style={{ color: 'var(--text-secondary)', fontSize: 13, whiteSpace: 'nowrap' }}>{formatPhone(o.buyer_phone)}</td>
                                             <td style={{ fontWeight: 600 }}>R$ {o.amount_display}</td>
                                             <td style={{ textTransform: 'uppercase', fontSize: 12, color: 'var(--text-muted)' }}>
                                                 {o.payment_method === 'credit_card' ? 'Cartão' : 'Pix'}
