@@ -288,7 +288,7 @@ export default function CheckoutCustomizationPage() {
                         </h3>
                         <div className="space-y-4">
                             {[
-                                { key: 'hide_phone', label: 'Ocultar Telefone' },
+                                { key: 'hide_phone', label: 'Ocultar WhatsApp' },
                                 { key: 'hide_address_pix', label: 'Ocultar Endereço no Pix' },
                                 { key: 'hide_product_image', label: 'Ocultar Imagem do Produto' }
                             ].map(opt => (
@@ -474,7 +474,7 @@ export default function CheckoutCustomizationPage() {
                                                     { label: 'Nome completo', value: 'Ana Cristina da Silva' },
                                                     { label: 'E-mail', value: 'ana.silva@exemplo.com' },
                                                     { label: 'CPF', value: '000.000.000-00' },
-                                                    ...(settings.hide_phone ? [] : [{ label: 'Seu celular', value: '(11) 99999-9999' }])
+                                                    ...(settings.hide_phone ? [] : [{ label: 'WhatsApp', value: '(11) 99999-9999' }])
                                                 ].map(f => (
                                                     <div key={f.label}>
                                                         <label className="text-[10px] font-black uppercase tracking-widest mb-1.5 block opacity-60" style={{ color: previewMuted }}>{f.label}</label>

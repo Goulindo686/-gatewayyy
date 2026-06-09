@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
-import { FiCheckCircle, FiClock, FiMail, FiPackage, FiSave, FiSend, FiShield, FiZap } from 'react-icons/fi';
+import { FiCheckCircle, FiClock, FiExternalLink, FiMail, FiMessageCircle, FiPackage, FiSave, FiSend, FiShield, FiZap } from 'react-icons/fi';
 
 type RecoverySetting = {
     enabled: boolean;
@@ -17,12 +17,26 @@ type RecoveryProduct = {
     recovery: RecoverySetting;
 };
 
+type WhatsappRecovery = {
+    id: string;
+    product_id: string;
+    product_name: string;
+    buyer_name?: string | null;
+    buyer_email?: string | null;
+    buyer_phone?: string | null;
+    amount_display: string;
+    pix_expires_at?: string | null;
+    created_at: string;
+};
+
 function errorMessage(error: unknown) {
     return error instanceof Error ? error.message : String(error);
 }
 
 export default function SalesRecoveryPage() {
     const [products, setProducts] = useState<RecoveryProduct[]>([]);
+    const [whatsappRecoveries, setWhatsappRecoveries] = useState<WhatsappRecovery[]>([]);
+    const [activeTab, setActiveTab] = useState<'whatsapp' | 'gmail'>('whatsapp');
     const [loading, setLoading] = useState(true);
     const [savingId, setSavingId] = useState<string | null>(null);
 
@@ -33,6 +47,7 @@ export default function SalesRecoveryPage() {
             const data = await response.json();
             if (!response.ok) throw new Error(data.error);
             setProducts(data.products || []);
+            setWhatsappRecoveries(data.whatsapp_recoveries || []);
         } catch (error: unknown) {
             toast.error(errorMessage(error) || 'Erro ao carregar produtos');
         } finally {
@@ -40,7 +55,38 @@ export default function SalesRecoveryPage() {
         }
     };
 
+    const formatDate = (value?: string | null) => {
+        if (!value) return 'Sem data';
+        try { return new Date(value).toLocaleString('pt-BR'); } catch { return value; }
+    };
+
+    const formatPhone = (phone?: string | null) => {
+        const digits = String(phone || '').replace(/\D/g, '');
+        if (!digits) return 'Sem WhatsApp';
+        if (digits.length === 11) return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+        if (digits.length === 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+        return phone || digits;
+    };
+
+    const whatsappUrl = (recovery: WhatsappRecovery) => {
+        const digits = String(recovery.buyer_phone || '').replace(/\D/g, '');
+        const brNumber = digits.startsWith('55') ? digits : `55${digits}`;
+        const message = [
+            `Oi ${recovery.buyer_name || 'tudo bem'}!`,
+            `Vi que seu Pix do produto ${recovery.product_name} ainda esta pendente.`,
+            `Valor: R$ ${String(recovery.amount_display).replace('.', ',')}.`,
+            'Se quiser finalizar a compra, e so usar o Pix gerado no checkout.'
+        ].join('\n\n');
+        return `https://wa.me/${brNumber}?text=${encodeURIComponent(message)}`;
+    };
+
     useEffect(() => { loadProducts(); }, []);
+
+    useEffect(() => {
+        if (activeTab !== 'whatsapp') return;
+        const timer = setInterval(() => { loadProducts(); }, 30000);
+        return () => clearInterval(timer);
+    }, [activeTab]);
 
     const updateRecovery = (productId: string, field: string, value: boolean | number) => {
         setProducts(current => current.map(product => product.id === productId
@@ -75,6 +121,17 @@ export default function SalesRecoveryPage() {
 
     return (
         <div className="animate-fade-in">
+            <div className="recovery-tabs">
+                <button className={activeTab === 'whatsapp' ? 'active' : ''} onClick={() => setActiveTab('whatsapp')}>
+                    <FiMessageCircle size={16} /> WhatsApp
+                    {whatsappRecoveries.length > 0 && <span>{whatsappRecoveries.length}</span>}
+                </button>
+                <button className={activeTab === 'gmail' ? 'active' : ''} onClick={() => setActiveTab('gmail')}>
+                    <FiMail size={16} /> Gmail
+                </button>
+            </div>
+
+            {activeTab === 'gmail' ? <>
             <div className="recovery-hero">
                 <div className="recovery-hero-copy">
                     <div className="hero-kicker"><FiMail size={15} /> Recuperacao via Gmail</div>
@@ -168,7 +225,133 @@ export default function SalesRecoveryPage() {
                     </div>
                 ))}
             </div>}
+            </> : <>
+            <div className="recovery-hero whatsapp-hero">
+                <div className="recovery-hero-copy">
+                    <div className="hero-kicker whatsapp-kicker"><FiMessageCircle size={15} /> Recuperacao manual via WhatsApp</div>
+                    <h1>Recuperacao por WhatsApp</h1>
+                    <p>
+                        Quando um produto pede o campo WhatsApp no checkout e o cliente gera um Pix sem pagar, o numero aparece aqui para voce chamar manualmente.
+                    </p>
+                </div>
+                <div className="hero-steps">
+                    <div><span><FiPackage size={15} /></span> Produto pede WhatsApp</div>
+                    <div><span><FiClock size={15} /></span> Pix fica pendente</div>
+                    <div><span><FiMessageCircle size={15} /></span> Voce chama o cliente</div>
+                </div>
+            </div>
+
+            <div className="recovery-summary">
+                <div className="summary-card">
+                    <span><FiMessageCircle size={18} /></span>
+                    <div>
+                        <strong>{whatsappRecoveries.length}</strong>
+                        <small>Pix pendentes com WhatsApp</small>
+                    </div>
+                </div>
+                <div className="summary-card">
+                    <span><FiShield size={18} /></span>
+                    <div>
+                        <strong>Manual</strong>
+                        <small>sem custo de API ou template Meta</small>
+                    </div>
+                </div>
+                <div className="summary-card">
+                    <span><FiCheckCircle size={18} /></span>
+                    <div>
+                        <strong>Auto</strong>
+                        <small>sai da lista quando o Pix for pago</small>
+                    </div>
+                </div>
+            </div>
+
+            <div className="gmail-notice whatsapp-notice">
+                <FiZap size={20} />
+                <div>
+                    <strong>Importante</strong>
+                    <p>
+                        Esta recuperacao nao envia mensagem sozinha. O botao abre o WhatsApp com uma mensagem pronta para voce revisar e enviar ao cliente.
+                    </p>
+                </div>
+            </div>
+
+            {whatsappRecoveries.length === 0 ? (
+                <div className="glass-card empty-state">
+                    <FiMessageCircle size={42} />
+                    <h3>Nenhum Pix pendente com WhatsApp</h3>
+                    <p>Quando um cliente gerar Pix em um produto com campo WhatsApp ativo, ele aparecera aqui enquanto estiver pendente.</p>
+                </div>
+            ) : <div className="whatsapp-list">
+                {whatsappRecoveries.map(recovery => (
+                    <div key={recovery.id} className="glass-card whatsapp-card">
+                        <div className="whatsapp-buyer">
+                            <div className="whatsapp-icon">
+                                <FiMessageCircle size={19} />
+                            </div>
+                            <div>
+                                <div className="product-title-row">
+                                    <h3>{recovery.buyer_name || 'Cliente sem nome'}</h3>
+                                    <span className="status-pill enabled">Pix pendente</span>
+                                </div>
+                                <div className="product-meta">
+                                    <span>{formatPhone(recovery.buyer_phone)}</span>
+                                    <span>{recovery.product_name}</span>
+                                    <span>R$ {String(recovery.amount_display).replace('.', ',')}</span>
+                                    <span>Gerado em {formatDate(recovery.created_at)}</span>
+                                </div>
+                                {recovery.buyer_email && <div className="buyer-email">{recovery.buyer_email}</div>}
+                            </div>
+                        </div>
+                        <a className="btn-primary whatsapp-button" href={whatsappUrl(recovery)} target="_blank" rel="noopener noreferrer">
+                            <FiExternalLink size={14} /> Chamar no WhatsApp
+                        </a>
+                    </div>
+                ))}
+            </div>}
+            </>}
             <style jsx>{`
+                .recovery-tabs {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    padding: 6px;
+                    margin-bottom: 18px;
+                    border: 1px solid rgba(255,255,255,0.10);
+                    border-radius: 14px;
+                    background: rgba(255,255,255,0.04);
+                }
+                .recovery-tabs button {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 8px;
+                    min-height: 40px;
+                    padding: 0 16px;
+                    border: 0;
+                    border-radius: 10px;
+                    color: var(--text-secondary);
+                    background: transparent;
+                    font-size: 13px;
+                    font-weight: 900;
+                    cursor: pointer;
+                    transition: all 0.18s ease;
+                }
+                .recovery-tabs button.active {
+                    color: var(--text-primary);
+                    background: rgba(108,92,231,0.24);
+                }
+                .recovery-tabs button span {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    min-width: 22px;
+                    height: 22px;
+                    padding: 0 7px;
+                    border-radius: 999px;
+                    background: #25d366;
+                    color: #07120b;
+                    font-size: 11px;
+                    font-weight: 900;
+                }
                 .recovery-hero {
                     display: grid;
                     grid-template-columns: minmax(0, 1fr) 340px;
@@ -210,6 +393,14 @@ export default function SalesRecoveryPage() {
                     font-weight: 800;
                     text-transform: uppercase;
                     letter-spacing: 0;
+                }
+                .whatsapp-kicker {
+                    color: #25d366;
+                }
+                .whatsapp-hero {
+                    background:
+                        linear-gradient(135deg, rgba(37,211,102,0.18), rgba(108,92,231,0.10)),
+                        var(--bg-secondary);
                 }
                 .hero-steps {
                     display: grid;
@@ -277,6 +468,54 @@ export default function SalesRecoveryPage() {
                     border-radius: 14px;
                     background: rgba(0,206,201,0.055);
                     color: var(--text-secondary);
+                }
+                .whatsapp-notice {
+                    border-color: rgba(37,211,102,0.22);
+                    background: rgba(37,211,102,0.055);
+                }
+                .whatsapp-list {
+                    display: grid;
+                    gap: 14px;
+                }
+                .whatsapp-card {
+                    display: grid;
+                    grid-template-columns: minmax(0, 1fr) auto;
+                    gap: 18px;
+                    align-items: center;
+                    padding: 18px;
+                    border-radius: 14px;
+                }
+                .whatsapp-buyer {
+                    display: flex;
+                    align-items: center;
+                    gap: 14px;
+                    min-width: 0;
+                }
+                .whatsapp-icon {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 42px;
+                    height: 42px;
+                    border-radius: 13px;
+                    background: rgba(37,211,102,0.14);
+                    color: #25d366;
+                    flex-shrink: 0;
+                }
+                .buyer-email {
+                    color: var(--text-muted);
+                    font-size: 12px;
+                    margin-top: 6px;
+                }
+                .whatsapp-button {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 7px;
+                    min-height: 42px;
+                    padding: 10px 14px;
+                    text-decoration: none;
+                    white-space: nowrap;
                 }
                 .gmail-notice > svg {
                     color: var(--accent-secondary);
@@ -433,6 +672,16 @@ export default function SalesRecoveryPage() {
                 @media (max-width: 780px) {
                     .recovery-card {
                         grid-template-columns: 1fr;
+                    }
+                    .whatsapp-card {
+                        grid-template-columns: 1fr;
+                    }
+                    .whatsapp-button {
+                        width: 100%;
+                    }
+                    .recovery-tabs {
+                        display: grid;
+                        grid-template-columns: 1fr 1fr;
                     }
                     .product-actions {
                         justify-content: stretch;

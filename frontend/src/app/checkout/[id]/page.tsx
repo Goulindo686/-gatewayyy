@@ -384,7 +384,7 @@ export default function CheckoutPage() {
         try {
             const methodToSend = enableCreditCard ? paymentMethod : 'pix';
             if (!isValidCPF(form.cpf)) { toast.error('CPF inválido'); setProcessing(false); return; }
-            if ((!settings.hide_phone || methodToSend === 'credit_card') && !isValidPhone(form.phone)) { toast.error('Telefone inválido'); setProcessing(false); return; }
+            if ((!settings.hide_phone || methodToSend === 'credit_card') && !isValidPhone(form.phone)) { toast.error('WhatsApp inválido'); setProcessing(false); return; }
             if (methodToSend === 'credit_card') {
                 if (!isValidCEP(form.cep)) { toast.error('CEP inválido'); setProcessing(false); return; }
                 if (!isValidUF(form.state)) { toast.error('UF inválida'); setProcessing(false); return; }
@@ -747,7 +747,7 @@ export default function CheckoutPage() {
                                     </div>
                                     {(!settings.hide_phone || paymentMethod === 'credit_card') && (
                                         <div className="group">
-                                            <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>Seu celular *</label>
+                                            <label className="text-xs font-black uppercase tracking-wider mb-2 block opacity-60" style={{ color: textSecondary }}>WhatsApp *</label>
                                             <div className="flex gap-3">
                                                 <div className="h-14 px-4 rounded-2xl border flex items-center gap-2 shrink-0" style={{ background: isLight ? '#fff' : inputBg, borderColor }}>
                                                     <img src="https://flagcdn.com/w20/br.png" alt="BR" className="w-5 h-3.5 object-cover rounded-sm" />
