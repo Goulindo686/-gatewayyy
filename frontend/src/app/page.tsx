@@ -660,12 +660,12 @@ export default function LandingPage() {
         </Reveal>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 24 }}>
           {[
-            { icon: <FiLock size={24} />, title: 'Checkout Seguro', desc: 'Página de pagamento profissional com Pix e cartão de crédito. SSL e antifraude integrados.' },
-            { icon: <HiOutlineLightningBolt size={24} />, title: 'Entrega Automática', desc: 'Pagamento aprovado? Liberação e entrega do conteúdo acontecem automaticamente.' },
-            { icon: <FiZap size={24} />, title: 'Pix Instantâneo', desc: 'Receba via Pix em segundos. QR Code gerado automaticamente para cada pagamento.' },
-            { icon: <HiOutlineChartBar size={24} />, title: 'Dashboard Completo', desc: 'Acompanhe vendas, saldo, saques e métricas em tempo real com gráficos interativos.' },
-            { icon: <HiOutlineCurrencyDollar size={24} />, title: 'Saques via Pix', desc: 'Solicite saques a qualquer momento. O valor é transferido diretamente para sua conta.' },
-            { icon: <HiOutlineShieldCheck size={24} />, title: 'Segurança Total', desc: 'Controle de chargeback, logs de transações e proteção contra fraude integrados.' },
+            { icon: <FiMessageCircle size={24} />, title: 'Recuperação de Vendas', desc: 'Recupere Pix pendentes com lembretes enviados por Gmail e WhatsApp, ajudando clientes a concluírem a compra.' },
+            { icon: <HiOutlineCurrencyDollar size={24} />, title: 'Taxa Simples', desc: 'Venda com previsibilidade: apenas R$2,00 por venda aprovada, sem mensalidade e sem complicação.' },
+            { icon: <HiOutlineShieldCheck size={24} />, title: 'Antifraude e Banco Virtual', desc: 'Conte com camadas de antifraude e uma estrutura de banco virtual liberada pelo Banco Central para operar com mais confiança.' },
+            { icon: <FiZap size={24} />, title: 'Saque na Hora', desc: 'Solicite seu saque via Pix e receba o valor rapidamente na sua conta, sem esperar dias para movimentar seu dinheiro.' },
+            { icon: <HiOutlineLightningBolt size={24} />, title: 'Entrega Automática', desc: 'Pagamento aprovado? O acesso ao produto digital é liberado automaticamente para o cliente.' },
+            { icon: <HiOutlineChartBar size={24} />, title: 'Gestão Completa', desc: 'Acompanhe vendas, clientes, recuperação, saques e desempenho dos produtos em um painel profissional.' },
           ].map((feature, i) => (
             <Reveal key={i} direction="up" delay={i * 0.08}>
               <motion.div
