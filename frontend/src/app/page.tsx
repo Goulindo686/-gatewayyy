@@ -268,7 +268,7 @@ export default function LandingPage() {
         ref={heroRef}
         style={{
           position: 'relative',
-          background: 'url(https://i.imgur.com/CRMOAPY.jpeg) center center / cover no-repeat',
+          background: '#07080b',
           overflow: 'hidden',
           paddingTop: 'calc(env(safe-area-inset-top) + 110px)',
           paddingBottom: 60,
@@ -279,37 +279,81 @@ export default function LandingPage() {
         className="landingHero"
       >
         {/* Overlay escuro sutil só no lado esquerdo para legibilidade */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(10,5,40,0.72) 0%, rgba(10,5,40,0.45) 45%, rgba(10,5,40,0.1) 75%, transparent 100%)', pointerEvents: 'none' }} />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: [
+            'linear-gradient(90deg, rgba(7,8,11,0.98) 0%, rgba(7,8,11,0.92) 42%, rgba(7,8,11,0.70) 70%, rgba(7,8,11,0.90) 100%)',
+            'url(https://i.imgur.com/OuIZdBG.png) right 12% center / min(760px, 50vw) auto no-repeat'
+          ].join(', '),
+          pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute',
+          inset: 0,
+          background: [
+            'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)',
+            'linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)'
+          ].join(', '),
+          backgroundSize: '72px 72px',
+          maskImage: 'linear-gradient(90deg, black 0%, black 58%, transparent 100%)',
+          pointerEvents: 'none'
+        }} />
+        <div style={{
+          position: 'absolute',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          height: 160,
+          background: 'linear-gradient(0deg, #07080b 0%, rgba(7,8,11,0) 100%)',
+          pointerEvents: 'none'
+        }} />
 
         <div style={{ position: 'relative', zIndex: 2, maxWidth: 1200, margin: '0 auto', padding: '0 48px', width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }} className="heroGrid">
 
           {/* Coluna esquerda — texto */}
           <div className="heroLeft">
-            <h1 style={{ fontSize: 'clamp(32px, 4.2vw, 58px)', fontWeight: 900, lineHeight: 1.08, letterSpacing: -1.5, color: 'white', marginBottom: 20, textShadow: '0 2px 24px rgba(0,0,0,0.4)' }} className="landingHeroTitle">
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '8px 12px',
+              marginBottom: 18,
+              borderRadius: 999,
+              border: '1px solid rgba(255,255,255,0.12)',
+              background: 'rgba(255,255,255,0.06)',
+              color: 'rgba(255,255,255,0.82)',
+              fontSize: 12,
+              fontWeight: 800
+            }}>
+              <FiLock size={14} /> Infraestrutura para vendas digitais
+            </div>
+
+            <h1 style={{ fontSize: 'clamp(34px, 4.3vw, 60px)', fontWeight: 900, lineHeight: 1.04, letterSpacing: -1.6, color: 'white', marginBottom: 20, textShadow: '0 18px 50px rgba(0,0,0,0.45)' }} className="landingHeroTitle">
               O gateway que faz<br />
-              <span style={{ background: 'linear-gradient(135deg, #c4b5fd, #a78bfa, #818cf8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <span style={{ background: 'linear-gradient(135deg, #ffffff 0%, #b8a7ff 42%, #6ee7d8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 seu negócio crescer
               </span>
             </h1>
 
-            <p style={{ color: 'rgba(255,255,255,0.82)', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.75, marginBottom: 32, maxWidth: 460, textShadow: '0 1px 8px rgba(0,0,0,0.3)' }} className="landingHeroSubtitle">
+            <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.75, marginBottom: 32, maxWidth: 500, textShadow: '0 1px 8px rgba(0,0,0,0.25)' }} className="landingHeroSubtitle">
               Checkout de alta conversão, Pix instantâneo, área de membros e loja integrada. Taxa: <strong style={{ color: '#c4b5fd' }}>R$2,00 + 1,09%</strong> por venda.
             </p>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }} className="landingHeroActions">
               <Link href="/register" style={{
                 padding: '13px 24px', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999,
-                background: '#7c3aed',
-                color: 'white', fontWeight: 700, textDecoration: 'none',
-                boxShadow: '0 4px 18px rgba(124,58,237,0.45)',
+                background: 'white',
+                color: '#08090d', fontWeight: 800, textDecoration: 'none',
+                boxShadow: '0 18px 46px rgba(255,255,255,0.16)',
               }}>
                 Criar conta grátis <FiArrowRight size={16} />
               </Link>
               <Link href="#features" style={{
                 padding: '13px 24px', fontSize: 15, borderRadius: 999,
-                background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(12px)',
-                border: '1.5px solid rgba(255,255,255,0.25)',
-                color: 'rgba(255,255,255,0.92)', textDecoration: 'none', fontWeight: 600,
+                background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(255,255,255,0.16)',
+                color: 'rgba(255,255,255,0.88)', textDecoration: 'none', fontWeight: 700,
                 display: 'inline-flex', alignItems: 'center',
               }}>
                 Ver recursos
@@ -323,9 +367,9 @@ export default function LandingPage() {
                 { value: '100%', label: 'Automático' },
                 { value: 'Grátis', label: 'Sem mensalidade' },
               ].map((s, i) => (
-                <div key={i} style={{ borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.15)' : 'none', paddingLeft: i > 0 ? 28 : 0 }}>
-                  <div style={{ fontSize: 20, fontWeight: 900, color: 'white', letterSpacing: -0.5, textShadow: '0 2px 12px rgba(0,0,0,0.3)' }}>{s.value}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 500, marginTop: 2 }}>{s.label}</div>
+                <div key={i} style={{ border: '1px solid rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.055)', borderRadius: 14, padding: '12px 16px', minWidth: 122 }}>
+                  <div style={{ fontSize: 19, fontWeight: 900, color: 'white', letterSpacing: -0.4 }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.58)', fontWeight: 600, marginTop: 2 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -334,28 +378,36 @@ export default function LandingPage() {
           {/* Coluna direita — mockup dashboard profissional */}
           <div style={{ position: 'relative' }} className="heroRight" id="heroMockup">
             {/* Glow atrás do mockup */}
-            <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', width: '90%', height: '60%', background: 'radial-gradient(ellipse, rgba(124,58,237,0.35) 0%, transparent 70%)', pointerEvents: 'none', zIndex: 0 }} />
+            <div style={{
+              position: 'absolute',
+              inset: '8% -4% 6% 10%',
+              border: '1px solid rgba(255,255,255,0.10)',
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
+              transform: 'skewY(-3deg)',
+              pointerEvents: 'none',
+              zIndex: 0
+            }} />
 
             {/* Frame do browser */}
             <div id="mockupFrame" style={{
               position: 'relative', zIndex: 2,
-              borderRadius: 16,
+              borderRadius: 18,
               overflow: 'hidden',
-              border: '1px solid rgba(255,255,255,0.15)',
-              boxShadow: '0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08)',
-              background: '#0f0e1a',
-              transform: 'perspective(1000px) rotateY(-4deg) rotateX(2deg)',
+              border: '1px solid rgba(255,255,255,0.13)',
+              boxShadow: '0 32px 90px rgba(0,0,0,0.58), 0 0 0 1px rgba(255,255,255,0.05)',
+              background: '#101114',
+              transform: 'perspective(1000px) rotateY(-3deg) rotateX(1.5deg)',
               transition: 'transform 0.15s ease, box-shadow 0.15s ease',
               willChange: 'transform',
             }}>
               {/* Barra do browser */}
-              <div style={{ background: '#1a1830', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+              <div style={{ background: '#16171c', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                 <div style={{ display: 'flex', gap: 5 }}>
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f56' }} />
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27c93f' }} />
                 </div>
-                <div style={{ flex: 1, background: 'rgba(255,255,255,0.06)', borderRadius: 6, padding: '4px 12px', fontSize: 11, color: 'rgba(255,255,255,0.4)', textAlign: 'center' }}>
+                <div style={{ flex: 1, background: 'rgba(255,255,255,0.055)', borderRadius: 7, padding: '4px 12px', fontSize: 11, color: 'rgba(255,255,255,0.44)', textAlign: 'center' }}>
                   goupay.com.br/dashboard
                 </div>
               </div>
@@ -372,10 +424,11 @@ export default function LandingPage() {
             {/* Card flutuante — saldo */}
             <div style={{
               position: 'absolute', bottom: '12%', left: '-8%', zIndex: 5,
-              background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(16px)',
+              background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(16px)',
               borderRadius: 14, padding: '12px 16px',
-              boxShadow: '0 16px 48px rgba(0,0,0,0.25)',
+              boxShadow: '0 18px 52px rgba(0,0,0,0.34)',
               minWidth: 140,
+              border: '1px solid rgba(255,255,255,0.70)',
               transition: 'transform 0.15s ease',
             }} id="cardSaldo">
               <div style={{ fontSize: 10, color: '#7c3aed', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Saldo disponível</div>
@@ -389,10 +442,11 @@ export default function LandingPage() {
             {/* Card flutuante — taxa */}
             <div style={{
               position: 'absolute', top: '8%', right: '-6%', zIndex: 5,
-              background: 'rgba(124,58,237,0.9)', backdropFilter: 'blur(16px)',
+              background: '#6d4df2', backdropFilter: 'blur(16px)',
               borderRadius: 14, padding: '12px 16px',
-              boxShadow: '0 16px 48px rgba(124,58,237,0.4)',
+              boxShadow: '0 18px 52px rgba(42,32,122,0.48)',
               minWidth: 120,
+              border: '1px solid rgba(255,255,255,0.16)',
               transition: 'transform 0.15s ease',
             }} id="cardTaxa">
               <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.7)', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>Taxa por venda</div>
@@ -949,16 +1003,13 @@ Body:
           .landingHero::before {
             content: '';
             position: absolute;
-            inset: -2px;
+            inset: 0;
             z-index: 2;
             pointer-events: none;
-            opacity: 0.92;
+            opacity: 0.55;
             background:
-              radial-gradient(680px circle at var(--mx) var(--my), rgba(108,92,231,0.40) 0%, rgba(108,92,231,0.00) 58%),
-              radial-gradient(520px circle at calc(var(--mx) + 140px) calc(var(--my) + 110px), rgba(0,206,201,0.24) 0%, rgba(0,206,201,0.00) 62%),
-              radial-gradient(860px circle at 20% 10%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.00) 55%);
-            mix-blend-mode: screen;
-            filter: saturate(1.1);
+              linear-gradient(115deg, rgba(109,77,242,0.18) 0%, rgba(109,77,242,0.00) 38%),
+              linear-gradient(250deg, rgba(110,231,216,0.12) 0%, rgba(110,231,216,0.00) 34%);
           }
           .landingHero::after {
             content: '';
@@ -966,22 +1017,13 @@ Body:
             inset: 0;
             z-index: 3;
             pointer-events: none;
-            background:
-              radial-gradient(2px 2px at 12% 22%, rgba(255,255,255,0.55) 0%, rgba(255,255,255,0.00) 65%),
-              radial-gradient(1.6px 1.6px at 78% 30%, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.00) 70%),
-              radial-gradient(1.8px 1.8px at 34% 70%, rgba(255,255,255,0.34) 0%, rgba(255,255,255,0.00) 70%),
-              radial-gradient(1.5px 1.5px at 62% 78%, rgba(255,255,255,0.28) 0%, rgba(255,255,255,0.00) 72%);
-            opacity: 0.55;
-            animation: heroTwinkle 6.5s ease-in-out infinite;
+            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.00) 22%, rgba(255,255,255,0.04) 100%);
+            opacity: 0.45;
           }
           .landingHeroImg {
             transform: translate3d(var(--tx), var(--ty), 0) scale(1.035);
             will-change: transform;
             transition: transform 120ms ease;
-          }
-          @keyframes heroTwinkle {
-            0%, 100% { opacity: 0.42; transform: translate3d(0, 0, 0); }
-            50% { opacity: 0.65; transform: translate3d(0, -4px, 0); }
           }
           @media (prefers-reduced-motion: reduce) {
             .landingHero::before,
