@@ -977,6 +977,9 @@ Body:
                 <a href="https://wa.me/5532998284648?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20a%20plataforma%20GouPay." target="_blank" rel="noreferrer" style={{ color: 'rgba(255,255,255,0.82)', textDecoration: 'none' }}>
                   Fale com a gente
                 </a>
+                <a href="mailto:support@goupay.com.br" style={{ color: 'rgba(255,255,255,0.82)', textDecoration: 'none' }}>
+                  support@goupay.com.br
+                </a>
               </div>
             </div>
 
