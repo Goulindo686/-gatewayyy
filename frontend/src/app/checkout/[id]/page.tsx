@@ -351,6 +351,21 @@ export default function CheckoutPage() {
         purchaseTrackedRef.current = true;
     };
 
+    const getTrackingParameters = () => {
+        if (typeof window === 'undefined') return {};
+        const search = new URLSearchParams(window.location.search);
+        const pick = (key: string) => search.get(key) || null;
+        return {
+            src: pick('src'),
+            sck: pick('sck'),
+            utm_source: pick('utm_source'),
+            utm_campaign: pick('utm_campaign'),
+            utm_medium: pick('utm_medium'),
+            utm_content: pick('utm_content'),
+            utm_term: pick('utm_term'),
+        };
+    };
+
     const startPixPolling = (orderId: string) => {
         // Estratégia de backoff exponencial para reduzir Edge Requests:
         // Começa verificando a cada 5s, vai aumentando progressivamente até 30s.
@@ -419,6 +434,7 @@ export default function CheckoutPage() {
                 ...getFacebookCookies(),
                 event_source_url: typeof window !== 'undefined' ? window.location.href : undefined
             };
+            payload.tracking = getTrackingParameters();
             if (methodToSend === 'credit_card') {
                 payload.card_data = {
                     number: form.card_number.replace(/\s/g, ''), holder_name: form.card_holder,

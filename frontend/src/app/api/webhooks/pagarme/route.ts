@@ -11,6 +11,7 @@ import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
 import { sendFacebookEvent } from '@/lib/facebook-capi';
+import { sendUtmifyOrder } from '@/lib/utmify';
 
 function safeEqual(a: string, b: string) {
     const aBuf = Buffer.from(a);
@@ -448,7 +449,7 @@ export async function POST(req: NextRequest) {
             try {
                 const { data: sellerUser } = await supabase
                     .from('users')
-                    .select('role, name, email')
+                    .select('role, name, email, utmify_enabled, utmify_api_token')
                     .eq('id', order.seller_id)
                     .single();
                 if (sellerUser?.role === 'admin') {
@@ -494,6 +495,34 @@ export async function POST(req: NextRequest) {
                 if (product) {
                     productData = product;
                     productName = product.name || 'Produto';
+
+                    try {
+                        const { data: sellerIntegration } = await supabase
+                            .from('users')
+                            .select('utmify_enabled, utmify_api_token')
+                            .eq('id', order.seller_id)
+                            .single();
+                        if (sellerIntegration?.utmify_enabled && sellerIntegration?.utmify_api_token && !order.utmify_sent_at) {
+                            const utmifyResult = await sendUtmifyOrder({
+                                token: sellerIntegration.utmify_api_token,
+                                order,
+                                product,
+                                status: 'paid',
+                            });
+                            if ((utmifyResult as any).ok) {
+                                await supabase.from('orders')
+                                    .update({ utmify_sent_at: new Date().toISOString(), utmify_last_error: null })
+                                    .eq('id', order.id);
+                            } else if (!(utmifyResult as any).skipped) {
+                                await supabase.from('orders')
+                                    .update({ utmify_last_error: (utmifyResult as any).error || 'Erro UTMify' })
+                                    .eq('id', order.id);
+                                console.warn('[UTMIFY] Webhook purchase not sent:', utmifyResult);
+                            }
+                        }
+                    } catch (utmifyErr) {
+                        console.error('[UTMIFY] Webhook purchase error:', utmifyErr);
+                    }
 
                     // Update sales count
                     await supabase.from('products')

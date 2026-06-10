@@ -305,7 +305,6 @@ export default function SettingsPage() {
         { key: 'bank', label: 'Dados Bancários', icon: <FiCreditCard size={16} /> },
         { key: 'pix', label: 'Chave Pix', icon: <FiKey size={16} /> },
         { key: 'notifications', label: 'Notificações', icon: <FiBell size={16} /> },
-        { key: 'api', label: 'API & Integração', icon: <FiCode size={16} /> }
     ];
 
     if (loading) {

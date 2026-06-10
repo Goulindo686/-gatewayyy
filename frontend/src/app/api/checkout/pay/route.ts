@@ -7,6 +7,7 @@ import { jsonError, jsonSuccess, generateToken, hashPassword } from '@/lib/auth'
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
 import { sendFacebookEvent } from '@/lib/facebook-capi';
+import { sendUtmifyOrder } from '@/lib/utmify';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
@@ -24,6 +25,7 @@ export async function POST(req: NextRequest) {
         const body = await req.json();
         const { product_id, buyer, card_data, plan_id, selected_bumps } = body;
         const facebook = body.facebook || {};
+        const tracking = body.tracking || {};
 
         // Rate limit por email: 5 checkouts por hora
         if (buyer?.email) {
@@ -291,6 +293,22 @@ export async function POST(req: NextRequest) {
             client_user_agent: clientUserAgent
         });
 
+        try {
+            await supabase.from('orders')
+                .update({
+                    utm_source: typeof tracking.utm_source === 'string' ? tracking.utm_source : null,
+                    utm_campaign: typeof tracking.utm_campaign === 'string' ? tracking.utm_campaign : null,
+                    utm_medium: typeof tracking.utm_medium === 'string' ? tracking.utm_medium : null,
+                    utm_content: typeof tracking.utm_content === 'string' ? tracking.utm_content : null,
+                    utm_term: typeof tracking.utm_term === 'string' ? tracking.utm_term : null,
+                    utm_src: typeof tracking.src === 'string' ? tracking.src : null,
+                    utm_sck: typeof tracking.sck === 'string' ? tracking.sck : null,
+                })
+                .eq('id', orderId);
+        } catch (utmErr) {
+            console.warn('[UTM] Tracking columns not available yet:', utmErr);
+        }
+
         // Save transaction
         await supabase.from('transactions').insert({
             id: uuidv4(), user_id: product.user_id, order_id: orderId,
@@ -302,6 +320,49 @@ export async function POST(req: NextRequest) {
         // If paid immediately, create fee transaction and update sales count
         let buyerUser: any = null;
         if (charge?.status === 'paid') {
+            try {
+                const { data: seller } = await supabase
+                    .from('users')
+                    .select('utmify_enabled, utmify_api_token')
+                    .eq('id', product.user_id)
+                    .single();
+                if (seller?.utmify_enabled && seller?.utmify_api_token) {
+                    const utmifyResult = await sendUtmifyOrder({
+                        token: seller.utmify_api_token,
+                        product,
+                        status: 'paid',
+                        order: {
+                            id: orderId,
+                            seller_id: product.user_id,
+                            product_id: product.id,
+                            buyer_name: buyer.name,
+                            buyer_email: buyer.email,
+                            buyer_phone: buyer.phone?.replace(/\D/g, ''),
+                            buyer_cpf: buyer.cpf,
+                            amount: totalCents,
+                            payment_method: normalizedPaymentMethod,
+                            status: 'paid',
+                            created_at: new Date().toISOString(),
+                            client_ip: clientIp,
+                            utm_source: typeof tracking.utm_source === 'string' ? tracking.utm_source : null,
+                            utm_campaign: typeof tracking.utm_campaign === 'string' ? tracking.utm_campaign : null,
+                            utm_medium: typeof tracking.utm_medium === 'string' ? tracking.utm_medium : null,
+                            utm_content: typeof tracking.utm_content === 'string' ? tracking.utm_content : null,
+                            utm_term: typeof tracking.utm_term === 'string' ? tracking.utm_term : null,
+                            utm_src: typeof tracking.src === 'string' ? tracking.src : null,
+                            utm_sck: typeof tracking.sck === 'string' ? tracking.sck : null,
+                        }
+                    });
+                    if ((utmifyResult as any).ok) {
+                        await supabase.from('orders').update({ utmify_sent_at: new Date().toISOString(), utmify_last_error: null }).eq('id', orderId);
+                    } else if (!(utmifyResult as any).skipped) {
+                        await supabase.from('orders').update({ utmify_last_error: (utmifyResult as any).error || 'Erro UTMify' }).eq('id', orderId);
+                    }
+                }
+            } catch (utmifyErr) {
+                console.error('[UTMIFY] Immediate purchase error:', utmifyErr);
+            }
+
             try {
                 const capiResult = await sendFacebookEvent({
                     eventName: 'Purchase',
