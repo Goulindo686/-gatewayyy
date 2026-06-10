@@ -187,12 +187,12 @@ export default function LandingPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 18,
-              padding: '10px 16px',
-              borderRadius: 999,
-              border: '1px solid rgba(108,92,231,0.14)',
-              background: 'rgba(255,255,255,0.82)',
+              padding: '10px 0',
+              borderRadius: 0,
+              border: '1px solid transparent',
+              background: 'transparent',
               backdropFilter: 'blur(18px)',
-              boxShadow: '0 14px 44px rgba(17, 24, 39, 0.10)'
+              boxShadow: 'none'
             }} className="landingHeaderBar">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }} className="landingLogo">
                 <img
@@ -210,8 +210,8 @@ export default function LandingPage() {
                   gap: 16,
                   padding: '8px 12px',
                   borderRadius: 999,
-                  border: '1px solid rgba(108,92,231,0.14)',
-                  background: 'rgba(255,255,255,0.70)'
+                  border: '1px solid transparent',
+                  background: 'transparent'
                 }} className="landingNav">
                   {[
                     { href: '#inicio', label: 'Início' },
@@ -247,8 +247,8 @@ export default function LandingPage() {
                     fontWeight: 900,
                     padding: '10px 14px',
                     borderRadius: 999,
-                    border: '1px solid var(--border-color)',
-                    background: 'rgba(255,255,255,0.65)',
+                    border: '1px solid rgba(124,58,237,0.12)',
+                    background: 'rgba(255,255,255,0.76)',
                     color: 'var(--text-primary)'
                   }}
                 >
@@ -309,8 +309,9 @@ export default function LandingPage() {
           background: 'linear-gradient(0deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
           pointerEvents: 'none'
         }} />
+        <div className="heroCurveLines" />
 
-        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1200, margin: '0 auto', padding: '0 48px', width: '100%', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }} className="heroGrid">
+        <div style={{ position: 'relative', zIndex: 2, maxWidth: 1320, margin: '0 auto', padding: '0 44px', width: '100%', display: 'grid', gridTemplateColumns: '0.82fr 1.18fr', gap: 46, alignItems: 'center' }} className="heroGrid">
 
           {/* Coluna esquerda — texto */}
           <div className="heroLeft">
@@ -377,13 +378,14 @@ export default function LandingPage() {
           </div>
 
           {/* Coluna direita — mockup dashboard profissional */}
-          <div style={{ position: 'relative' }} className="heroRight" id="heroMockup">
+          <div style={{ position: 'relative', minHeight: 500 }} className="heroRight" id="heroMockup">
             {/* Glow atrás do mockup */}
             <div style={{
               position: 'absolute',
-              inset: '8% -4% 6% 10%',
-              border: '1px solid rgba(255,255,255,0.10)',
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))',
+              inset: '-9% -4% 5% 18%',
+              border: '1px solid rgba(124,58,237,0.08)',
+              borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(124,58,237,0.12), rgba(124,58,237,0.00) 68%)',
               transform: 'skewY(-3deg)',
               pointerEvents: 'none',
               zIndex: 0
@@ -392,12 +394,12 @@ export default function LandingPage() {
             {/* Frame do browser */}
             <div id="mockupFrame" style={{
               position: 'relative', zIndex: 2,
-              borderRadius: 18,
+              borderRadius: 20,
               overflow: 'hidden',
               border: '1px solid rgba(124,58,237,0.12)',
               boxShadow: '0 34px 80px rgba(88,28,135,0.18), 0 0 0 1px rgba(255,255,255,0.88)',
               background: 'rgba(255,255,255,0.78)',
-              transform: 'perspective(1000px) rotateY(-3deg) rotateX(1.5deg)',
+              transform: 'perspective(1000px) rotateY(-2deg) rotateX(1deg)',
               transition: 'transform 0.15s ease, box-shadow 0.15s ease',
               willChange: 'transform',
             }}>
@@ -420,14 +422,15 @@ export default function LandingPage() {
                 loading="eager"
                 style={{ width: '100%', display: 'block', background: 'linear-gradient(135deg, rgba(124,58,237,0.04), rgba(255,255,255,0.92))' }}
               />
-              <img
-                src="https://i.imgur.com/8gcYDam.jpeg"
-                alt="Visual complementar GouPay"
-                referrerPolicy="no-referrer"
-                loading="eager"
-                className="heroAccentImage"
-              />
             </div>
+
+            <img
+              src="https://i.imgur.com/8gcYDam.jpeg"
+              alt="Notificacoes de venda GouPay"
+              referrerPolicy="no-referrer"
+              loading="eager"
+              className="heroAccentImage"
+            />
 
             {/* Card flutuante — saldo */}
             <div style={{
@@ -498,15 +501,28 @@ export default function LandingPage() {
           }
           .heroAccentImage {
             position: absolute;
-            right: -26px;
-            bottom: -28px;
-            width: min(210px, 38%);
-            aspect-ratio: 1 / 1;
+            right: -18px;
+            bottom: -52px;
+            width: min(235px, 34%);
+            aspect-ratio: 9 / 16;
             object-fit: cover;
-            border-radius: 28px;
-            border: 8px solid rgba(255,255,255,0.92);
-            box-shadow: 0 24px 60px rgba(88,28,135,0.22);
+            border-radius: 30px;
+            border: 7px solid rgba(255,255,255,0.96);
+            box-shadow: 0 28px 70px rgba(88,28,135,0.28);
             animation: heroFloatSoft 5.8s ease-in-out infinite;
+            z-index: 6;
+          }
+          .heroCurveLines {
+            position: absolute;
+            left: -8%;
+            right: -8%;
+            bottom: -90px;
+            height: 250px;
+            pointer-events: none;
+            opacity: 0.34;
+            background:
+              repeating-radial-gradient(ellipse at 48% 0%, transparent 0 22px, rgba(124,58,237,0.24) 23px 24px, transparent 25px 42px);
+            mask-image: linear-gradient(90deg, transparent 0%, black 12%, black 88%, transparent 100%);
           }
           .heroRight {
             animation: heroRiseIn 0.8s ease-out both;
@@ -530,10 +546,23 @@ export default function LandingPage() {
             .heroAccentImage {
               right: -10px;
               bottom: -16px;
-              width: 42%;
+              width: 36%;
               border-width: 5px;
               border-radius: 18px;
             }
+          }
+          .landingNav a:first-child {
+            color: #6d28d9 !important;
+            box-shadow: inset 0 -2px 0 #7c3aed;
+          }
+          .landingHeroActions a:first-child:hover,
+          .landingActions a:last-child:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 22px 48px rgba(124,58,237,0.32) !important;
+          }
+          .landingHeroActions a,
+          .landingActions a {
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
           }
         `}</style>
       </section>
