@@ -282,6 +282,105 @@ export default function LoginPage() {
                         height: 42px;
                     }
                 }
+                .authShell {
+                    background: #fbfaff;
+                    color: #0f172a;
+                }
+                .authBackdrop {
+                    background:
+                        radial-gradient(760px 460px at 8% 10%, rgba(124,58,237,0.14), transparent 62%),
+                        radial-gradient(620px 380px at 92% 80%, rgba(139,92,246,0.10), transparent 60%),
+                        linear-gradient(180deg, #ffffff 0%, #f8f5ff 100%);
+                }
+                .authLayout {
+                    grid-template-columns: minmax(420px, 0.95fr) minmax(420px, 1fr);
+                }
+                .authSide {
+                    padding: 52px;
+                }
+                .authSide::before {
+                    inset: 32px;
+                    border-radius: 30px;
+                    background:
+                        linear-gradient(135deg, rgba(255,255,255,0.94), rgba(250,247,255,0.86)),
+                        radial-gradient(620px 340px at 20% 18%, rgba(124,58,237,0.16), transparent 58%);
+                    border: 1px solid rgba(124,58,237,0.12);
+                    box-shadow: 0 28px 80px rgba(88,28,135,0.12);
+                }
+                .authSide::after {
+                    content: 'Pix aprovado, venda registrada e saque pronto para acompanhar no painel.';
+                    position: absolute;
+                    left: 88px;
+                    right: 88px;
+                    bottom: 88px;
+                    padding: 18px 20px;
+                    border-radius: 20px;
+                    background: rgba(255,255,255,0.82);
+                    border: 1px solid rgba(124,58,237,0.12);
+                    box-shadow: 0 18px 50px rgba(88,28,135,0.12);
+                    color: #475569;
+                    font-size: 13px;
+                    line-height: 1.55;
+                    font-weight: 700;
+                    z-index: 2;
+                }
+                .authSide video {
+                    display: none;
+                }
+                .authSideInner {
+                    max-width: 500px;
+                }
+                .authSideBadge {
+                    background: rgba(124,58,237,0.09);
+                    border-color: rgba(124,58,237,0.15);
+                    color: #6d28d9;
+                }
+                .authSideTitle {
+                    color: #0f172a;
+                    font-size: 42px;
+                }
+                .authSideSub {
+                    color: #64748b;
+                    font-size: 15px;
+                }
+                .authMain {
+                    padding: 48px 24px;
+                }
+                .authCard {
+                    border-radius: 30px;
+                    background: rgba(255,255,255,0.9);
+                    border: 1px solid rgba(124,58,237,0.12);
+                    box-shadow: 0 30px 90px rgba(88,28,135,0.14);
+                }
+                .authTitle {
+                    color: #0f172a;
+                }
+                .authSubtitle,
+                label {
+                    color: #64748b !important;
+                }
+                .input-field {
+                    background: #ffffff !important;
+                    border: 1px solid rgba(124,58,237,0.14) !important;
+                    color: #0f172a !important;
+                    border-radius: 16px !important;
+                    box-shadow: 0 10px 24px rgba(88,28,135,0.05);
+                }
+                .input-field:focus {
+                    border-color: rgba(124,58,237,0.46) !important;
+                    box-shadow: 0 0 0 4px rgba(124,58,237,0.10) !important;
+                }
+                .authFooter {
+                    color: #64748b;
+                }
+                .authLink {
+                    color: #6d28d9;
+                }
+                @media (max-width: 980px) {
+                    .authLayout {
+                        grid-template-columns: 1fr;
+                    }
+                }
             `}</style>
         </div>
     );
