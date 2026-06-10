@@ -7,7 +7,7 @@ import { jsonError, jsonSuccess, generateToken, hashPassword } from '@/lib/auth'
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
 import { sendFacebookEvent } from '@/lib/facebook-capi';
-import { sendUtmifyOrder } from '@/lib/utmify';
+import { decryptUtmifyToken, sendUtmifyOrderWithLog } from '@/lib/utmify';
 import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest) {
@@ -326,9 +326,11 @@ export async function POST(req: NextRequest) {
                     .select('utmify_enabled, utmify_api_token')
                     .eq('id', product.user_id)
                     .single();
-                if (seller?.utmify_enabled && seller?.utmify_api_token) {
-                    const utmifyResult = await sendUtmifyOrder({
-                        token: seller.utmify_api_token,
+                const utmifyToken = decryptUtmifyToken(seller?.utmify_api_token);
+                if (seller?.utmify_enabled && utmifyToken) {
+                    const utmifyResult = await sendUtmifyOrderWithLog({
+                        token: utmifyToken,
+                        sellerId: product.user_id,
                         product,
                         status: 'paid',
                         order: {

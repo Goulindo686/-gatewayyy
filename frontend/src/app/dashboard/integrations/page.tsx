@@ -29,9 +29,12 @@ export default function IntegrationsPage() {
     const [utmify, setUtmify] = useState({
         enabled: false,
         api_token: '',
+        has_token: false,
         last_sent_at: '',
         last_error: '',
     });
+    const [utmifyEvents, setUtmifyEvents] = useState<any[]>([]);
+    const [retryingEvent, setRetryingEvent] = useState<string | null>(null);
 
     const [apiKeys, setApiKeys] = useState<any[]>([]);
     const [visibleApiKeys, setVisibleApiKeys] = useState<Record<string, boolean>>({});
@@ -57,9 +60,11 @@ export default function IntegrationsPage() {
             setUtmify({
                 enabled: !!data.integration?.enabled,
                 api_token: data.integration?.api_token || '',
+                has_token: !!data.integration?.has_token,
                 last_sent_at: data.integration?.last_sent_at || '',
                 last_error: data.integration?.last_error || '',
             });
+            setUtmifyEvents(data.events || []);
         } catch (err: any) {
             toast.error(err.response?.data?.error || 'Erro ao carregar UTMify');
         } finally {
@@ -84,6 +89,20 @@ export default function IntegrationsPage() {
             toast.error(err.response?.data?.error || 'Erro ao salvar UTMify');
         } finally {
             setSavingUtmify(false);
+        }
+    };
+
+    const retryUtmifyEvent = async (eventId: string) => {
+        setRetryingEvent(eventId);
+        try {
+            const { data } = await axios.post(`/api/integrations/utmify/events/${eventId}/retry`, {}, { headers: headers() });
+            toast.success(data.message || 'Evento reenviado!');
+            loadUtmify();
+        } catch (err: any) {
+            toast.error(err.response?.data?.error || 'Erro ao reenviar evento');
+            loadUtmify();
+        } finally {
+            setRetryingEvent(null);
         }
     };
 
@@ -261,10 +280,15 @@ export default function IntegrationsPage() {
                             <input
                                 className="input-field"
                                 type="password"
-                                placeholder="Cole aqui o x-api-token da UTMify"
+                                placeholder={utmify.has_token ? 'Token salvo. Preencha somente se quiser trocar.' : 'Cole aqui o x-api-token da UTMify'}
                                 value={utmify.api_token}
                                 onChange={(e) => setUtmify(prev => ({ ...prev, api_token: e.target.value }))}
                             />
+                            {utmify.has_token && (
+                                <p style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 7 }}>
+                                    Token já salvo com proteção no servidor. Por segurança, ele não é exibido novamente.
+                                </p>
+                            )}
                         </div>
 
                         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
@@ -294,6 +318,61 @@ export default function IntegrationsPage() {
                             <p>Na UTMify, crie sua credencial em <strong>Integracoes &gt; Webhooks &gt; Credenciais API</strong> e cole o token aqui.</p>
                         </div>
                     </aside>
+
+                    <section className="glass-card" style={{ padding: 28, gridColumn: '1 / -1' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 14, marginBottom: 16, flexWrap: 'wrap' }}>
+                            <div>
+                                <h3 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>Historico de eventos UTMify</h3>
+                                <p style={{ color: 'var(--text-secondary)', fontSize: 13 }}>Acompanhe os envios recentes e reenvie manualmente quando houver falha.</p>
+                            </div>
+                            <button className="btn-secondary" onClick={loadUtmify} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+                                <FiRefreshCw /> Atualizar
+                            </button>
+                        </div>
+
+                        <div style={{ display: 'grid', gap: 10 }}>
+                            {utmifyEvents.map((event) => (
+                                <div key={event.id} style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 12, alignItems: 'center', padding: 14, borderRadius: 14, border: '1px solid var(--border-color)', background: 'var(--bg-hover)' }} className="utmify-event-row">
+                                    <div style={{ minWidth: 0 }}>
+                                        <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 5 }}>
+                                            <strong style={{ fontSize: 13 }}>{event.order_id ? `Pedido ${String(event.order_id).slice(0, 8)}` : 'Evento de teste'}</strong>
+                                            <span style={{
+                                                fontSize: 10,
+                                                fontWeight: 800,
+                                                borderRadius: 999,
+                                                padding: '3px 7px',
+                                                background: event.status === 'sent' ? '#dcfce7' : event.status === 'failed' ? '#fee2e2' : 'rgba(148,163,184,0.18)',
+                                                color: event.status === 'sent' ? '#166534' : event.status === 'failed' ? '#991b1b' : 'var(--text-secondary)'
+                                            }}>
+                                                {event.status === 'sent' ? 'ENVIADO' : event.status === 'failed' ? 'FALHOU' : String(event.status || '').toUpperCase()}
+                                            </span>
+                                            <span style={{ fontSize: 11, color: 'var(--text-muted)' }}>Tentativas: {event.attempt_count || 0}</span>
+                                        </div>
+                                        <div style={{ fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                            {event.error_message || (event.sent_at ? `Enviado em ${new Date(event.sent_at).toLocaleString()}` : `Criado em ${new Date(event.created_at).toLocaleString()}`)}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        {event.status === 'failed' && (
+                                            <button
+                                                className="btn-secondary"
+                                                onClick={() => retryUtmifyEvent(event.id)}
+                                                disabled={retryingEvent === event.id}
+                                                style={{ display: 'inline-flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}
+                                            >
+                                                <FiRefreshCw /> {retryingEvent === event.id ? 'Reenviando...' : 'Reenviar'}
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                            {utmifyEvents.length === 0 && (
+                                <div style={{ padding: 24, borderRadius: 14, border: '1px dashed var(--border-color)', color: 'var(--text-secondary)', textAlign: 'center', fontSize: 13 }}>
+                                    Nenhum evento UTMify registrado ainda.
+                                </div>
+                            )}
+                        </div>
+                    </section>
                 </div>
             )}
 
@@ -402,6 +481,9 @@ export default function IntegrationsPage() {
                     .webhook-row {
                         flex-direction: column !important;
                         align-items: stretch !important;
+                    }
+                    .utmify-event-row {
+                        grid-template-columns: 1fr !important;
                     }
                 }
             `}</style>

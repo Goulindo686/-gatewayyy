@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server';
 import { supabase } from '@/lib/db';
 import { getAuthUser, jsonError, jsonSuccess } from '@/lib/auth';
 import { checkRateLimit, rateLimitResponse } from '@/lib/rate-limit';
-import { sendUtmifyOrder } from '@/lib/utmify';
+import { decryptUtmifyToken, encryptUtmifyToken, sendUtmifyOrderWithLog } from '@/lib/utmify';
 
 function sanitizeToken(value: any) {
     const token = String(value || '').trim();
@@ -15,13 +15,26 @@ export async function GET(req: NextRequest) {
     const auth = await getAuthUser(req);
     if (!auth?.user) return jsonError('Nao autorizado', 401);
 
+    const { data: events, error: eventsError } = await supabase
+        .from('utmify_events')
+        .select('id, order_id, event_type, status, response_status, error_message, attempt_count, next_retry_at, sent_at, created_at, updated_at')
+        .eq('seller_id', auth.user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+    if (eventsError) console.warn('[UTMIFY] Events table unavailable:', eventsError.message);
+
+    const decrypted = decryptUtmifyToken(auth.user.utmify_api_token);
+    const hasToken = !!decrypted;
+
     return jsonSuccess({
         integration: {
             enabled: !!auth.user.utmify_enabled,
-            api_token: auth.user.utmify_api_token || '',
+            api_token: '',
+            has_token: hasToken,
             last_sent_at: auth.user.utmify_last_sent_at || null,
             last_error: auth.user.utmify_last_error || null,
-        }
+        },
+        events: eventsError ? [] : (events || [])
     });
 }
 
@@ -37,12 +50,14 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
     const enabled = !!body.enabled;
     const token = sanitizeToken(body.api_token);
+    const existingToken = decryptUtmifyToken(auth.user.utmify_api_token);
+    const tokenToStore = token ? encryptUtmifyToken(token) : auth.user.utmify_api_token || null;
 
-    if (enabled && !token) return jsonError('Informe a credencial API da UTMify para ativar.');
+    if (enabled && !token && !existingToken) return jsonError('Informe a credencial API da UTMify para ativar.');
 
     const updateData = {
         utmify_enabled: enabled,
-        utmify_api_token: token,
+        utmify_api_token: enabled ? tokenToStore : null,
         utmify_last_error: null,
     };
 
@@ -56,7 +71,8 @@ export async function PUT(req: NextRequest) {
     return jsonSuccess({
         integration: {
             enabled,
-            api_token: token || '',
+            api_token: '',
+            has_token: enabled && !!(token || existingToken),
             last_error: null,
             last_sent_at: auth.user.utmify_last_sent_at || null,
         },
@@ -73,12 +89,13 @@ export async function POST(req: NextRequest) {
     const rl = await checkRateLimit({ key: `utmify:test:${auth.user.id}:${ip}`, limit: 10, windowSecs: 3600, failOpen: true });
     if (!rl.allowed) return rateLimitResponse(rl.resetAt);
 
-    const token = auth.user.utmify_api_token;
+    const token = decryptUtmifyToken(auth.user.utmify_api_token);
     if (!auth.user.utmify_enabled || !token) return jsonError('Ative a UTMify e salve a credencial antes de testar.');
 
     const now = new Date().toISOString();
-    const result = await sendUtmifyOrder({
+    const result = await sendUtmifyOrderWithLog({
         token,
+        sellerId: auth.user.id,
         isTest: true,
         status: 'paid',
         product: {

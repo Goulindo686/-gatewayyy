@@ -11,7 +11,7 @@ import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
 import { sendFacebookEvent } from '@/lib/facebook-capi';
-import { sendUtmifyOrder } from '@/lib/utmify';
+import { decryptUtmifyToken, sendUtmifyOrderWithLog } from '@/lib/utmify';
 
 function safeEqual(a: string, b: string) {
     const aBuf = Buffer.from(a);
@@ -502,9 +502,11 @@ export async function POST(req: NextRequest) {
                             .select('utmify_enabled, utmify_api_token')
                             .eq('id', order.seller_id)
                             .single();
-                        if (sellerIntegration?.utmify_enabled && sellerIntegration?.utmify_api_token && !order.utmify_sent_at) {
-                            const utmifyResult = await sendUtmifyOrder({
-                                token: sellerIntegration.utmify_api_token,
+                        const utmifyToken = decryptUtmifyToken(sellerIntegration?.utmify_api_token);
+                        if (sellerIntegration?.utmify_enabled && utmifyToken && !order.utmify_sent_at) {
+                            const utmifyResult = await sendUtmifyOrderWithLog({
+                                token: utmifyToken,
+                                sellerId: order.seller_id,
                                 order,
                                 product,
                                 status: 'paid',
