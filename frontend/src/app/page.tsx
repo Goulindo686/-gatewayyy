@@ -187,12 +187,12 @@ export default function LandingPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 18,
-              padding: '10px 0',
-              borderRadius: 0,
-              border: '1px solid transparent',
-              background: 'transparent',
+              padding: '10px 16px',
+              borderRadius: 999,
+              border: '1px solid rgba(124, 58, 237, 0.12)',
+              background: 'rgba(255, 255, 255, 0.84)',
               backdropFilter: 'blur(18px)',
-              boxShadow: 'none'
+              boxShadow: '0 18px 46px rgba(88, 28, 135, 0.1)'
             }} className="landingHeaderBar">
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }} className="landingLogo">
                 <img
