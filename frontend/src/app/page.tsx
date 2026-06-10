@@ -268,7 +268,7 @@ export default function LandingPage() {
         ref={heroRef}
         style={{
           position: 'relative',
-          background: '#07080b',
+          background: '#ffffff',
           overflow: 'hidden',
           paddingTop: 'calc(env(safe-area-inset-top) + 110px)',
           paddingBottom: 60,
@@ -283,8 +283,9 @@ export default function LandingPage() {
           position: 'absolute',
           inset: 0,
           background: [
-            'linear-gradient(90deg, rgba(7,8,11,0.98) 0%, rgba(7,8,11,0.92) 42%, rgba(7,8,11,0.70) 70%, rgba(7,8,11,0.90) 100%)',
-            'url(https://i.imgur.com/OuIZdBG.png) right 12% center / min(760px, 50vw) auto no-repeat'
+            'radial-gradient(circle at 80% 35%, rgba(124,58,237,0.14) 0%, rgba(124,58,237,0.00) 34%)',
+            'radial-gradient(circle at 12% 20%, rgba(167,139,250,0.16) 0%, rgba(167,139,250,0.00) 28%)',
+            'linear-gradient(180deg, #ffffff 0%, #fbf9ff 58%, #ffffff 100%)'
           ].join(', '),
           pointerEvents: 'none'
         }} />
@@ -292,11 +293,11 @@ export default function LandingPage() {
           position: 'absolute',
           inset: 0,
           background: [
-            'linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px)',
-            'linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px)'
+            'radial-gradient(circle, rgba(124,58,237,0.16) 1px, transparent 1px)'
           ].join(', '),
-          backgroundSize: '72px 72px',
-          maskImage: 'linear-gradient(90deg, black 0%, black 58%, transparent 100%)',
+          backgroundSize: '22px 22px',
+          maskImage: 'linear-gradient(110deg, transparent 0%, black 18%, black 82%, transparent 100%)',
+          opacity: 0.42,
           pointerEvents: 'none'
         }} />
         <div style={{
@@ -304,8 +305,8 @@ export default function LandingPage() {
           left: 0,
           right: 0,
           bottom: 0,
-          height: 160,
-          background: 'linear-gradient(0deg, #07080b 0%, rgba(7,8,11,0) 100%)',
+          height: 180,
+          background: 'linear-gradient(0deg, #ffffff 0%, rgba(255,255,255,0) 100%)',
           pointerEvents: 'none'
         }} />
 
@@ -320,40 +321,40 @@ export default function LandingPage() {
               padding: '8px 12px',
               marginBottom: 18,
               borderRadius: 999,
-              border: '1px solid rgba(255,255,255,0.12)',
-              background: 'rgba(255,255,255,0.06)',
-              color: 'rgba(255,255,255,0.82)',
+              border: '1px solid rgba(124,58,237,0.14)',
+              background: 'rgba(124,58,237,0.08)',
+              color: '#6d28d9',
               fontSize: 12,
               fontWeight: 800
             }}>
               <FiLock size={14} /> Infraestrutura para vendas digitais
             </div>
 
-            <h1 style={{ fontSize: 'clamp(34px, 4.3vw, 60px)', fontWeight: 900, lineHeight: 1.04, letterSpacing: -1.6, color: 'white', marginBottom: 20, textShadow: '0 18px 50px rgba(0,0,0,0.45)' }} className="landingHeroTitle">
+            <h1 style={{ fontSize: 'clamp(34px, 4.3vw, 60px)', fontWeight: 900, lineHeight: 1.04, letterSpacing: -1.6, color: '#0f172a', marginBottom: 20 }} className="landingHeroTitle">
               O gateway que faz<br />
-              <span style={{ background: 'linear-gradient(135deg, #ffffff 0%, #b8a7ff 42%, #6ee7d8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <span style={{ background: 'linear-gradient(135deg, #6d28d9 0%, #8b5cf6 52%, #4f46e5 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
                 seu negócio crescer
               </span>
             </h1>
 
-            <p style={{ color: 'rgba(255,255,255,0.72)', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.75, marginBottom: 32, maxWidth: 500, textShadow: '0 1px 8px rgba(0,0,0,0.25)' }} className="landingHeroSubtitle">
+            <p style={{ color: '#64748b', fontSize: 'clamp(14px, 1.5vw, 17px)', lineHeight: 1.75, marginBottom: 32, maxWidth: 500 }} className="landingHeroSubtitle">
               Checkout de alta conversão, Pix instantâneo, área de membros e loja integrada. Taxa: <strong style={{ color: '#c4b5fd' }}>R$2,00 + 1,09%</strong> por venda.
             </p>
 
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginBottom: 40 }} className="landingHeroActions">
               <Link href="/register" style={{
                 padding: '13px 24px', fontSize: 15, display: 'inline-flex', alignItems: 'center', gap: 8, borderRadius: 999,
-                background: 'white',
-                color: '#08090d', fontWeight: 800, textDecoration: 'none',
-                boxShadow: '0 18px 46px rgba(255,255,255,0.16)',
+                background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+                color: 'white', fontWeight: 800, textDecoration: 'none',
+                boxShadow: '0 18px 42px rgba(124,58,237,0.28)',
               }}>
                 Criar conta grátis <FiArrowRight size={16} />
               </Link>
               <Link href="#features" style={{
                 padding: '13px 24px', fontSize: 15, borderRadius: 999,
-                background: 'rgba(255,255,255,0.06)', backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.16)',
-                color: 'rgba(255,255,255,0.88)', textDecoration: 'none', fontWeight: 700,
+                background: 'rgba(255,255,255,0.78)', backdropFilter: 'blur(12px)',
+                border: '1px solid rgba(124,58,237,0.16)',
+                color: '#334155', textDecoration: 'none', fontWeight: 700,
                 display: 'inline-flex', alignItems: 'center',
               }}>
                 Ver recursos
@@ -367,9 +368,9 @@ export default function LandingPage() {
                 { value: '100%', label: 'Automático' },
                 { value: 'Grátis', label: 'Sem mensalidade' },
               ].map((s, i) => (
-                <div key={i} style={{ border: '1px solid rgba(255,255,255,0.10)', background: 'rgba(255,255,255,0.055)', borderRadius: 14, padding: '12px 16px', minWidth: 122 }}>
-                  <div style={{ fontSize: 19, fontWeight: 900, color: 'white', letterSpacing: -0.4 }}>{s.value}</div>
-                  <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.58)', fontWeight: 600, marginTop: 2 }}>{s.label}</div>
+                <div key={i} style={{ border: '1px solid rgba(124,58,237,0.12)', background: 'rgba(255,255,255,0.72)', borderRadius: 16, padding: '12px 16px', minWidth: 122, boxShadow: '0 16px 36px rgba(88,28,135,0.08)' }}>
+                  <div style={{ fontSize: 19, fontWeight: 900, color: '#0f172a', letterSpacing: -0.4 }}>{s.value}</div>
+                  <div style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginTop: 2 }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -393,40 +394,47 @@ export default function LandingPage() {
               position: 'relative', zIndex: 2,
               borderRadius: 18,
               overflow: 'hidden',
-              border: '1px solid rgba(255,255,255,0.13)',
-              boxShadow: '0 32px 90px rgba(0,0,0,0.58), 0 0 0 1px rgba(255,255,255,0.05)',
-              background: '#101114',
+              border: '1px solid rgba(124,58,237,0.12)',
+              boxShadow: '0 34px 80px rgba(88,28,135,0.18), 0 0 0 1px rgba(255,255,255,0.88)',
+              background: 'rgba(255,255,255,0.78)',
               transform: 'perspective(1000px) rotateY(-3deg) rotateX(1.5deg)',
               transition: 'transform 0.15s ease, box-shadow 0.15s ease',
               willChange: 'transform',
             }}>
               {/* Barra do browser */}
-              <div style={{ background: '#16171c', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+              <div style={{ background: 'rgba(255,255,255,0.88)', padding: '10px 16px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(124,58,237,0.10)' }}>
                 <div style={{ display: 'flex', gap: 5 }}>
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ff5f56' }} />
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#ffbd2e' }} />
                   <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#27c93f' }} />
                 </div>
-                <div style={{ flex: 1, background: 'rgba(255,255,255,0.055)', borderRadius: 7, padding: '4px 12px', fontSize: 11, color: 'rgba(255,255,255,0.44)', textAlign: 'center' }}>
+                <div style={{ flex: 1, background: 'rgba(124,58,237,0.055)', borderRadius: 7, padding: '4px 12px', fontSize: 11, color: '#7c3aed', textAlign: 'center', fontWeight: 700 }}>
                   goupay.com.br/dashboard
                 </div>
               </div>
               {/* Screenshot */}
               <img
-                src="https://i.imgur.com/OuIZdBG.png"
-                alt="Dashboard GouPay"
+                src="https://i.imgur.com/M24u2FU.png"
+                alt="Visual GouPay em destaque"
                 referrerPolicy="no-referrer"
                 loading="eager"
-                style={{ width: '100%', display: 'block' }}
+                style={{ width: '100%', display: 'block', background: 'linear-gradient(135deg, rgba(124,58,237,0.04), rgba(255,255,255,0.92))' }}
+              />
+              <img
+                src="https://i.imgur.com/8gcYDam.jpeg"
+                alt="Visual complementar GouPay"
+                referrerPolicy="no-referrer"
+                loading="eager"
+                className="heroAccentImage"
               />
             </div>
 
             {/* Card flutuante — saldo */}
             <div style={{
               position: 'absolute', bottom: '12%', left: '-8%', zIndex: 5,
-              background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(16px)',
+              background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(16px)',
               borderRadius: 14, padding: '12px 16px',
-              boxShadow: '0 18px 52px rgba(0,0,0,0.34)',
+              boxShadow: '0 18px 48px rgba(88,28,135,0.14)',
               minWidth: 140,
               border: '1px solid rgba(255,255,255,0.70)',
               transition: 'transform 0.15s ease',
@@ -442,7 +450,7 @@ export default function LandingPage() {
             {/* Card flutuante — taxa */}
             <div style={{
               position: 'absolute', top: '8%', right: '-6%', zIndex: 5,
-              background: '#6d4df2', backdropFilter: 'blur(16px)',
+              background: 'linear-gradient(135deg, #7c3aed, #6d28d9)', backdropFilter: 'blur(16px)',
               borderRadius: 14, padding: '12px 16px',
               boxShadow: '0 18px 52px rgba(42,32,122,0.48)',
               minWidth: 120,
@@ -487,6 +495,45 @@ export default function LandingPage() {
             .heroRight { display: block !important; max-width: 320px !important; margin: 0 auto !important; }
             /* Esconde cards flutuantes em mobile */
             #cardSaldo, #cardTaxa { display: none !important; }
+          }
+          .heroAccentImage {
+            position: absolute;
+            right: -26px;
+            bottom: -28px;
+            width: min(210px, 38%);
+            aspect-ratio: 1 / 1;
+            object-fit: cover;
+            border-radius: 28px;
+            border: 8px solid rgba(255,255,255,0.92);
+            box-shadow: 0 24px 60px rgba(88,28,135,0.22);
+            animation: heroFloatSoft 5.8s ease-in-out infinite;
+          }
+          .heroRight {
+            animation: heroRiseIn 0.8s ease-out both;
+          }
+          .heroLeft {
+            animation: heroCopyIn 0.7s ease-out both;
+          }
+          @keyframes heroFloatSoft {
+            0%, 100% { transform: translate3d(0, 0, 0) rotate(-2deg); }
+            50% { transform: translate3d(0, -12px, 0) rotate(2deg); }
+          }
+          @keyframes heroRiseIn {
+            from { opacity: 0; transform: translate3d(26px, 18px, 0) scale(0.98); }
+            to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+          }
+          @keyframes heroCopyIn {
+            from { opacity: 0; transform: translate3d(-18px, 14px, 0); }
+            to { opacity: 1; transform: translate3d(0, 0, 0); }
+          }
+          @media (max-width: 640px) {
+            .heroAccentImage {
+              right: -10px;
+              bottom: -16px;
+              width: 42%;
+              border-width: 5px;
+              border-radius: 18px;
+            }
           }
         `}</style>
       </section>
@@ -1006,10 +1053,10 @@ Body:
             inset: 0;
             z-index: 2;
             pointer-events: none;
-            opacity: 0.55;
+            opacity: 0.42;
             background:
-              linear-gradient(115deg, rgba(109,77,242,0.18) 0%, rgba(109,77,242,0.00) 38%),
-              linear-gradient(250deg, rgba(110,231,216,0.12) 0%, rgba(110,231,216,0.00) 34%);
+              linear-gradient(115deg, rgba(124,58,237,0.10) 0%, rgba(124,58,237,0.00) 38%),
+              linear-gradient(250deg, rgba(167,139,250,0.12) 0%, rgba(167,139,250,0.00) 34%);
           }
           .landingHero::after {
             content: '';
@@ -1017,8 +1064,8 @@ Body:
             inset: 0;
             z-index: 3;
             pointer-events: none;
-            background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.00) 22%, rgba(255,255,255,0.04) 100%);
-            opacity: 0.45;
+            background: linear-gradient(180deg, rgba(124,58,237,0.05) 0%, rgba(255,255,255,0.00) 26%, rgba(124,58,237,0.04) 100%);
+            opacity: 0.62;
           }
           .landingHeroImg {
             transform: translate3d(var(--tx), var(--ty), 0) scale(1.035);
