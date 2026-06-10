@@ -488,14 +488,50 @@ export default function LandingPage() {
           @media (max-width: 640px) {
             .landingHeroTitle { font-size: 28px !important; }
             .landingHeroSubtitle { font-size: 14px !important; }
-            .landingHeroStats { gap: 16px !important; flex-wrap: wrap !important; justify-content: center !important; }
-            .landingHeroStats > div { border-left: none !important; padding-left: 0 !important; }
+            .landingHeroStats {
+              display: grid !important;
+              grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+              gap: 14px !important;
+              width: 100% !important;
+              max-width: 292px !important;
+              margin: 0 auto !important;
+              justify-content: center !important;
+            }
+            .landingHeroStats > div {
+              min-width: 0 !important;
+              width: 100% !important;
+              min-height: 68px !important;
+              padding: 12px 10px !important;
+              display: flex !important;
+              flex-direction: column !important;
+              align-items: center !important;
+              justify-content: center !important;
+              text-align: center !important;
+              border-left: none !important;
+            }
+            .landingHeroStats > div:nth-child(3) {
+              grid-column: 1 / -1 !important;
+              width: min(148px, 100%) !important;
+              justify-self: center !important;
+            }
             .landingHeroActions { flex-direction: row !important; flex-wrap: wrap !important; justify-content: center !important; }
             .landingHeroActions a { font-size: 14px !important; padding: 12px 18px !important; }
             .landingHero { padding-top: calc(env(safe-area-inset-top) + 160px) !important; }
             .heroGrid { padding: 0 16px !important; }
             /* Mostra mockup em mobile, menor */
-            .heroRight { display: block !important; max-width: 320px !important; margin: 0 auto !important; }
+            .heroRight {
+              display: block !important;
+              width: min(100%, 330px) !important;
+              max-width: 330px !important;
+              min-height: 388px !important;
+              margin: 4px auto 0 !important;
+              padding-bottom: 92px !important;
+            }
+            #mockupFrame {
+              transform: none !important;
+              border-radius: 18px !important;
+              box-shadow: 0 24px 58px rgba(88,28,135,0.16), 0 0 0 1px rgba(255,255,255,0.9) !important;
+            }
             /* Esconde cards flutuantes em mobile */
             #cardSaldo, #cardTaxa { display: none !important; }
           }
@@ -544,11 +580,12 @@ export default function LandingPage() {
           }
           @media (max-width: 640px) {
             .heroAccentImage {
-              right: -10px;
-              bottom: -16px;
-              width: 36%;
+              right: 14px;
+              bottom: 18px;
+              width: min(29%, 92px);
               border-width: 5px;
               border-radius: 18px;
+              box-shadow: 0 18px 44px rgba(88,28,135,0.24);
             }
           }
           .landingNav a:first-child {
