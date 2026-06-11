@@ -280,12 +280,15 @@ export default function SubscriptionsPage() {
 
             <style jsx>{`
                 .subscriptions-shell {
-                    background: #111922;
-                    color: #f8fafc;
-                    border-radius: 24px;
+                    background:
+                        radial-gradient(circle at top right, rgba(124, 58, 237, 0.11), transparent 34%),
+                        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
+                    color: #111827;
+                    border-radius: 18px;
                     padding: 30px;
                     min-height: calc(100vh - 150px);
-                    box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.08);
+                    border: 1px solid rgba(226, 232, 240, 0.95);
+                    box-shadow: 0 20px 55px rgba(15, 23, 42, 0.06);
                 }
                 .subscriptions-header {
                     display: flex;
@@ -301,7 +304,7 @@ export default function SubscriptionsPage() {
                     letter-spacing: 0;
                 }
                 .subscriptions-header p {
-                    color: #93a8c5;
+                    color: #64748b;
                     font-size: 13px;
                     margin: 0;
                 }
@@ -317,10 +320,10 @@ export default function SubscriptionsPage() {
                     align-items: center;
                     min-width: 112px;
                     height: 48px;
-                    border: 1px solid rgba(148, 163, 184, 0.28);
-                    border-radius: 9px;
-                    background: #121d29;
-                    color: #fff;
+                    border: 1px solid #ddd6fe;
+                    border-radius: 12px;
+                    background: #fff;
+                    color: #111827;
                     padding: 16px 32px 4px 13px;
                 }
                 .period-select span {
@@ -328,8 +331,8 @@ export default function SubscriptionsPage() {
                     top: -8px;
                     left: 12px;
                     padding: 0 5px;
-                    background: #111922;
-                    color: #879bb8;
+                    background: #fff;
+                    color: #7c3aed;
                     font-size: 12px;
                 }
                 .period-select select {
@@ -338,7 +341,7 @@ export default function SubscriptionsPage() {
                     border: 0;
                     outline: 0;
                     background: transparent;
-                    color: #fff;
+                    color: #111827;
                     font-size: 15px;
                     font-weight: 700;
                     cursor: pointer;
@@ -350,14 +353,14 @@ export default function SubscriptionsPage() {
                     position: absolute;
                     right: 10px;
                     pointer-events: none;
-                    color: #9badc5;
+                    color: #7c3aed;
                 }
                 .refresh-button {
                     height: 48px;
                     border: 0;
-                    border-radius: 8px;
-                    background: #354252;
-                    color: #b8c6d8;
+                    border-radius: 12px;
+                    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+                    color: #fff;
                     padding: 0 28px;
                     font-weight: 800;
                     display: inline-flex;
@@ -374,38 +377,39 @@ export default function SubscriptionsPage() {
                 }
                 .metrics-grid {
                     display: grid;
-                    grid-template-columns: repeat(6, 1fr);
-                    gap: 16px;
-                    margin-bottom: 30px;
+                    grid-template-columns: repeat(5, minmax(0, 1fr));
+                    gap: 14px;
+                    margin-bottom: 22px;
                 }
                 .metric-card {
                     position: relative;
-                    border-radius: 14px;
-                    background: #1d2a38;
-                    border-left: 3px solid var(--accent);
+                    border-radius: 16px;
+                    background: #fff;
+                    border: 1px solid #e5e7eb;
+                    border-top: 4px solid var(--accent);
                     min-height: 90px;
                     padding: 20px 18px;
                     overflow: hidden;
+                    box-shadow: 0 16px 35px rgba(15, 23, 42, 0.05);
                 }
                 .metric-1,
-                .metric-2 {
-                    grid-column: span 3;
-                }
+                .metric-2,
                 .metric-3,
                 .metric-4,
                 .metric-5 {
-                    grid-column: span 2;
+                    grid-column: span 1;
                 }
                 .metric-content {
                     display: flex;
-                    gap: 48px;
+                    gap: 24px;
                     align-items: flex-start;
+                    justify-content: space-between;
                 }
                 .metric-label {
                     display: inline-flex;
                     align-items: center;
                     gap: 5px;
-                    color: #94a8c4;
+                    color: #64748b;
                     font-size: 14px;
                     font-weight: 750;
                     margin-bottom: 8px;
@@ -414,7 +418,7 @@ export default function SubscriptionsPage() {
                     display: block;
                     font-size: 25px;
                     line-height: 1;
-                    color: #fff;
+                    color: #111827;
                     letter-spacing: 0;
                 }
                 .metric-eye {
@@ -424,22 +428,24 @@ export default function SubscriptionsPage() {
                     transform: translateY(-50%);
                     border: 0;
                     background: transparent;
-                    color: #c9d4e2;
+                    color: #a78bfa;
                     display: inline-flex;
                     cursor: help;
                 }
                 .plans-strip {
-                    background: #1d2a38;
-                    border-radius: 14px;
+                    background: linear-gradient(135deg, #ffffff, #faf7ff);
+                    border: 1px solid #ede9fe;
+                    border-radius: 16px;
                     padding: 18px;
                     margin-bottom: 18px;
+                    box-shadow: 0 16px 35px rgba(124, 58, 237, 0.06);
                 }
                 .section-title {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     margin-bottom: 14px;
-                    color: #94a8c4;
+                    color: #6d28d9;
                 }
                 .section-title div {
                     display: flex;
@@ -447,7 +453,7 @@ export default function SubscriptionsPage() {
                     gap: 10px;
                 }
                 .section-title strong {
-                    color: #fff;
+                    color: #111827;
                     font-size: 22px;
                 }
                 .plan-list {
@@ -460,10 +466,10 @@ export default function SubscriptionsPage() {
                     justify-content: space-between;
                     gap: 12px;
                     align-items: center;
-                    border: 1px solid rgba(148, 163, 184, 0.16);
+                    border: 1px solid #e9d5ff;
                     border-radius: 12px;
                     padding: 12px 14px;
-                    background: rgba(15, 23, 42, 0.28);
+                    background: #fff;
                 }
                 .plan-pill strong {
                     display: block;
@@ -472,7 +478,7 @@ export default function SubscriptionsPage() {
                 }
                 .plan-pill span,
                 .empty-inline {
-                    color: #94a8c4;
+                    color: #64748b;
                     font-size: 12px;
                 }
                 .plan-pill button {
@@ -489,7 +495,9 @@ export default function SubscriptionsPage() {
                 .table-card {
                     overflow: hidden;
                     border-radius: 16px;
-                    background: #1d2a38;
+                    background: #fff;
+                    border: 1px solid #e5e7eb;
+                    box-shadow: 0 18px 38px rgba(15, 23, 42, 0.06);
                 }
                 .table-toolbar {
                     display: flex;
@@ -501,14 +509,14 @@ export default function SubscriptionsPage() {
                 .search-box {
                     width: min(100%, 250px);
                     height: 40px;
-                    border: 1px solid rgba(148, 163, 184, 0.32);
-                    border-radius: 8px;
+                    border: 1px solid #ddd6fe;
+                    border-radius: 12px;
                     display: flex;
                     align-items: center;
                     gap: 10px;
                     padding: 0 14px;
-                    color: #89a0bd;
-                    background: #1a2734;
+                    color: #7c3aed;
+                    background: #fafaff;
                 }
                 .search-box input {
                     min-width: 0;
@@ -516,25 +524,25 @@ export default function SubscriptionsPage() {
                     border: 0;
                     outline: 0;
                     background: transparent;
-                    color: #dbe7f7;
+                    color: #111827;
                     font-size: 15px;
                 }
                 .search-box input::placeholder {
-                    color: #6f85a2;
+                    color: #94a3b8;
                 }
                 .filter-button {
                     position: relative;
                     height: 38px;
-                    border: 1px solid rgba(148, 163, 184, 0.3);
-                    border-radius: 8px;
+                    border: 1px solid #ddd6fe;
+                    border-radius: 12px;
                     padding: 0 12px;
                     display: inline-flex;
                     align-items: center;
                     gap: 8px;
-                    color: #fff;
+                    color: #6d28d9;
                     font-weight: 800;
                     cursor: pointer;
-                    background: #1a2734;
+                    background: #fafaff;
                 }
                 .filter-button select {
                     position: absolute;
@@ -551,35 +559,35 @@ export default function SubscriptionsPage() {
                     min-width: 920px;
                 }
                 th {
-                    background: #334150;
-                    color: #9fb3cf;
+                    background: #f8f5ff;
+                    color: #6d28d9;
                     text-align: left;
                     font-size: 13px;
                     font-weight: 800;
                     padding: 18px;
                 }
                 td {
-                    border-top: 1px solid rgba(148, 163, 184, 0.08);
-                    color: #cbd7e6;
+                    border-top: 1px solid #f1f5f9;
+                    color: #334155;
                     font-size: 13px;
                     padding: 16px 18px;
                     vertical-align: middle;
                 }
                 td strong {
                     display: block;
-                    color: #f8fafc;
+                    color: #111827;
                     font-size: 13px;
                     margin-bottom: 3px;
                 }
                 td span {
-                    color: #8498b4;
+                    color: #64748b;
                     font-size: 12px;
                 }
                 .check-box {
                     display: inline-block;
                     width: 18px;
                     height: 18px;
-                    border: 2px solid #8aa0ba;
+                    border: 2px solid #c4b5fd;
                     border-radius: 5px;
                 }
                 .status-pill {
@@ -609,7 +617,7 @@ export default function SubscriptionsPage() {
                     display: grid;
                     place-items: center;
                     gap: 8px;
-                    color: #9fb3cf;
+                    color: #64748b;
                 }
                 .empty-state svg {
                     opacity: 0.55;
@@ -628,7 +636,7 @@ export default function SubscriptionsPage() {
                     border: 0;
                     border-radius: 50%;
                     background: transparent;
-                    color: #8ea2bd;
+                    color: #7c3aed;
                     display: inline-grid;
                     place-items: center;
                 }
@@ -636,7 +644,7 @@ export default function SubscriptionsPage() {
                     width: 32px;
                     height: 32px;
                     border-radius: 50%;
-                    background: #0f8f7b;
+                    background: #7c3aed;
                     color: #fff;
                     display: inline-grid;
                     place-items: center;
