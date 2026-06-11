@@ -26,7 +26,6 @@ export default function IntegrationsPage() {
     const [loading, setLoading] = useState(true);
     const [savingUtmify, setSavingUtmify] = useState(false);
     const [testingUtmify, setTestingUtmify] = useState(false);
-    const [syncingUtmify, setSyncingUtmify] = useState(false);
     const [utmify, setUtmify] = useState({
         enabled: false,
         api_token: '',
@@ -117,20 +116,6 @@ export default function IntegrationsPage() {
             toast.error(err.response?.data?.error || 'Erro ao testar UTMify');
         } finally {
             setTestingUtmify(false);
-        }
-    };
-
-    const syncUtmifyPaidOrders = async () => {
-        setSyncingUtmify(true);
-        try {
-            const { data } = await axios.post('/api/integrations/utmify/sync', {}, { headers: headers() });
-            toast.success(data.message || 'Vendas pagas sincronizadas!');
-            loadUtmify();
-        } catch (err: any) {
-            toast.error(err.response?.data?.error || 'Erro ao sincronizar vendas');
-            loadUtmify();
-        } finally {
-            setSyncingUtmify(false);
         }
     };
 
@@ -312,9 +297,6 @@ export default function IntegrationsPage() {
                             </button>
                             <button className="btn-secondary" onClick={testUtmify} disabled={testingUtmify || !utmify.enabled || !utmify.api_token} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
                                 <FiSend /> {testingUtmify ? 'Testando...' : 'Enviar teste'}
-                            </button>
-                            <button className="btn-secondary" onClick={syncUtmifyPaidOrders} disabled={syncingUtmify || !utmify.enabled || !utmify.has_token} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-                                <FiRefreshCw /> {syncingUtmify ? 'Sincronizando...' : 'Sincronizar vendas pagas'}
                             </button>
                         </div>
 
