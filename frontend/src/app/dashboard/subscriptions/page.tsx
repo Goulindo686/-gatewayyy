@@ -7,7 +7,6 @@ import {
     FiChevronDown,
     FiChevronLeft,
     FiChevronRight,
-    FiEye,
     FiFilter,
     FiHelpCircle,
     FiRefreshCw,
@@ -160,13 +159,9 @@ export default function SubscriptionsPage() {
                                 <strong>{metric.value}</strong>
                             </div>
                             {metric.sideLabel && (
-                                <div>
-                                    <span className="metric-label">{metric.sideLabel}</span>
-                                    <strong>{metric.sideValue}</strong>
-                                </div>
+                                <span className="metric-note">{metric.sideLabel}: {metric.sideValue}</span>
                             )}
                         </div>
-                        <button aria-label={metric.helper} title={metric.helper} className="metric-eye"><FiEye /></button>
                     </article>
                 ))}
             </section>
@@ -280,15 +275,11 @@ export default function SubscriptionsPage() {
 
             <style jsx>{`
                 .subscriptions-shell {
-                    background:
-                        radial-gradient(circle at top right, rgba(124, 58, 237, 0.11), transparent 34%),
-                        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.96));
-                    color: #111827;
+                    background: var(--bg-primary);
+                    color: var(--text-primary);
                     border-radius: 18px;
                     padding: 30px;
                     min-height: calc(100vh - 150px);
-                    border: 1px solid rgba(226, 232, 240, 0.95);
-                    box-shadow: 0 20px 55px rgba(15, 23, 42, 0.06);
                 }
                 .subscriptions-header {
                     display: flex;
@@ -304,7 +295,7 @@ export default function SubscriptionsPage() {
                     letter-spacing: 0;
                 }
                 .subscriptions-header p {
-                    color: #64748b;
+                    color: var(--text-secondary);
                     font-size: 13px;
                     margin: 0;
                 }
@@ -320,10 +311,10 @@ export default function SubscriptionsPage() {
                     align-items: center;
                     min-width: 112px;
                     height: 48px;
-                    border: 1px solid #ddd6fe;
+                    border: 1px solid var(--border-color);
                     border-radius: 12px;
-                    background: #fff;
-                    color: #111827;
+                    background: var(--bg-card);
+                    color: var(--text-primary);
                     padding: 16px 32px 4px 13px;
                 }
                 .period-select span {
@@ -331,8 +322,8 @@ export default function SubscriptionsPage() {
                     top: -8px;
                     left: 12px;
                     padding: 0 5px;
-                    background: #fff;
-                    color: #7c3aed;
+                    background: var(--bg-primary);
+                    color: var(--accent-primary);
                     font-size: 12px;
                 }
                 .period-select select {
@@ -341,7 +332,7 @@ export default function SubscriptionsPage() {
                     border: 0;
                     outline: 0;
                     background: transparent;
-                    color: #111827;
+                    color: var(--text-primary);
                     font-size: 15px;
                     font-weight: 700;
                     cursor: pointer;
@@ -353,13 +344,13 @@ export default function SubscriptionsPage() {
                     position: absolute;
                     right: 10px;
                     pointer-events: none;
-                    color: #7c3aed;
+                    color: var(--accent-primary);
                 }
                 .refresh-button {
                     height: 48px;
                     border: 0;
                     border-radius: 12px;
-                    background: linear-gradient(135deg, #7c3aed, #5b21b6);
+                    background: var(--accent-gradient);
                     color: #fff;
                     padding: 0 28px;
                     font-weight: 800;
@@ -384,13 +375,13 @@ export default function SubscriptionsPage() {
                 .metric-card {
                     position: relative;
                     border-radius: 16px;
-                    background: #fff;
-                    border: 1px solid #e5e7eb;
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-color);
                     border-top: 4px solid var(--accent);
                     min-height: 90px;
                     padding: 20px 18px;
                     overflow: hidden;
-                    box-shadow: 0 16px 35px rgba(15, 23, 42, 0.05);
+                    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
                 }
                 .metric-1,
                 .metric-2,
@@ -401,15 +392,15 @@ export default function SubscriptionsPage() {
                 }
                 .metric-content {
                     display: flex;
-                    gap: 24px;
+                    flex-direction: column;
+                    gap: 8px;
                     align-items: flex-start;
-                    justify-content: space-between;
                 }
                 .metric-label {
                     display: inline-flex;
                     align-items: center;
                     gap: 5px;
-                    color: #64748b;
+                    color: var(--text-secondary);
                     font-size: 14px;
                     font-weight: 750;
                     margin-bottom: 8px;
@@ -418,34 +409,28 @@ export default function SubscriptionsPage() {
                     display: block;
                     font-size: 25px;
                     line-height: 1;
-                    color: #111827;
+                    color: var(--text-primary);
                     letter-spacing: 0;
                 }
-                .metric-eye {
-                    position: absolute;
-                    right: 18px;
-                    top: 50%;
-                    transform: translateY(-50%);
-                    border: 0;
-                    background: transparent;
-                    color: #a78bfa;
-                    display: inline-flex;
-                    cursor: help;
+                .metric-note {
+                    color: var(--text-muted);
+                    font-size: 12px;
+                    font-weight: 700;
                 }
                 .plans-strip {
-                    background: linear-gradient(135deg, #ffffff, #faf7ff);
-                    border: 1px solid #ede9fe;
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-color);
                     border-radius: 16px;
                     padding: 18px;
                     margin-bottom: 18px;
-                    box-shadow: 0 16px 35px rgba(124, 58, 237, 0.06);
+                    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
                 }
                 .section-title {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
                     margin-bottom: 14px;
-                    color: #6d28d9;
+                    color: var(--accent-primary);
                 }
                 .section-title div {
                     display: flex;
@@ -453,7 +438,7 @@ export default function SubscriptionsPage() {
                     gap: 10px;
                 }
                 .section-title strong {
-                    color: #111827;
+                    color: var(--text-primary);
                     font-size: 22px;
                 }
                 .plan-list {
@@ -466,10 +451,10 @@ export default function SubscriptionsPage() {
                     justify-content: space-between;
                     gap: 12px;
                     align-items: center;
-                    border: 1px solid #e9d5ff;
+                    border: 1px solid var(--border-color);
                     border-radius: 12px;
                     padding: 12px 14px;
-                    background: #fff;
+                    background: var(--bg-secondary);
                 }
                 .plan-pill strong {
                     display: block;
@@ -478,7 +463,7 @@ export default function SubscriptionsPage() {
                 }
                 .plan-pill span,
                 .empty-inline {
-                    color: #64748b;
+                    color: var(--text-secondary);
                     font-size: 12px;
                 }
                 .plan-pill button {
@@ -495,8 +480,8 @@ export default function SubscriptionsPage() {
                 .table-card {
                     overflow: hidden;
                     border-radius: 16px;
-                    background: #fff;
-                    border: 1px solid #e5e7eb;
+                    background: var(--bg-card);
+                    border: 1px solid var(--border-color);
                     box-shadow: 0 18px 38px rgba(15, 23, 42, 0.06);
                 }
                 .table-toolbar {
@@ -509,14 +494,14 @@ export default function SubscriptionsPage() {
                 .search-box {
                     width: min(100%, 250px);
                     height: 40px;
-                    border: 1px solid #ddd6fe;
+                    border: 1px solid var(--border-color);
                     border-radius: 12px;
                     display: flex;
                     align-items: center;
                     gap: 10px;
                     padding: 0 14px;
-                    color: #7c3aed;
-                    background: #fafaff;
+                    color: var(--accent-primary);
+                    background: var(--bg-secondary);
                 }
                 .search-box input {
                     min-width: 0;
@@ -524,25 +509,25 @@ export default function SubscriptionsPage() {
                     border: 0;
                     outline: 0;
                     background: transparent;
-                    color: #111827;
+                    color: var(--text-primary);
                     font-size: 15px;
                 }
                 .search-box input::placeholder {
-                    color: #94a3b8;
+                    color: var(--text-muted);
                 }
                 .filter-button {
                     position: relative;
                     height: 38px;
-                    border: 1px solid #ddd6fe;
+                    border: 1px solid var(--border-color);
                     border-radius: 12px;
                     padding: 0 12px;
                     display: inline-flex;
                     align-items: center;
                     gap: 8px;
-                    color: #6d28d9;
+                    color: var(--accent-primary);
                     font-weight: 800;
                     cursor: pointer;
-                    background: #fafaff;
+                    background: var(--bg-secondary);
                 }
                 .filter-button select {
                     position: absolute;
@@ -559,35 +544,35 @@ export default function SubscriptionsPage() {
                     min-width: 920px;
                 }
                 th {
-                    background: #f8f5ff;
-                    color: #6d28d9;
+                    background: var(--bg-secondary);
+                    color: var(--accent-primary);
                     text-align: left;
                     font-size: 13px;
                     font-weight: 800;
                     padding: 18px;
                 }
                 td {
-                    border-top: 1px solid #f1f5f9;
-                    color: #334155;
+                    border-top: 1px solid var(--border-color);
+                    color: var(--text-secondary);
                     font-size: 13px;
                     padding: 16px 18px;
                     vertical-align: middle;
                 }
                 td strong {
                     display: block;
-                    color: #111827;
+                    color: var(--text-primary);
                     font-size: 13px;
                     margin-bottom: 3px;
                 }
                 td span {
-                    color: #64748b;
+                    color: var(--text-muted);
                     font-size: 12px;
                 }
                 .check-box {
                     display: inline-block;
                     width: 18px;
                     height: 18px;
-                    border: 2px solid #c4b5fd;
+                    border: 2px solid rgba(124, 58, 237, 0.35);
                     border-radius: 5px;
                 }
                 .status-pill {
@@ -617,7 +602,7 @@ export default function SubscriptionsPage() {
                     display: grid;
                     place-items: center;
                     gap: 8px;
-                    color: #64748b;
+                    color: var(--text-secondary);
                 }
                 .empty-state svg {
                     opacity: 0.55;
@@ -636,7 +621,7 @@ export default function SubscriptionsPage() {
                     border: 0;
                     border-radius: 50%;
                     background: transparent;
-                    color: #7c3aed;
+                    color: var(--accent-primary);
                     display: inline-grid;
                     place-items: center;
                 }
@@ -644,7 +629,7 @@ export default function SubscriptionsPage() {
                     width: 32px;
                     height: 32px;
                     border-radius: 50%;
-                    background: #7c3aed;
+                    background: var(--accent-primary);
                     color: #fff;
                     display: inline-grid;
                     place-items: center;
