@@ -11,7 +11,7 @@ import { notifySale } from '@/lib/telegram';
 import { sendPushNotification } from '@/lib/webpush';
 import { sendPurchaseApprovedEmail } from '@/lib/email';
 import { sendFacebookEvent } from '@/lib/facebook-capi';
-import { decryptUtmifyToken, sendUtmifyOrderWithLog } from '@/lib/utmify';
+import { sendPaidOrderToUtmify } from '@/lib/utmify';
 
 function safeEqual(a: string, b: string) {
     const aBuf = Buffer.from(a);
@@ -413,10 +413,16 @@ export async function POST(req: NextRequest) {
 
         // Update order status
         if (order.status === 'paid' && newStatus === 'paid') {
+            try {
+                await sendPaidOrderToUtmify(order);
+            } catch (utmifyErr) {
+                console.error('[UTMIFY] Paid duplicate sync error:', utmifyErr);
+            }
             return jsonSuccess({ received: true }); // Already processed
         }
 
         await supabase.from('orders').update({ status: newStatus }).eq('id', order.id);
+        order = { ...order, status: newStatus };
 
         if (newStatus === 'paid') {
             // IDEMPOTÊNCIA: verifica se a taxa já foi inserida para este pedido
@@ -428,6 +434,11 @@ export async function POST(req: NextRequest) {
                 .maybeSingle();
 
             if (existingFee) {
+                try {
+                    await sendPaidOrderToUtmify(order);
+                } catch (utmifyErr) {
+                    console.error('[UTMIFY] Existing fee sync error:', utmifyErr);
+                }
                 // Pagamento já foi processado completamente — ignora reenvio
                 console.log('Webhook duplicado ignorado para pedido:', order.id);
                 return jsonSuccess({ received: true });
@@ -497,30 +508,9 @@ export async function POST(req: NextRequest) {
                     productName = product.name || 'Produto';
 
                     try {
-                        const { data: sellerIntegration } = await supabase
-                            .from('users')
-                            .select('utmify_enabled, utmify_api_token')
-                            .eq('id', order.seller_id)
-                            .single();
-                        const utmifyToken = decryptUtmifyToken(sellerIntegration?.utmify_api_token);
-                        if (sellerIntegration?.utmify_enabled && utmifyToken && !order.utmify_sent_at) {
-                            const utmifyResult = await sendUtmifyOrderWithLog({
-                                token: utmifyToken,
-                                sellerId: order.seller_id,
-                                order,
-                                product,
-                                status: 'paid',
-                            });
-                            if ((utmifyResult as any).ok) {
-                                await supabase.from('orders')
-                                    .update({ utmify_sent_at: new Date().toISOString(), utmify_last_error: null })
-                                    .eq('id', order.id);
-                            } else if (!(utmifyResult as any).skipped) {
-                                await supabase.from('orders')
-                                    .update({ utmify_last_error: (utmifyResult as any).error || 'Erro UTMify' })
-                                    .eq('id', order.id);
-                                console.warn('[UTMIFY] Webhook purchase not sent:', utmifyResult);
-                            }
+                        const utmifyResult = await sendPaidOrderToUtmify(order);
+                        if (!(utmifyResult as any).ok && !(utmifyResult as any).skipped) {
+                            console.warn('[UTMIFY] Webhook purchase not sent:', utmifyResult);
                         }
                     } catch (utmifyErr) {
                         console.error('[UTMIFY] Webhook purchase error:', utmifyErr);

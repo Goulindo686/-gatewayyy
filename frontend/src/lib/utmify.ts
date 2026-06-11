@@ -307,3 +307,50 @@ export async function retryUtmifyEvent(event: any, token?: string | null) {
 
     return result;
 }
+
+export async function sendPaidOrderToUtmify(order: any) {
+    if (!order?.id || order.status !== 'paid' || order.utmify_sent_at) {
+        return { skipped: true, reason: 'not_eligible' };
+    }
+
+    const { data: seller } = await supabase
+        .from('users')
+        .select('utmify_enabled, utmify_api_token')
+        .eq('id', order.seller_id)
+        .single();
+
+    const token = decryptUtmifyToken(seller?.utmify_api_token);
+    if (!seller?.utmify_enabled || !token) {
+        return { skipped: true, reason: 'integration_disabled' };
+    }
+
+    let product: any = null;
+    if (order.product_id) {
+        const { data } = await supabase
+            .from('products')
+            .select('id, name')
+            .eq('id', order.product_id)
+            .single();
+        product = data;
+    }
+
+    const result = await sendUtmifyOrderWithLog({
+        token,
+        sellerId: order.seller_id,
+        order,
+        product,
+        status: 'paid',
+    });
+
+    if ((result as any).ok) {
+        await supabase.from('orders')
+            .update({ utmify_sent_at: new Date().toISOString(), utmify_last_error: null })
+            .eq('id', order.id);
+    } else if (!(result as any).skipped) {
+        await supabase.from('orders')
+            .update({ utmify_last_error: (result as any).error || 'Erro UTMify' })
+            .eq('id', order.id);
+    }
+
+    return result;
+}
