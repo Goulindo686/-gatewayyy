@@ -248,6 +248,7 @@ export default function CheckoutPage() {
  
     useEffect(() => {
         if (params.id) loadProduct(params.id as string);
+        if (params.id && typeof window !== 'undefined') persistTrackingParameters(params.id as string);
         return () => {
             if (pollingRef.current) clearTimeout(pollingRef.current);
             if (countdownRef.current) clearInterval(countdownRef.current);
@@ -351,19 +352,73 @@ export default function CheckoutPage() {
         purchaseTrackedRef.current = true;
     };
 
+    const TRACKING_KEYS = [
+        'src', 'sck',
+        'utm_id', 'utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term',
+        'fbclid', 'gclid', 'ttclid', 'msclkid',
+        'campaign_id', 'adset_id', 'ad_id',
+        'campaign_name', 'adset_name', 'ad_name',
+        'fbp', 'fbc'
+    ];
+
+    const getTrackingStorageKey = (productId?: string) => `goupay_tracking_${productId || 'global'}`;
+
+    const readStoredTracking = (productId?: string) => {
+        if (typeof window === 'undefined') return {};
+        const candidates = [
+            getTrackingStorageKey(productId),
+            getTrackingStorageKey('global')
+        ];
+        for (const key of candidates) {
+            try {
+                const raw = window.localStorage.getItem(key);
+                if (!raw) continue;
+                const parsed = JSON.parse(raw);
+                if (parsed && typeof parsed === 'object') return parsed;
+            } catch {}
+        }
+        return {};
+    };
+
+    const persistTrackingParameters = (productId?: string) => {
+        if (typeof window === 'undefined') return;
+        const search = new URLSearchParams(window.location.search);
+        const collected: Record<string, string> = {};
+        TRACKING_KEYS.forEach((key) => {
+            const value = search.get(key);
+            if (value) collected[key] = value;
+        });
+
+        const hasTracking = Object.keys(collected).length > 0;
+        if (!hasTracking) return;
+
+        const stored = readStoredTracking(productId);
+        const payload = {
+            ...stored,
+            ...collected,
+            landing_url: window.location.href,
+            referrer: document.referrer || stored.referrer || null,
+            captured_at: new Date().toISOString()
+        };
+
+        try {
+            window.localStorage.setItem(getTrackingStorageKey(productId), JSON.stringify(payload));
+            window.localStorage.setItem(getTrackingStorageKey('global'), JSON.stringify(payload));
+        } catch {}
+    };
+
     const getTrackingParameters = () => {
         if (typeof window === 'undefined') return {};
         const search = new URLSearchParams(window.location.search);
-        const pick = (key: string) => search.get(key) || null;
-        return {
-            src: pick('src'),
-            sck: pick('sck'),
-            utm_source: pick('utm_source'),
-            utm_campaign: pick('utm_campaign'),
-            utm_medium: pick('utm_medium'),
-            utm_content: pick('utm_content'),
-            utm_term: pick('utm_term'),
+        const stored = readStoredTracking(params.id as string);
+        const tracking: Record<string, string | null> = {
+            landing_url: window.location.href,
+            referrer: document.referrer || stored.referrer || null,
         };
+        TRACKING_KEYS.forEach((key) => {
+            tracking[key] = search.get(key) || stored[key] || null;
+        });
+        return tracking;
     };
 
     const startPixPolling = (orderId: string) => {

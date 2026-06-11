@@ -19,14 +19,30 @@ function cleanDigits(value: any) {
 }
 
 function getTracking(order: any) {
+    const params = order?.tracking_params && typeof order.tracking_params === 'object'
+        ? order.tracking_params
+        : {};
     return {
-        src: order?.utm_src || null,
-        sck: order?.utm_sck || null,
-        utm_source: order?.utm_source || null,
-        utm_campaign: order?.utm_campaign || null,
-        utm_medium: order?.utm_medium || null,
-        utm_content: order?.utm_content || null,
-        utm_term: order?.utm_term || null,
+        src: order?.utm_src || params.src || null,
+        sck: order?.utm_sck || params.sck || null,
+        utm_id: params.utm_id || null,
+        utm_source: order?.utm_source || params.utm_source || null,
+        utm_campaign: order?.utm_campaign || params.utm_campaign || null,
+        utm_medium: order?.utm_medium || params.utm_medium || null,
+        utm_content: order?.utm_content || params.utm_content || null,
+        utm_term: order?.utm_term || params.utm_term || null,
+        fbclid: params.fbclid || null,
+        gclid: params.gclid || null,
+        ttclid: params.ttclid || null,
+        msclkid: params.msclkid || null,
+        campaign_id: params.campaign_id || null,
+        adset_id: params.adset_id || null,
+        ad_id: params.ad_id || null,
+        campaign_name: params.campaign_name || null,
+        adset_name: params.adset_name || null,
+        ad_name: params.ad_name || null,
+        landing_url: order?.landing_url || params.landing_url || null,
+        referrer: order?.referrer || params.referrer || null,
     };
 }
 
@@ -259,6 +275,9 @@ export async function retryUtmifyEvent(event: any, token?: string | null) {
         utm_term: payload.trackingParameters?.utm_term,
         utm_src: payload.trackingParameters?.src,
         utm_sck: payload.trackingParameters?.sck,
+        tracking_params: payload.trackingParameters,
+        landing_url: payload.trackingParameters?.landing_url,
+        referrer: payload.trackingParameters?.referrer,
     };
 
     const product = payload.products?.[0]

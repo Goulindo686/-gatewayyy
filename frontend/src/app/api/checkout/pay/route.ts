@@ -26,6 +26,24 @@ export async function POST(req: NextRequest) {
         const { product_id, buyer, card_data, plan_id, selected_bumps } = body;
         const facebook = body.facebook || {};
         const tracking = body.tracking || {};
+        const normalizeTracking = (input: any) => {
+            const allowed = [
+                'src', 'sck',
+                'utm_id', 'utm_source', 'utm_campaign', 'utm_medium', 'utm_content', 'utm_term',
+                'fbclid', 'gclid', 'ttclid', 'msclkid',
+                'campaign_id', 'adset_id', 'ad_id',
+                'campaign_name', 'adset_name', 'ad_name',
+                'fbp', 'fbc',
+                'landing_url', 'referrer', 'captured_at'
+            ];
+            const out: Record<string, string> = {};
+            for (const key of allowed) {
+                const value = input?.[key];
+                if (typeof value === 'string' && value.trim()) out[key] = value.trim().slice(0, 1000);
+            }
+            return out;
+        };
+        const trackingParams = normalizeTracking(tracking);
 
         // Rate limit por email: 5 checkouts por hora
         if (buyer?.email) {
@@ -296,13 +314,16 @@ export async function POST(req: NextRequest) {
         try {
             await supabase.from('orders')
                 .update({
-                    utm_source: typeof tracking.utm_source === 'string' ? tracking.utm_source : null,
-                    utm_campaign: typeof tracking.utm_campaign === 'string' ? tracking.utm_campaign : null,
-                    utm_medium: typeof tracking.utm_medium === 'string' ? tracking.utm_medium : null,
-                    utm_content: typeof tracking.utm_content === 'string' ? tracking.utm_content : null,
-                    utm_term: typeof tracking.utm_term === 'string' ? tracking.utm_term : null,
-                    utm_src: typeof tracking.src === 'string' ? tracking.src : null,
-                    utm_sck: typeof tracking.sck === 'string' ? tracking.sck : null,
+                    utm_source: trackingParams.utm_source || null,
+                    utm_campaign: trackingParams.utm_campaign || null,
+                    utm_medium: trackingParams.utm_medium || null,
+                    utm_content: trackingParams.utm_content || null,
+                    utm_term: trackingParams.utm_term || null,
+                    utm_src: trackingParams.src || null,
+                    utm_sck: trackingParams.sck || null,
+                    tracking_params: trackingParams,
+                    landing_url: trackingParams.landing_url || null,
+                    referrer: trackingParams.referrer || null,
                 })
                 .eq('id', orderId);
         } catch (utmErr) {
@@ -346,13 +367,16 @@ export async function POST(req: NextRequest) {
                             status: 'paid',
                             created_at: new Date().toISOString(),
                             client_ip: clientIp,
-                            utm_source: typeof tracking.utm_source === 'string' ? tracking.utm_source : null,
-                            utm_campaign: typeof tracking.utm_campaign === 'string' ? tracking.utm_campaign : null,
-                            utm_medium: typeof tracking.utm_medium === 'string' ? tracking.utm_medium : null,
-                            utm_content: typeof tracking.utm_content === 'string' ? tracking.utm_content : null,
-                            utm_term: typeof tracking.utm_term === 'string' ? tracking.utm_term : null,
-                            utm_src: typeof tracking.src === 'string' ? tracking.src : null,
-                            utm_sck: typeof tracking.sck === 'string' ? tracking.sck : null,
+                            utm_source: trackingParams.utm_source || null,
+                            utm_campaign: trackingParams.utm_campaign || null,
+                            utm_medium: trackingParams.utm_medium || null,
+                            utm_content: trackingParams.utm_content || null,
+                            utm_term: trackingParams.utm_term || null,
+                            utm_src: trackingParams.src || null,
+                            utm_sck: trackingParams.sck || null,
+                            tracking_params: trackingParams,
+                            landing_url: trackingParams.landing_url || null,
+                            referrer: trackingParams.referrer || null,
                         }
                     });
                     if ((utmifyResult as any).ok) {

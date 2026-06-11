@@ -313,9 +313,9 @@ export default function IntegrationsPage() {
                             <FiInfo /> Como funciona
                         </h3>
                         <div style={{ display: 'grid', gap: 14, color: 'var(--text-secondary)', fontSize: 13, lineHeight: 1.65 }}>
-                            <p>O checkout captura os parametros <strong>utm_source, utm_campaign, utm_medium, utm_content, utm_term, src e sck</strong> quando o cliente compra.</p>
+                            <p>O checkout captura automaticamente <strong>UTMs, src, sck, fbclid, gclid, ttclid, msclkid</strong> e dados de campanha quando eles chegam pelo clique do anuncio.</p>
                             <p>Quando o pagamento for aprovado, o GouPay envia o evento <strong>paid</strong> para a UTMify com produto, cliente, valor e comissao.</p>
-                            <p>Na UTMify, crie sua credencial em <strong>Integracoes &gt; Webhooks &gt; Credenciais API</strong> e cole o token aqui.</p>
+                            <p>Na UTMify, crie sua credencial em <strong>Integracoes &gt; Webhooks &gt; Credenciais API</strong>, cole o token aqui e use seus links de checkout nos anuncios normalmente.</p>
                         </div>
                     </aside>
 
