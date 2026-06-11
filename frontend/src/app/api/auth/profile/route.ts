@@ -25,6 +25,25 @@ const BANK_CODES: Record<string, string> = {
     'mercado pago': '323', 'c6': '336', 'picpay': '380', 'btg': '208',
 };
 
+function getRecipientStatus(recipient: any, fallback = 'pending') {
+    const raw = String(recipient?.status || recipient?.registration_status || fallback || 'pending').toLowerCase();
+    if (['active', 'pending', 'refused', 'suspended'].includes(raw)) return raw;
+    if (['rejected', 'denied', 'failed'].includes(raw)) return 'refused';
+    return fallback;
+}
+
+function getPagarmeErrorMessage(error: any) {
+    const data = error?.response?.data;
+    if (!data) return error?.message || 'Erro ao sincronizar recebedor';
+    if (typeof data.message === 'string') return data.message;
+    if (data.errors && typeof data.errors === 'object') {
+        return Object.entries(data.errors)
+            .map(([field, messages]: any) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : String(messages)}`)
+            .join('; ');
+    }
+    return error?.message || 'Erro ao sincronizar recebedor';
+}
+
 export async function PUT(req: NextRequest) {
     const auth = await getAuthUser(req);
     if (!auth) return jsonError('Não autorizado', 401);
@@ -114,10 +133,11 @@ export async function PUT(req: NextRequest) {
             try {
                 const { data: recipients } = await supabase
                     .from('recipients')
-                    .select('pagarme_recipient_id')
-                    .eq('user_id', auth.user.id);
+                    .select('id, pagarme_recipient_id, status, created_at, updated_at')
+                    .eq('user_id', auth.user.id)
+                    .order('created_at', { ascending: false });
 
-                const existingRecipient = recipients?.[0];
+                const existingRecipient = (recipients || []).find((r: any) => !!r.pagarme_recipient_id) || recipients?.[0];
 
                 // Detect if the document (CPF/CNPJ) changed
                 const oldDoc = oldUser?.cpf_cnpj?.replace(/\D/g, '');
@@ -156,22 +176,46 @@ export async function PUT(req: NextRequest) {
                 console.log(`[AUTH API] Syncing Recipient Data:`, JSON.stringify(recipientData));
 
                 const isTestRecipient = existingRecipient?.pagarme_recipient_id?.startsWith('re_test_');
+                const hasRealRecipient = !!existingRecipient?.pagarme_recipient_id && !isTestRecipient;
 
-                if (existingRecipient?.pagarme_recipient_id && !documentChanged && !isTestRecipient) {
+                if (hasRealRecipient && documentChanged) {
+                    await supabase
+                        .from('recipients')
+                        .update({ status: existingRecipient.status || 'pending' })
+                        .eq('id', existingRecipient.id);
+
+                    return jsonSuccess({
+                        user,
+                        syncError: {
+                            message: 'CPF/CNPJ diferente do recebedor já cadastrado. Para evitar recebedores duplicados na Pagar.me, entre em contato com o suporte para revisar ou recriar manualmente esse recebedor.',
+                            details: []
+                        }
+                    });
+                }
+
+                if (hasRealRecipient) {
                     try {
                         // Attempt to update existing
-                        await PagarmeService.updateRecipient(existingRecipient.pagarme_recipient_id, recipientData);
-                        await supabase.from('recipients').update({ status: 'active' }).eq('user_id', auth.user.id);
+                        const updatedRecipient = await PagarmeService.updateRecipient(existingRecipient.pagarme_recipient_id, recipientData);
+                        await supabase
+                            .from('recipients')
+                            .update({ status: getRecipientStatus(updatedRecipient, 'active') })
+                            .eq('id', existingRecipient.id);
                     } catch (updateErr: any) {
                         const errorMsg = updateErr.response?.data?.message || "";
-                        // If update is forbidden (due to status), we try to create a NEW one
                         if (updateErr.response?.status === 403 || errorMsg.includes("valid status")) {
-                            console.log(`[AUTH API] Update forbidden for ${existingRecipient.pagarme_recipient_id}, attempting new creation...`);
-                            const pRecipient = await PagarmeService.createRecipient(recipientData);
                             await supabase
                                 .from('recipients')
-                                .update({ pagarme_recipient_id: pRecipient.id, status: 'active' })
-                                .eq('user_id', auth.user.id);
+                                .update({ status: existingRecipient.status || 'refused' })
+                                .eq('id', existingRecipient.id);
+
+                            return jsonSuccess({
+                                user,
+                                syncError: {
+                                    message: 'A Pagar.me não permitiu atualizar este recebedor. Para evitar duplicidade, nenhum novo recebedor foi criado automaticamente. Revise os dados ou fale com o suporte.',
+                                    details: updateErr.response?.data?.errors || []
+                                }
+                            });
                         } else {
                             throw updateErr; // Re-throw other errors to be caught by the outer catch
                         }
@@ -179,23 +223,24 @@ export async function PUT(req: NextRequest) {
                 } else {
                     // Create new
                     const pRecipient = await PagarmeService.createRecipient(recipientData);
+                    const recipientStatus = getRecipientStatus(pRecipient, 'pending');
                     if (existingRecipient) {
                         await supabase
                             .from('recipients')
-                            .update({ pagarme_recipient_id: pRecipient.id, status: 'active' })
-                            .eq('user_id', auth.user.id);
+                            .update({ pagarme_recipient_id: pRecipient.id, status: recipientStatus })
+                            .eq('id', existingRecipient.id);
                     } else {
                         await supabase.from('recipients').insert({
                             id: uuidv4(),
                             user_id: auth.user.id,
                             pagarme_recipient_id: pRecipient.id,
-                            status: 'active'
+                            status: recipientStatus
                         });
                     }
                 }
             } catch (pError: any) {
                 const errorData = pError.response?.data;
-                const errorDetail = errorData?.message || pError.message;
+                const errorDetail = getPagarmeErrorMessage(pError);
 
                 console.error('[AUTH API] Pagar.me sync error:', JSON.stringify(errorData || pError.message, null, 2));
 
