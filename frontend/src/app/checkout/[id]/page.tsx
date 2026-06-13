@@ -202,9 +202,7 @@ function OrderSummary({
 export default function CheckoutPage() {
     const params = useParams();
     const router = useRouter();
-    const enableCreditCard = process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD
-        ? (process.env.NEXT_PUBLIC_ENABLE_CREDIT_CARD === 'true')
-        : true;
+    const enableCreditCard = false;
     const [product, setProduct] = useState<any>(null);
     const [plans, setPlans] = useState<any[]>([]);
     const [selectedPlan, setSelectedPlan] = useState<any>(null);

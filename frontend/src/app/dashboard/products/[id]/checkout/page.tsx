@@ -487,8 +487,8 @@ export default function CheckoutCustomizationPage() {
 
                                             <div className="space-y-4">
                                                 <h4 className="text-sm font-black" style={{ color: previewText }}>Pagamento</h4>
-                                                <div className="grid grid-cols-2 gap-3">
-                                                    <div className="rounded-2xl border p-4 flex flex-col items-center justify-center text-center min-h-[96px]" style={{ background: settings.theme === 'light' ? '#f3f4f6' : `${previewAccent}1A`, borderColor: previewAccent }}>
+                                                <div className="grid grid-cols-1 gap-3">
+                                                    <div className="hidden" style={{ background: settings.theme === 'light' ? '#f3f4f6' : `${previewAccent}1A`, borderColor: previewAccent }}>
                                                         <div className="w-10 h-10 rounded-xl flex items-center justify-center text-white" style={{ background: previewAccent }}>
                                                             <FiCreditCard size={18} />
                                                         </div>
